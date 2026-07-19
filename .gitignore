@@ -6,4 +6,4 @@ books-from-vm/
 analysis-report.txt
 builder/fixture.epub
 builder/fixture_extracted/
-.claude/settings.local.json
+.claude/
