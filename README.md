@@ -32,7 +32,7 @@ were.
 3. Restart KOReader.
 
 After that, updates install from within KOReader: Tools → Glimpse →
-*Check for updates*.
+Updates → *Check for updates*.
 
 ## Usage
 
@@ -49,11 +49,14 @@ After that, updates install from within KOReader: Tools → Glimpse →
 | Search only what you've read *(default)* | Images past your current chapter stay hidden (no spoilers). |
 | Search the whole book | Everything, incl. parts you haven't reached. |
 | Show Image Captions *(checkbox, on)* | Overlay the image's caption from the book in the viewer's top-left corner. |
-| Filter irrelevant images *(checkbox, on)* | Hides covers, publisher logos, ornaments and other non-reference imagery. Off = every image in the book. |
+| Hide irrelevant images *(checkbox, on)* | Hides covers, publisher logos, ornaments and other non-reference imagery. Off = every image in the book. |
 | Restore hidden images | Undo the viewer's per-book **Remove image from collection**. |
 | Rescan this book | Drop the cached scan (scans are cached per book file). |
-| Check for updates | Fetch the latest GitHub release and install it in place (with backup and rollback), then offer a restart. |
-| Include pre-release versions *(checkbox, off)* | Also offer releases marked pre-release on GitHub: test builds, at your own risk. Normal update checks never see those. |
+| Updates → Check for updates | Fetch the latest GitHub release and install it in place (with backup and rollback), then offer a restart. |
+| Updates → Include pre-release versions *(checkbox, off)* | Also offer releases marked pre-release on GitHub: test builds, at your own risk. Normal update checks never see those. |
+
+The menu also shows which gesture currently opens Glimpse, at the top
+of the list.
 
 ### Releasing
 

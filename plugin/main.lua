@@ -726,8 +726,23 @@ function GlimpseViewer:update()
         nb = self:_galleryPages()
     end
     -- ⋯ lives in the TOP-right corner: it's the least-used control, and
-    -- up there it can't be mistaken for the navigation row at the bottom
-    if self._more_frame then
+    -- up there it can't be mistaken for the navigation row at the bottom;
+    -- the gallery swaps it for a Close button (its menu would only hold
+    -- "close" anyway)
+    if self._close_frame then
+        self._close_frame:free()
+        self._close_frame = nil
+    end
+    if self._gallery_mode then
+        self._close_frame = GlimpseMoreButton:new{
+            icon = _PLUGIN_DIR .. "/assets/close.svg",
+        }
+        self._close_frame.overlap_offset = {
+            image_area_w - self._close_frame.size,
+            btn_inset,
+        }
+        table.insert(overlay, self._close_frame)
+    elseif self._more_frame then
         local more_size = self._more_frame:getSize()
         self._more_frame.overlap_offset = {
             image_area_w - more_size.w,
@@ -1090,6 +1105,7 @@ function GlimpseViewer:onCloseWidget()
     end
     if self._nav_prev_frame then self._nav_prev_frame:free() end
     if self._nav_next_frame then self._nav_next_frame:free() end
+    if self._close_frame then self._close_frame:free() end
     if self._caption_wg then
         self._caption_wg:free()
         self._caption_wg = nil
@@ -1380,55 +1396,44 @@ end
 -- The ⋯ menu (from the design): gallery, remove from collection, rotate
 -- 90° (remembered per image, plus a reset once rotated), show in book,
 -- invert in night mode (the global setting, also in the plugin menu).
--- While the gallery is open the per-image actions make no sense, so the
--- menu shrinks to just closing the gallery.
+-- The gallery has no ⋯ button (it shows a Close button instead), so this
+-- only ever runs on the single-image view.
 function GlimpseViewer:_showMoreMenu()
-    local items
-    if self._gallery_mode then
-        items = {
-            {
-                text = _("Close Gallery"),
-                icon = _PLUGIN_DIR .. "/assets/gallery.svg",
-                callback = function() self:_exitGallery() end,
-            },
-        }
-    else
-        items = {
-            {
-                text = _("Gallery"),
-                icon = _PLUGIN_DIR .. "/assets/gallery.svg",
-                callback = function() self:_enterGallery() end,
-            },
-            {
-                text = _("Hide Image"),
-                icon = _PLUGIN_DIR .. "/assets/hide.svg",
-                callback = function() self:_hideCurrentImage() end,
-            },
-            {
-                text = _("Rotate 90°"),
-                icon = _PLUGIN_DIR .. "/assets/rotate.svg",
-                callback = function() self:_rotateCurrent() end,
-            },
-        }
-        if (self._cur_rotation or 0) ~= 0 then
-            items[#items + 1] = {
-                text = _("Reset Rotation"),
-                callback = function() self:_setRotation(0) end,
-            }
-        end
+    local items = {
+        {
+            text = _("Gallery"),
+            icon = _PLUGIN_DIR .. "/assets/gallery.svg",
+            callback = function() self:_enterGallery() end,
+        },
+        {
+            text = _("Hide Image"),
+            icon = _PLUGIN_DIR .. "/assets/hide.svg",
+            callback = function() self:_hideCurrentImage() end,
+        },
+        {
+            text = _("Rotate 90°"),
+            icon = _PLUGIN_DIR .. "/assets/rotate.svg",
+            callback = function() self:_rotateCurrent() end,
+        },
+    }
+    if (self._cur_rotation or 0) ~= 0 then
         items[#items + 1] = {
-            text = _("Show in Book"),
-            icon = _PLUGIN_DIR .. "/assets/goto.svg",
-            callback = function() self:_showInBook() end,
-        }
-        items[#items + 1] = {
-            -- checkbox drawn in the icon column (see GlimpseMenuRow),
-            -- so it lines up with the icons above it
-            text = _("Invert in Night Mode"),
-            check = G_reader_settings:isTrue(INVERT_KEY),
-            callback = function() self:_toggleInvert() end,
+            text = _("Reset Rotation"),
+            callback = function() self:_setRotation(0) end,
         }
     end
+    items[#items + 1] = {
+        text = _("Show in Book"),
+        icon = _PLUGIN_DIR .. "/assets/goto.svg",
+        callback = function() self:_showInBook() end,
+    }
+    items[#items + 1] = {
+        -- checkbox drawn in the icon column (see GlimpseMenuRow),
+        -- so it lines up with the icons above it
+        text = _("Invert in Night Mode"),
+        check = G_reader_settings:isTrue(INVERT_KEY),
+        callback = function() self:_toggleInvert() end,
+    }
     local menu
     menu = GlimpsePopupMenu:new{
         items = items,
@@ -1572,7 +1577,16 @@ function GlimpseViewer:onTap(_, ges)
         self:onClose()
         return true
     end
-    if self._more_frame and self._more_frame.dimen
+    if self._gallery_mode and self._close_frame and self._close_frame.dimen
+       and ges.pos:intersectWith(self._close_frame.dimen) then
+        self:_flashButton(self._close_frame, function()
+            self:_exitGallery()
+        end)
+        return true
+    end
+    -- gate on not-gallery: _more_frame keeps its stale dimen (same rect
+    -- the Close button now occupies) from the last single-image paint
+    if not self._gallery_mode and self._more_frame and self._more_frame.dimen
        and ges.pos:intersectWith(self._more_frame.dimen) then
         -- press feedback: repaint the button inverted (rounded, via its
         -- stencil mask); it stays inverted while the menu is open and
@@ -2647,6 +2661,29 @@ function Glimpse:addToMainMenu(menu_items)
     }
 end
 
+-- Which gesture (if any) currently triggers Glimpse in this context —
+-- read from the gestures plugin's live table for the current mode
+-- (reader vs file manager). Keys are prettified ("hold_top_left_corner"
+-- → "Hold top left corner"); the friendly-name table is a local of the
+-- gestures plugin and not reachable.
+function Glimpse:_gestureLabel()
+    local g = self.ui and self.ui.gestures
+    local found = {}
+    if g and type(g.gestures) == "table" then
+        for ges, actions in pairs(g.gestures) do
+            if type(actions) == "table" and actions.glimpse_show then
+                found[#found + 1] = ges
+            end
+        end
+    end
+    if #found == 0 then return _("Gesture: none set") end
+    table.sort(found)
+    for i, ges in ipairs(found) do
+        found[i] = ges:gsub("_", " "):gsub("^%l", string.upper)
+    end
+    return T(_("Gesture: %1"), table.concat(found, ", "))
+end
+
 function Glimpse:_menuItems()
     local function scope_item(value, text, help)
         return {
@@ -2660,6 +2697,11 @@ function Glimpse:_menuItems()
         }
     end
     return {
+        {
+            -- read-only info row: which gesture opens Glimpse here
+            text_func = function() return self:_gestureLabel() end,
+            help_text = _("Assign or change it under Taps and gestures → Gesture manager → (pick a gesture) → Reader → 'Glimpse: book images'."),
+        },
         {
             text = _("Show book images"),
             help_text = _("Browse the maps, family trees and other reference images found in this book, without losing your reading position. Tip: bind the gesture action 'Glimpse: book images' for one-touch access."),
@@ -2680,7 +2722,7 @@ function Glimpse:_menuItems()
         scope_item("whole_book", _("Search the whole book"),
             _("Show reference images from anywhere in the book, including parts you haven't reached yet.")),
         {
-            text = _("Filter irrelevant images"),
+            text = _("Hide irrelevant images"),
             help_text = _("Hide covers, publisher logos, ornaments and other non-reference imagery, keeping maps, family trees, diagrams and illustrations. Turn off to see every image in the book. A wrongly kept image can be removed via the viewer's ⋯ menu."),
             checked_func = function() return self:getFilterLevel() ~= "all" end,
             callback = function()
@@ -2764,74 +2806,26 @@ function Glimpse:_menuItems()
             end,
         },
         {
-            text_func = function()
-                return T(_("Check for updates (v%1)"), _installed_version())
-            end,
-            callback = function() self:_checkForUpdate() end,
-        },
-        {
-            text = _("Include pre-release versions"),
-            help_text = _("Also offer releases marked as pre-release on GitHub — test builds published before a proper release. Normal update checks never see those."),
-            checked_func = function()
-                return G_reader_settings:isTrue(PRERELEASE_KEY)
-            end,
-            callback = function()
-                G_reader_settings:saveSetting(PRERELEASE_KEY,
-                    not G_reader_settings:isTrue(PRERELEASE_KEY))
-            end,
-        },
-        {
-            text_func = function()
-                local t = G_reader_settings:readSetting(GH_TOKEN_KEY)
-                return t and t ~= "" and _("GitHub token (set)")
-                    or _("GitHub token (not set)")
-            end,
-            help_text = _("Personal access token with read access to the plugin's GitHub repository. Only needed while the repository is private; leave unset once it is public."),
-            keep_menu_open = true,
-            callback = function(touchmenu_instance)
-                local InputDialog = require("ui/widget/inputdialog")
-                local dialog
-                dialog = InputDialog:new{
-                    title = _("GitHub token"),
-                    input = G_reader_settings:readSetting(GH_TOKEN_KEY) or "",
-                    input_hint = "github_pat_…",
-                    buttons = {{
-                        {
-                            text = _("Cancel"),
-                            id = "close",
-                            callback = function() UIManager:close(dialog) end,
-                        },
-                        {
-                            text = _("Clear"),
-                            callback = function()
-                                G_reader_settings:delSetting(GH_TOKEN_KEY)
-                                UIManager:close(dialog)
-                                if touchmenu_instance then
-                                    touchmenu_instance:updateItems()
-                                end
-                            end,
-                        },
-                        {
-                            text = _("Save"),
-                            is_enter_default = true,
-                            callback = function()
-                                local t = dialog:getInputText()
-                                if t and t ~= "" then
-                                    G_reader_settings:saveSetting(GH_TOKEN_KEY, t)
-                                else
-                                    G_reader_settings:delSetting(GH_TOKEN_KEY)
-                                end
-                                UIManager:close(dialog)
-                                if touchmenu_instance then
-                                    touchmenu_instance:updateItems()
-                                end
-                            end,
-                        },
-                    }},
-                }
-                UIManager:show(dialog)
-                dialog:onShowKeyboard()
-            end,
+            text = _("Updates"),
+            sub_item_table = {
+                {
+                    text_func = function()
+                        return T(_("Check for updates (v%1)"), _installed_version())
+                    end,
+                    callback = function() self:_checkForUpdate() end,
+                },
+                {
+                    text = _("Include pre-release versions"),
+                    help_text = _("Also offer releases marked as pre-release on GitHub — test builds published before a proper release. Normal update checks never see those."),
+                    checked_func = function()
+                        return G_reader_settings:isTrue(PRERELEASE_KEY)
+                    end,
+                    callback = function()
+                        G_reader_settings:saveSetting(PRERELEASE_KEY,
+                            not G_reader_settings:isTrue(PRERELEASE_KEY))
+                    end,
+                },
+            },
         },
     }
 end
