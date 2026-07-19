@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(luac -p *)",
+      "Bash(./builder/check.sh *)",
+      "Bash(lua builder/lua_helper_tests.lua *)",
+      "Bash(lua builder/scanner_tests.lua *)",
+      "Bash(lua builder/metric_apply_tests.lua *)",
+      "Bash(lua builder/sidecar_to_json.lua *)",
+      "Bash(python3 builder/sweep.py *)",
+      "Bash(./builder/analyze_epub.sh *)",
+      "Bash(ssh footfree-vm *)",
+      "Bash(unzip -p *)",
+      "Bash(unzip -l *)",
+      "Bash(unzip -t *)",
+      "Bash(md5 *)",
+      "Bash(/Users/erikfanki/.local/bin/codebase-memory-mcp cli *)",
+      "mcp__Claude_Preview__preview_screenshot",
+      "mcp__Claude_Preview__preview_console_logs",
+      "mcp__Figma__get_design_context",
+      "mcp__Figma__get_screenshot",
+      "mcp__Figma__get_metadata",
+      "mcp__figma-dev-mode__get_design_context",
+      "mcp__figma-dev-mode__get_screenshot",
+      "mcp__figma-dev-mode__get_metadata",
+      "mcp__tolaria__open_note",
+      "mcp__tolaria__search_notes",
+      "mcp__tolaria__get_note"
+    ]
+  }
+}
