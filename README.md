@@ -11,22 +11,10 @@ were.
 ## What it does
 
 - Scans the EPUB's HTML directly for images and **filters out ornaments,
-  icons, dividers and publisher chrome** using:
-  - pixel dimensions and aspect ratio (per filter level)
-  - repetition across chapters (chapter-head decorations)
-  - dimension series: ≥4 unique files with identical pixel dimensions are
-    chapter/part-opener art, unless they carry distinct real captions
-    (genuine figure plates)
-  - decorative alt text ("Chapter 1 …", "Book Title, …", "… Back Ad logo",
-    publisher names, advertisements) and chrome filenames (`author.jpg`,
-    `titlepage.jpg`, `endpaper.jpg`, `*logo*`, publisher tokens like `_tp_`).
-    A chrome-named file is only rescued by a strong caption; "Title by
-    Author" alt text doesn't count. Conversely, figure-naming conventions
-    (`f0156-01.jpg`, `fig12.png`) earn the same relief as a caption.
-  - front matter: uncaptioned cover-shaped portrait images in the first 3
-    spine items (unflagged cover variants and title pages)
-  - HTML metadata (`<figure>`/`<figcaption>`, `alt`, `title`) as a positive
-    signal: captioned images get more lenient size thresholds.
+  icons, dividers, covers and publisher chrome**, judging each image by its
+  size and aspect ratio, repetition across chapters, filename and alt text,
+  position in the book, and captions (a genuine caption or figure-style
+  filename keeps an image; boilerplate text doesn't).
 - Remembers the **last image you viewed** per book, including its **zoom
   level and pan position**, and reopens right where you left off, handy
   when you keep returning to the same corner of the same map.
