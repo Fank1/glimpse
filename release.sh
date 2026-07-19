@@ -44,8 +44,9 @@ if [ -n "$VERSION_ARG" ]; then
     perl -0pi -e "s/(version\s*=\s*\")[^\"]*(\")/\${1}${VERSION_ARG}\${2}/" "$META"
 fi
 
-# 2. Read the version that will be released.
-VERSION="$(lua -e "print((dofile('$META')).version)")"
+# 2. Read the version that will be released. (Parsed textually: _meta.lua
+# requires KOReader's gettext module, so it can't be dofile'd by plain lua.)
+VERSION="$(sed -n 's/.*version *= *"\([^"]*\)".*/\1/p' "$META" | head -1)"
 [ -n "$VERSION" ] || { echo "ERROR: could not read version from $META" >&2; exit 1; }
 TAG="v$VERSION"
 echo "Preparing release $TAG"
