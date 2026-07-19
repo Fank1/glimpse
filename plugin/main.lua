@@ -1852,7 +1852,10 @@ end
 
 local Glimpse = WidgetContainer:extend{
     name = "glimpse",
-    is_doc_only = true,
+    -- also load in the file manager, so the Tools menu entry (and Check
+    -- for updates) is always there; book-dependent actions answer with
+    -- "No book is open." via _supportedReason
+    is_doc_only = false,
     -- GitHub repo the in-plugin updater checks (class field so tests can
     -- point it at a repo with known releases)
     github_repo = "Fank1/glimpse",
