@@ -41,6 +41,12 @@ Updates → *Check for updates*.
 - **Gesture (recommended):** Settings → Taps and gestures → Gesture manager →
   pick a gesture → *Reader* → **Glimpse: book images**. One-touch access is
   the whole point of the plugin.
+- **Dot indicator:** tap it to jump near that image directly, not just
+  swipe through one at a time; its tap target is padded well beyond the
+  dots themselves. Double-tap an image to zoom in (150% of its natural
+  size if it's small enough to already show at 100%, otherwise 2× the
+  fitted view) and again to return; a "Fit" button only appears once
+  you're actually zoomed past that point.
 
 ### Settings (Tools → Glimpse)
 
@@ -60,10 +66,11 @@ opens Glimpse, at the top of the list.
 
 ### Gallery
 
-⋯ → *Gallery* shows every image as a Pinterest-style masonry grid
-(images keep their own aspect ratio instead of being cropped to a
-uniform tile), paged when there are enough to browse. Tap a thumbnail
-to jump straight to that image in the normal viewer.
+⋯ → *Gallery* shows every image as a Pinterest-style masonry grid, each
+thumbnail with a subtle rounded outline (a heavier one marks the image
+you're currently on), keeping its own aspect ratio instead of being
+cropped to a uniform tile. Paged when there are enough to browse. Tap a
+thumbnail to jump straight to that image in the normal viewer.
 
 ### Releasing
 

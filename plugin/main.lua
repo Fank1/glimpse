@@ -727,10 +727,8 @@ function GlimpseViewer:update()
         cur = self._gallery_page or 1
         nb = self:_galleryPages()
     end
-    -- ⋯ lives in the TOP-right corner: it's the least-used control, and
-    -- up there it can't be mistaken for the navigation row at the bottom;
-    -- the gallery swaps it for a Close button (its menu would only hold
-    -- "close" anyway)
+    -- the gallery's Close button stays top-right (its menu would only
+    -- ever hold "close" anyway, so there's no ⋯ to speak of there)
     if self._close_frame then
         self._close_frame:free()
         self._close_frame = nil
@@ -744,13 +742,6 @@ function GlimpseViewer:update()
             btn_inset,
         }
         table.insert(overlay, self._close_frame)
-    elseif self._more_frame then
-        local more_size = self._more_frame:getSize()
-        self._more_frame.overlap_offset = {
-            image_area_w - more_size.w,
-            btn_inset,
-        }
-        table.insert(overlay, self._more_frame)
     end
     if nav then
         self._nav_prev_frame = GlimpseMoreButton:new{
@@ -772,12 +763,27 @@ function GlimpseViewer:update()
         }
         table.insert(overlay, self._nav_next_frame)
     end
+    -- ⋯ lives at the BOTTOM row, just left of the next-image button (or
+    -- in that same slot when nav buttons are off) — kept out of the top
+    -- strip entirely so it never competes with KOReader's own top-of-
+    -- screen menu gesture. Gallery has no ⋯ (see Close button above).
+    if not self._gallery_mode and self._more_frame then
+        local more_size = self._more_frame:getSize()
+        local more_x = self._nav_next_frame
+            and (self._nav_next_frame.overlap_offset[1] - btn_gap - more_size.w)
+            or (image_area_w - more_size.w)
+        self._more_frame.overlap_offset = {
+            more_x,
+            self.height - more_size.h - btn_inset,
+        }
+        table.insert(overlay, self._more_frame)
+    end
     if self._pill_frame then
         local pill_size = self._pill_frame:getSize()
         -- the revert button is the same height as the ⋯ button, so share
         -- its bottom inset to sit on the same baseline; the shorter dots
         -- pill uses a larger inset so its centre still lines up
-        local bottom_inset = self.scale_factor ~= 0
+        local bottom_inset = self:_isOverFit()
             and btn_inset or Screen:scaleBySize(25)
         self._pill_frame.overlap_offset = {
             math.floor((image_area_w - pill_size.w) / 2),
@@ -795,12 +801,11 @@ function GlimpseViewer:update()
             and self.image_metas[self._images_list_cur or 1]
         local caption = meta and meta.caption
         if caption and caption ~= "" then
-            -- stop short of the top-right ⋯ button
-            local more_w = self._more_frame
-                and self._more_frame:getSize().w + btn_gap or 0
+            -- the top-right corner is clear now that ⋯ lives at the
+            -- bottom, so the caption only needs its own side margins
             self._caption_wg = GlimpseCaption:new{
                 text = caption,
-                max_width = image_area_w - 2 * Screen:scaleBySize(16) - more_w,
+                max_width = image_area_w - 2 * Screen:scaleBySize(16),
             }
             self._caption_wg.overlap_offset = {
                 Screen:scaleBySize(16), Screen:scaleBySize(12),
@@ -1203,6 +1208,7 @@ function GlimpseViewer:_buildPill()
         self._pill_frame:free()
         self._pill_frame = nil
     end
+    self._pill_dots = nil -- only set back below when dots are actually built
     if self._gallery_mode then
         -- gallery: explicit "Page X of Y" — dots here would read as the
         -- single-view image indicator and confuse the two states
@@ -1215,10 +1221,10 @@ function GlimpseViewer:_buildPill()
         } }
         return
     end
-    if self.scale_factor ~= 0 then
-        -- zoomed: image switching is disabled; the indicator becomes a
-        -- tappable "back to fit" button, styled to match the ⋯ button
-        -- (see onTap)
+    if self:_isOverFit() then
+        -- genuinely spilling past fit: image switching is disabled, and
+        -- the indicator becomes a tappable "back to fit" button, styled
+        -- to match the ⋯ button (see onTap)
         self._pill_frame = GlimpseTextButton:new{
             text = _("Fit"),
             bold = true,
@@ -1233,6 +1239,7 @@ function GlimpseViewer:_buildPill()
                 nb = self._images_list_nb,
                 cur = self._images_list_cur or 1,
             }
+            self._pill_dots = inner
         else
             inner = TextWidget:new{
                 text = string.format("%d / %d",
@@ -1345,9 +1352,13 @@ end
 
 -- Shared gallery geometry: the band above the grid holds the heading and
 -- the Close button, the band below holds the page pill and ‹ › buttons.
+-- area_w is the FULL content width (unlike the single-image view, the
+-- grid has no chrome that needs to dodge the rounded right corner — the
+-- top/bottom bands already keep clear of it vertically) so the grid's
+-- right margin (pad) matches its left margin exactly.
 function GlimpseViewer:_galleryMetrics()
     return {
-        area_w = self.width - self.image_right_gap,
+        area_w = self.width,
         pad = Screen:scaleBySize(16),
         top = Screen:scaleBySize(16 + 40 + 10),
         bottom = Screen:scaleBySize(60),
@@ -1455,12 +1466,19 @@ function GlimpseViewer:_buildGallery()
         local bb = self:_thumb(c.idx,
             c.w - 2 * m.inset, c.h - 2 * m.inset)
         if bb then
+            -- every thumbnail gets a subtle rounded outline so adjacent
+            -- images (which otherwise butt edge to edge) stay visually
+            -- distinct; the current image gets a heavier black one on
+            -- top of that, same as before
+            local is_cur = c.idx == (self._images_list_cur or 1)
             local cell = CenterContainer:new{
                 dimen = Geom:new{ w = c.w, h = c.h },
                 FrameContainer:new{
-                    -- a border marks the image the viewer is currently on
-                    bordersize = c.idx == (self._images_list_cur or 1)
-                        and Screen:scaleBySize(2) or 0,
+                    bordersize = is_cur
+                        and Screen:scaleBySize(2) or Screen:scaleBySize(1),
+                    color = is_cur and Blitbuffer.COLOR_BLACK
+                        or Blitbuffer.COLOR_GRAY,
+                    radius = Screen:scaleBySize(3),
                     padding = Screen:scaleBySize(2),
                     ImageWidget:new{
                         image = bb,
@@ -1623,8 +1641,13 @@ function GlimpseViewer:_checkDoubleTap(ges)
     end
 end
 
--- Double-tap: photo-app convention — back to fit when zoomed, zoom to 2×
--- centered on the tap when at fit.
+-- Double-tap: photo-app convention — back to fit when zoomed, zoom in
+-- when at fit. The target depends on whether the image is "fitted" (too
+-- big for the box, fit < 1, the usual case): then 2× the on-screen fit,
+-- as before. A small image already shows at its true 100% (fit capped
+-- to 1, see _computeFitScaleFactor) — for those, 2× overshoots past the
+-- point of legible extra detail, so the target is a flat 150% of the
+-- image's own natural size instead.
 function GlimpseViewer:onGlimpseDoubleTap(_, ges)
     if self.scale_factor == 0 then
         local wg = self._image_wg
@@ -1637,7 +1660,8 @@ function GlimpseViewer:onGlimpseDoubleTap(_, ges)
                 wg:getPanByCenterRatio(ges.pos.x - cx, ges.pos.y - cy)
         end
         self:_refreshScaleFactor() -- resolve fit into a number
-        self:_applyNewScaleFactor(self.scale_factor * 2)
+        local fit = self.scale_factor
+        self:_applyNewScaleFactor(fit >= 1 and 1.5 or fit * 2)
     else
         self.scale_factor = 0
         self._center_x_ratio, self._center_y_ratio = 0.5, 0.5
@@ -1725,6 +1749,28 @@ function GlimpseViewer:onTap(_, ges)
             end
         end
         return true -- no zoom surface in the gallery
+    end
+    -- dot indicator: tappable as a quick "jump near here" — precisely
+    -- hitting an individual dot isn't the point, so the hitbox is padded
+    -- well beyond the dots' own tiny paint area
+    if self._pill_dots and self._pill_frame and self._pill_frame.dimen then
+        local d = self._pill_frame.dimen
+        local pad = Screen:scaleBySize(20)
+        local hit = Geom:new{
+            x = d.x - pad, y = d.y - pad,
+            w = d.w + 2 * pad, h = d.h + 2 * pad,
+        }
+        if ges.pos:intersectWith(hit) then
+            local dots = self._pill_dots
+            local dd = dots.dimen or d
+            local rel = ges.pos.x - dd.x - dots.dot_r
+            local idx = math.floor(rel / dots.pitch + 0.5) + 1
+            idx = math.min(math.max(idx, 1), dots.nb)
+            if idx ~= (self._images_list_cur or 1) then
+                self:switchToImageNum(idx)
+            end
+            return true
+        end
     end
     if self.scale_factor ~= 0 then
         -- zoomed: the pill is a "Revert to 100%" button; single taps
@@ -1830,6 +1876,16 @@ end
 -- _refreshScaleFactor is what resolves it to a number in every zoom path);
 -- reaching it snaps back to fit mode proper, which recenters the image
 -- and re-enables swipe navigation.
+-- True only when the image is actually spilling past its fit size —
+-- scale_factor ~= 0 alone isn't enough: a restored view can carry a
+-- scale_factor equal to fit. Chrome (the "Fit" pill button) should only
+-- appear when there's somewhere to revert TO.
+function GlimpseViewer:_isOverFit()
+    if self.scale_factor == 0 then return false end
+    local fit = self._fit_scale_factor or self:_computeFitScaleFactor() or 1
+    return self.scale_factor > fit + 0.001
+end
+
 -- Best-fit factor for the current image, computed from its dimensions the
 -- same way the widget's render resolves scale 0. Used when the fit factor
 -- is needed before the viewer has ever been in fit mode (e.g. a restored
