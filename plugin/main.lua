@@ -283,14 +283,14 @@ function GlimpseMoreButton:free()
     end
 end
 
--- Caption overlay: white text with a 1px black outline (8 offset copies
--- of the text in black under a white copy), so it stays readable over any
+-- Caption overlay: white text with a 2px black outline (offset copies of
+-- the text in black under a white copy), so it stays readable over any
 -- image. Painted in day polarity — night mode's inversion turns it into
 -- black text with a white outline, per the design. Truncates to max_width.
 local GlimpseCaption = Widget:extend{
     text = "",
     max_width = 0,
-    outline = 1,
+    outline = 2,
 }
 
 function GlimpseCaption:init()
@@ -314,8 +314,10 @@ function GlimpseCaption:paintTo(bb, x, y)
     local o = self.outline
     self.dimen = self:getSize()
     self.dimen.x, self.dimen.y = x, y
-    for dy = -o, o, o do
-        for dx = -o, o, o do
+    -- step 1 (not o): every offset within the radius, so a 2px outline
+    -- has no gaps at the ±1 ring
+    for dy = -o, o do
+        for dx = -o, o do
             if dx ~= 0 or dy ~= 0 then
                 self._black:paintTo(bb, x + o + dx, y + o + dy)
             end
@@ -611,6 +613,7 @@ end
 
 local GlimpseViewer = ImageViewer:extend{
     image_metas = nil,     -- parallel to the image list: scanner records
+    gallery_hidden_count = 0, -- images the chapter scope holds back (heading)
     on_image_shown = nil,  -- function(meta, index)
     on_hide = nil,         -- function(meta)
     on_show_in_book = nil, -- function(meta): jump the reader to the image
@@ -618,9 +621,8 @@ local GlimpseViewer = ImageViewer:extend{
     get_pref = nil,        -- function(meta) -> per-image prefs {rotation=}
     set_pref = nil,        -- function(meta, key, value)
     dots_max = 15,         -- more images than this: "n / N" text in the pill
-    -- gallery grid (⋯ → Gallery): thumbnails per page
+    -- gallery masonry (⋯ → Gallery): fixed-width columns, variable heights
     gallery_cols = 3,
-    gallery_rows = 3,
     -- No title bar and no button row: everything is image. Position comes
     -- from the dot pill, actions from the ⋯ button, closing from
     -- tap-outside, multiswipe or Back.
@@ -1106,6 +1108,10 @@ function GlimpseViewer:onCloseWidget()
     if self._nav_prev_frame then self._nav_prev_frame:free() end
     if self._nav_next_frame then self._nav_next_frame:free() end
     if self._close_frame then self._close_frame:free() end
+    if self._gallery_heading then
+        self._gallery_heading:free()
+        self._gallery_heading = nil
+    end
     if self._caption_wg then
         self._caption_wg:free()
         self._caption_wg = nil
@@ -1198,23 +1204,15 @@ function GlimpseViewer:_buildPill()
         self._pill_frame = nil
     end
     if self._gallery_mode then
-        -- gallery: the dots show grid PAGES, not images
+        -- gallery: explicit "Page X of Y" — dots here would read as the
+        -- single-view image indicator and confuse the two states
         local pages = self:_galleryPages()
         if pages <= 1 then return end
-        local inner
-        if pages <= self.dots_max then
-            inner = GlimpseDots:new{
-                nb = pages,
-                cur = self._gallery_page or 1,
-            }
-        else
-            inner = TextWidget:new{
-                text = string.format("%d / %d", self._gallery_page or 1, pages),
-                face = Font:getFace("cfont", 12),
-                fgcolor = Blitbuffer.COLOR_WHITE,
-            }
-        end
-        self._pill_frame = GlimpsePill:new{ inner = inner }
+        self._pill_frame = GlimpsePill:new{ inner = TextWidget:new{
+            text = T(_("Page %1 of %2"), self._gallery_page or 1, pages),
+            face = Font:getFace("cfont", 12),
+            fgcolor = Blitbuffer.COLOR_WHITE,
+        } }
         return
     end
     if self.scale_factor ~= 0 then
@@ -1253,17 +1251,20 @@ function GlimpseViewer:_buildMoreButton()
     self._more_frame = GlimpseMoreButton:new{}
 end
 
--- ── gallery (⋯ → Gallery): a paged thumbnail grid in the drawer ─────────────
--- Same window, same chrome: the grid replaces the image area, the dot
--- pill shows grid PAGES, the ‹ › buttons page (always shown here — they
--- are the pagination affordance — hidden on a single page), swipes page
--- too. Tapping a thumbnail leaves the gallery and opens that image in
--- the normal viewer.
+-- ── gallery (⋯ → Gallery): a paged masonry grid in the drawer ───────────────
+-- Same window, same chrome: the grid replaces the image area, the pill
+-- shows "Page X of Y", the ‹ › buttons page (always shown here — they
+-- are the pagination affordance — hidden on a single page), swipes and
+-- physical page keys page too. Tapping a thumbnail leaves the gallery
+-- and opens that image in the normal viewer. Thumbnails are laid out
+-- Pinterest-style: fixed-width columns, each image at its own aspect
+-- ratio, placed into the currently shortest column — a page is full
+-- when the next image doesn't fit any column.
 
 function GlimpseViewer:_enterGallery()
     self._gallery_mode = true
-    local per = self.gallery_cols * self.gallery_rows
-    self._gallery_page = math.ceil((self._images_list_cur or 1) / per)
+    local layout = self:_galleryLayout()
+    self._gallery_page = layout.page_of[self._images_list_cur or 1] or 1
     -- the gallery browses from the fit state; a zoomed view has been
     -- left behind anyway once the user goes looking for another image
     self.scale_factor = 0
@@ -1281,8 +1282,80 @@ function GlimpseViewer:_exitGallery(idx)
 end
 
 function GlimpseViewer:_galleryPages()
-    local per = self.gallery_cols * self.gallery_rows
-    return math.max(1, math.ceil((self._images_list_nb or 1) / per))
+    return #self:_galleryLayout().pages
+end
+
+-- Masonry layout for ALL images, computed once per viewer (the image
+-- list and drawer size are fixed while it is open) from the scanner's
+-- header-sniffed dimensions — no decoding. Returns { pages = {
+-- {cell,...}, ... }, page_of = {idx -> page} }; cell = {idx,x,y,w,h}
+-- relative to the drawer content origin (the onTap hit-test space).
+function GlimpseViewer:_galleryLayout()
+    if self._gallery_layout then return self._gallery_layout end
+    local m = self:_galleryMetrics()
+    local cols = self.gallery_cols
+    local col_w = math.floor(
+        (m.area_w - 2 * m.pad - (cols - 1) * m.gap) / cols)
+    local thumb_w = col_w - 2 * m.inset
+    local layout = { pages = {}, page_of = {} }
+    local page, heights = {}, {}
+    for c = 1, cols do heights[c] = 0 end
+    local function flush()
+        if #page > 0 then
+            layout.pages[#layout.pages + 1] = page
+            page = {}
+            for c = 1, cols do heights[c] = 0 end
+        end
+    end
+    for i = 1, self._images_list_nb or 1 do
+        local meta = self.image_metas and self.image_metas[i]
+        local iw = meta and (meta.width or meta.attr_width)
+        local ih = meta and (meta.height or meta.attr_height)
+        if not (iw and ih and iw > 0 and ih > 0) then iw, ih = 1, 1 end
+        local th = math.floor(thumb_w * ih / iw + 0.5)
+        -- clamp: never taller than a full column, never too small to tap
+        th = math.min(th, m.grid_h - 2 * m.inset)
+        th = math.max(th, Screen:scaleBySize(24))
+        local cell_h = th + 2 * m.inset
+        -- shortest column (leftmost on ties, so pages fill left to right)
+        local best = 1
+        for c = 2, cols do
+            if heights[c] < heights[best] then best = c end
+        end
+        local y = heights[best] > 0 and heights[best] + m.gap or 0
+        if y + cell_h > m.grid_h and #page > 0 then
+            flush()
+            best, y = 1, 0
+        end
+        page[#page + 1] = {
+            idx = i,
+            x = m.pad + (best - 1) * (col_w + m.gap),
+            y = m.top + y,
+            w = col_w,
+            h = math.min(cell_h, m.grid_h),
+        }
+        heights[best] = y + cell_h
+        layout.page_of[i] = #layout.pages + 1
+    end
+    flush()
+    if #layout.pages == 0 then layout.pages[1] = {} end
+    self._gallery_layout = layout
+    return layout
+end
+
+-- Shared gallery geometry: the band above the grid holds the heading and
+-- the Close button, the band below holds the page pill and ‹ › buttons.
+function GlimpseViewer:_galleryMetrics()
+    return {
+        area_w = self.width - self.image_right_gap,
+        pad = Screen:scaleBySize(16),
+        top = Screen:scaleBySize(16 + 40 + 10),
+        bottom = Screen:scaleBySize(60),
+        gap = Screen:scaleBySize(10),
+        inset = Screen:scaleBySize(4),
+        grid_h = self.img_container_h - Screen:scaleBySize(16 + 40 + 10)
+            - Screen:scaleBySize(60),
+    }
 end
 
 function GlimpseViewer:_galleryGo(delta)
@@ -1335,44 +1408,58 @@ function GlimpseViewer:_thumb(i, w, h)
     return bb
 end
 
--- Builds the grid as self.image_container (update() slots it into the
--- overlay in place of the image). Cell rects are recorded relative to
--- the drawer content origin for onTap hit-testing.
+-- Builds the masonry page as self.image_container (update() slots it
+-- into the overlay in place of the image). Cell rects are recorded
+-- relative to the drawer content origin for onTap hit-testing.
 function GlimpseViewer:_buildGallery()
-    local per = self.gallery_cols * self.gallery_rows
-    local nb = self._images_list_nb or 1
-    local pages = self:_galleryPages()
+    local layout = self:_galleryLayout()
+    local pages = #layout.pages
     self._gallery_page = math.min(math.max(self._gallery_page or 1, 1), pages)
-    local first = (self._gallery_page - 1) * per + 1
-    local last = math.min(first + per - 1, nb)
-    local area_w = self.width - self.image_right_gap
-    local pad = Screen:scaleBySize(16)
-    -- clear the top-right ⋯ button and the bottom pill row
-    local top = Screen:scaleBySize(16 + 40 + 10)
-    local bottom = Screen:scaleBySize(60)
-    local gap = Screen:scaleBySize(10)
-    local grid_h = self.img_container_h - top - bottom
-    local cell_w = math.floor(
-        (area_w - 2 * pad - (self.gallery_cols - 1) * gap) / self.gallery_cols)
-    local cell_h = math.floor(
-        (grid_h - (self.gallery_rows - 1) * gap) / self.gallery_rows)
+    local m = self:_galleryMetrics()
     local grid = OverlapGroup:new{
         dimen = Geom:new{ w = self.width, h = self.img_container_h },
     }
+    -- heading, top-left on the close button's baseline: how much there
+    -- is to browse, and how much the chapter scope is holding back
+    if self._gallery_heading then
+        self._gallery_heading:free()
+        self._gallery_heading = nil
+    end
+    local nb = self._images_list_nb or 1
+    local hidden = self.gallery_hidden_count or 0
+    local heading_text
+    if hidden > 0 then
+        heading_text = T(_("%1 images in book this far, %2 hidden"),
+            nb, hidden)
+    else
+        heading_text = T(_("%1 images in book"), nb)
+    end
+    self._gallery_heading = TextWidget:new{
+        text = heading_text,
+        face = Font:getFace("cfont", 16),
+        bold = true,
+        fgcolor = Blitbuffer.COLOR_BLACK,
+        -- stop short of the top-right Close button
+        max_width = m.area_w - 2 * m.pad
+            - Screen:scaleBySize(40) - m.gap,
+    }
+    local hh = self._gallery_heading:getSize().h
+    self._gallery_heading.overlap_offset = {
+        m.pad,
+        Screen:scaleBySize(16)
+            + math.floor((Screen:scaleBySize(40) - hh) / 2),
+    }
+    table.insert(grid, self._gallery_heading)
     self._gallery_cells = {}
-    local cell_inset = Screen:scaleBySize(4)
-    for i = first, last do
-        local k = i - first
-        local cx = pad + (k % self.gallery_cols) * (cell_w + gap)
-        local cy = top + math.floor(k / self.gallery_cols) * (cell_h + gap)
-        local bb = self:_thumb(i,
-            cell_w - 2 * cell_inset, cell_h - 2 * cell_inset)
+    for _, c in ipairs(layout.pages[self._gallery_page] or {}) do
+        local bb = self:_thumb(c.idx,
+            c.w - 2 * m.inset, c.h - 2 * m.inset)
         if bb then
             local cell = CenterContainer:new{
-                dimen = Geom:new{ w = cell_w, h = cell_h },
+                dimen = Geom:new{ w = c.w, h = c.h },
                 FrameContainer:new{
                     -- a border marks the image the viewer is currently on
-                    bordersize = i == (self._images_list_cur or 1)
+                    bordersize = c.idx == (self._images_list_cur or 1)
                         and Screen:scaleBySize(2) or 0,
                     padding = Screen:scaleBySize(2),
                     ImageWidget:new{
@@ -1384,10 +1471,10 @@ function GlimpseViewer:_buildGallery()
                     },
                 },
             }
-            cell.overlap_offset = { cx, cy }
+            cell.overlap_offset = { c.x, c.y }
             table.insert(grid, cell)
             table.insert(self._gallery_cells,
-                { x = cx, y = cy, w = cell_w, h = cell_h, idx = i })
+                { x = c.x, y = c.y, w = c.w, h = c.h, idx = c.idx })
         end
     end
     self.image_container = grid
@@ -1499,6 +1586,14 @@ function GlimpseViewer:_toggleInvert()
     local cur = self._images_list_cur or 1
     G_reader_settings:saveSetting(INVERT_KEY,
         not G_reader_settings:isTrue(INVERT_KEY))
+    -- cached gallery thumbnails have the OLD polarity baked into their
+    -- pixels — drop them so the gallery re-renders with the new setting
+    if self._thumb_bbs then
+        for _, t in pairs(self._thumb_bbs) do
+            if t.bb then t.bb:free() end
+        end
+        self._thumb_bbs = nil
+    end
     -- re-render so the change is visible immediately (the render closure
     -- reads prefs and night mode live)
     if self.image and self.image_disposable and self.image.free then
@@ -1647,6 +1742,24 @@ function GlimpseViewer:onTap(_, ges)
     end
     self:_checkDoubleTap(ges)
     return true
+end
+
+-- Physical page-turn keys (upstream maps PgFwd/PgBack to these when the
+-- image is a list): in the gallery they flip grid pages instead.
+function GlimpseViewer:onShowNextImage()
+    if self._gallery_mode then
+        self:_galleryGo(1)
+        return true
+    end
+    return ImageViewer.onShowNextImage(self)
+end
+
+function GlimpseViewer:onShowPrevImage()
+    if self._gallery_mode then
+        self:_galleryGo(-1)
+        return true
+    end
+    return ImageViewer.onShowPrevImage(self)
 end
 
 function GlimpseViewer:switchToImageNum(image_num)
@@ -2135,21 +2248,8 @@ function Glimpse:showViewer(whole_book_once)
     local level = self:getFilterLevel()
     local imgs = scanner.filter(scan.images, level)
 
-    -- scope: drop images beyond the reading position
-    if self:getScope() == "read_so_far" and not whole_book_once then
-        local cur = self:_currentSpineIndex()
-        if cur then
-            local kept = {}
-            for _, im in ipairs(imgs) do
-                if im.spine_index <= cur then
-                    kept[#kept + 1] = im
-                end
-            end
-            imgs = kept
-        end
-    end
-
-    -- per-book hidden images
+    -- per-book hidden images (before scope, so the gallery heading can
+    -- count what the chapter scope holds back without counting these)
     local hidden = self:_hiddenPaths()
     do
         local kept = {}
@@ -2159,6 +2259,22 @@ function Glimpse:showViewer(whole_book_once)
             end
         end
         imgs = kept
+    end
+
+    -- scope: drop images beyond the reading position
+    local scope_hidden = 0
+    if self:getScope() == "read_so_far" and not whole_book_once then
+        local cur = self:_currentSpineIndex()
+        if cur then
+            local kept = {}
+            for _, im in ipairs(imgs) do
+                if im.spine_index <= cur then
+                    kept[#kept + 1] = im
+                end
+            end
+            scope_hidden = #imgs - #kept
+            imgs = kept
+        end
     end
 
     if #imgs == 0 then
@@ -2254,6 +2370,8 @@ function Glimpse:showViewer(whole_book_once)
     viewer = GlimpseViewer:new{
         image = images_list,
         image_metas = imgs,
+        -- for the gallery heading: images the chapter scope holds back
+        gallery_hidden_count = scope_hidden,
         images_keep_pan_and_zoom = false,
         -- hold refreshes until the initial state is fully built (see below)
         _suppress_refresh = true,
@@ -2699,7 +2817,9 @@ function Glimpse:_menuItems()
     return {
         {
             -- read-only info row: which gesture opens Glimpse here
+            -- (dimmed so it doesn't read as an action)
             text_func = function() return self:_gestureLabel() end,
+            enabled_func = function() return false end,
             help_text = _("Assign or change it under Taps and gestures → Gesture manager → (pick a gesture) → Reader → 'Glimpse: book images'."),
         },
         {
@@ -2717,19 +2837,18 @@ function Glimpse:_menuItems()
             end,
             separator = true,
         },
-        scope_item("read_so_far", _("Search only what you've read"),
-            _("Images that appear beyond your current position stay hidden, so you can't spoil yourself. Granularity is per chapter: images in the chapter you are currently reading are shown.")),
-        scope_item("whole_book", _("Search the whole book"),
-            _("Show reference images from anywhere in the book, including parts you haven't reached yet.")),
         {
-            text = _("Hide irrelevant images"),
-            help_text = _("Hide covers, publisher logos, ornaments and other non-reference imagery, keeping maps, family trees, diagrams and illustrations. Turn off to see every image in the book. A wrongly kept image can be removed via the viewer's ⋯ menu."),
-            checked_func = function() return self:getFilterLevel() ~= "all" end,
-            callback = function()
-                local now_on = self:getFilterLevel() ~= "all"
-                G_reader_settings:saveSetting(FILTER_KEY,
-                    now_on and "all" or "balanced")
+            text_func = function()
+                return self:getScope() == "whole_book"
+                    and _("Mode: all images")
+                    or _("Mode: up to current chapter")
             end,
+            sub_item_table = {
+                scope_item("read_so_far", _("Show images up to current chapter"),
+                    _("Images that appear beyond your current position stay hidden, so you can't spoil yourself. Granularity is per chapter: images in the chapter you are currently reading are shown.")),
+                scope_item("whole_book", _("Show all images"),
+                    _("Show reference images from anywhere in the book, including parts you haven't reached yet.")),
+            },
         },
         {
             text = _("Invert in Night Mode"),
@@ -2740,16 +2859,6 @@ function Glimpse:_menuItems()
             callback = function()
                 G_reader_settings:saveSetting(INVERT_KEY,
                     not G_reader_settings:isTrue(INVERT_KEY))
-            end,
-        },
-        {
-            text = _("Show Image Captions"),
-            help_text = _("Show the image's caption from the book, overlaid in the viewer's top-left corner."),
-            checked_func = function()
-                return G_reader_settings:nilOrTrue(CAPTIONS_KEY)
-            end,
-            callback = function()
-                G_reader_settings:flipNilOrTrue(CAPTIONS_KEY)
             end,
         },
         {
@@ -2804,6 +2913,33 @@ function Glimpse:_menuItems()
                     UIManager:show(Notification:new{ text = _("Scan failed.") })
                 end
             end,
+        },
+        {
+            text = _("Advanced"),
+            sub_item_table = {
+                {
+                    text = _("Hide irrelevant images"),
+                    help_text = _("Hide covers, publisher logos, ornaments and other non-reference imagery, keeping maps, family trees, diagrams and illustrations. Turn off to see every image in the book. A wrongly kept image can be removed via the viewer's ⋯ menu."),
+                    checked_func = function()
+                        return self:getFilterLevel() ~= "all"
+                    end,
+                    callback = function()
+                        local now_on = self:getFilterLevel() ~= "all"
+                        G_reader_settings:saveSetting(FILTER_KEY,
+                            now_on and "all" or "balanced")
+                    end,
+                },
+                {
+                    text = _("Show image captions (beta)"),
+                    help_text = _("Show the image's caption from the book, overlaid in the viewer's top-left corner."),
+                    checked_func = function()
+                        return G_reader_settings:nilOrTrue(CAPTIONS_KEY)
+                    end,
+                    callback = function()
+                        G_reader_settings:flipNilOrTrue(CAPTIONS_KEY)
+                    end,
+                },
+            },
         },
         {
             text = _("Updates"),

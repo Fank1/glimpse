@@ -46,17 +46,24 @@ Updates → *Check for updates*.
 
 | Setting | Meaning |
 | --- | --- |
-| Search only what you've read *(default)* | Images past your current chapter stay hidden (no spoilers). |
-| Search the whole book | Everything, incl. parts you haven't reached. |
-| Show Image Captions *(checkbox, on)* | Overlay the image's caption from the book in the viewer's top-left corner. |
-| Hide irrelevant images *(checkbox, on)* | Hides covers, publisher logos, ornaments and other non-reference imagery. Off = every image in the book. |
+| Mode: up to current chapter *(default)* | Images past your current chapter stay hidden (no spoilers). |
+| Mode: all images | Everything, incl. parts you haven't reached. |
 | Restore hidden images | Undo the viewer's per-book **Remove image from collection**. |
 | Rescan this book | Drop the cached scan (scans are cached per book file). |
+| Advanced → Hide irrelevant images *(checkbox, on)* | Hides covers, publisher logos, ornaments and other non-reference imagery. Off = every image in the book. |
+| Advanced → Show image captions (beta) *(checkbox, on)* | Overlay the image's caption from the book in the viewer's top-left corner. |
 | Updates → Check for updates | Fetch the latest GitHub release and install it in place (with backup and rollback), then offer a restart. |
 | Updates → Include pre-release versions *(checkbox, off)* | Also offer releases marked pre-release on GitHub: test builds, at your own risk. Normal update checks never see those. |
 
-The menu also shows which gesture currently opens Glimpse, at the top
-of the list.
+The menu also shows (dimmed, informational) which gesture currently
+opens Glimpse, at the top of the list.
+
+### Gallery
+
+⋯ → *Gallery* shows every image as a Pinterest-style masonry grid
+(images keep their own aspect ratio instead of being cropped to a
+uniform tile), paged when there are enough to browse. Tap a thumbnail
+to jump straight to that image in the normal viewer.
 
 ### Releasing
 
