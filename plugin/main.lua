@@ -679,6 +679,19 @@ function GlimpseViewer:init()
     self:update()
 end
 
+-- Upstream ImageViewer:onShow() unconditionally queues its OWN "full"
+-- flashing refresh of the whole widget — UIManager:show() fires the
+-- Show event (which reaches this) immediately after enqueuing whatever
+-- refresh WE explicitly asked for, so every open queued both: our
+-- careful "ui" refresh (see showViewer) AND upstream's forced "full"
+-- one, and the queue promotes the merged region to the more aggressive
+-- "full" — flashing on every single open regardless of what we asked
+-- for (2026-07-21, reported worst in Night Mode). No-op this instead;
+-- showViewer already enqueues the one refresh we actually want.
+function GlimpseViewer:onShow()
+    return true
+end
+
 function GlimpseViewer:_prefFor(i)
     local meta = self.image_metas and self.image_metas[i]
     if meta and self.get_pref then
