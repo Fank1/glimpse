@@ -1170,12 +1170,17 @@ function GlimpseViewer:onCloseWidget()
     -- (2026-07-21: was flashing here on every close, worst at night; if
     -- ghosting turns out to be visible on device, "flashui" is the next
     -- step up — see uimanager.lua's refreshtype docs).
+    -- Dither hint (2026-07-21): the open refresh always passed one, this
+    -- one never did — the gradient shadow being erased here banded into a
+    -- handful of distinct grays without it (very visible in Day mode's
+    -- black-on-light shadow; the same banding was there in Night mode too,
+    -- just far less visible against an already-dark background).
     UIManager:setDirty(nil, function()
         local d = self.main_frame.dimen:copy()
         -- cover the shadow at its widest (night mode = 2× shadow_width)
         d.w = math.min(Screen:getWidth() - d.x,
             d.w + 2 * self.shadow_width - self.shadow_overlap + 1)
-        return "ui", d
+        return "ui", d, true
     end)
 end
 
