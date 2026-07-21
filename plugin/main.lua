@@ -345,6 +345,7 @@ local GlimpseTextButton = Widget:extend{
     radius = Screen:scaleBySize(8),
     stroke = Screen:scaleBySize(2),
     padding_h = Screen:scaleBySize(14),
+    inverted = nil,                      -- pressed state, see paintTo
 }
 
 function GlimpseTextButton:init()
@@ -389,6 +390,19 @@ function GlimpseTextButton:paintTo(bb, x, y)
         cx = cx + self.icon_size + self.icon_gap
     end
     self._text_wg:paintTo(bb, cx, y + math.floor((self.height - tsz.h) / 2))
+    if self.inverted then
+        -- pressed state: invert within the rounded silhouette only (the
+        -- stencil's alpha), same trick as GlimpseMoreButton
+        for yy = 0, self.height - 1 do
+            for xx = 0, self._w - 1 do
+                local a = self._bg_bb:getPixel(xx, yy):getColorRGB32().alpha
+                if a > 127 then
+                    bb:setPixel(x + xx, y + yy,
+                        bb:getPixel(x + xx, y + yy):getColorRGB32():invert())
+                end
+            end
+        end
+    end
 end
 
 function GlimpseTextButton:free()
@@ -539,6 +553,9 @@ function GlimpsePopupMenu:init()
             bordersize = Screen:scaleBySize(2),
             radius = Screen:scaleBySize(9),
             padding = 0,
+            -- the last row otherwise butts straight against the rounded
+            -- bottom border with no breathing room
+            padding_bottom = Screen:scaleBySize(8),
             margin = 0,
             vg,
         },
@@ -727,21 +744,9 @@ function GlimpseViewer:update()
         cur = self._gallery_page or 1
         nb = self:_galleryPages()
     end
-    -- the gallery's Close button stays top-right (its menu would only
-    -- ever hold "close" anyway, so there's no ⋯ to speak of there)
     if self._close_frame then
         self._close_frame:free()
         self._close_frame = nil
-    end
-    if self._gallery_mode then
-        self._close_frame = GlimpseMoreButton:new{
-            icon = _PLUGIN_DIR .. "/assets/close.svg",
-        }
-        self._close_frame.overlap_offset = {
-            image_area_w - self._close_frame.size,
-            btn_inset,
-        }
-        table.insert(overlay, self._close_frame)
     end
     if nav then
         self._nav_prev_frame = GlimpseMoreButton:new{
@@ -763,11 +768,26 @@ function GlimpseViewer:update()
         }
         table.insert(overlay, self._nav_next_frame)
     end
-    -- ⋯ lives at the BOTTOM row, just left of the next-image button (or
-    -- in that same slot when nav buttons are off) — kept out of the top
-    -- strip entirely so it never competes with KOReader's own top-of-
-    -- screen menu gesture. Gallery has no ⋯ (see Close button above).
-    if not self._gallery_mode and self._more_frame then
+    -- ⋯ (single-image) / Back (gallery) both live at the BOTTOM row, just
+    -- left of the next/page-forward button (or in that same slot when
+    -- nav buttons are off) — kept out of the top strip entirely so it
+    -- never competes with KOReader's own top-of-screen menu gesture.
+    if self._gallery_mode then
+        self._close_frame = GlimpseTextButton:new{
+            text = _("Back"),
+            bold = true,
+            icon = _PLUGIN_DIR .. "/assets/prev.svg",
+        }
+        local size = self._close_frame:getSize()
+        local x = self._nav_next_frame
+            and (self._nav_next_frame.overlap_offset[1] - btn_gap - size.w)
+            or (image_area_w - size.w)
+        self._close_frame.overlap_offset = {
+            x,
+            self.height - size.h - btn_inset,
+        }
+        table.insert(overlay, self._close_frame)
+    elseif self._more_frame then
         local more_size = self._more_frame:getSize()
         local more_x = self._nav_next_frame
             and (self._nav_next_frame.overlap_offset[1] - btn_gap - more_size.w)
@@ -1151,13 +1171,15 @@ function GlimpseViewer:_new_image_wg()
     local max_image_w = avail_w - self.image_padding * 2
     -- Logical fit mode (scale_factor 0) stays 0 for the viewer (dot pill,
     -- nav state, double-tap all key off it), but an image SMALLER than
-    -- the content box renders at 100% instead of the widget's blown-up
-    -- best-fit: _computeFitScaleFactor caps at 1 exactly for this case.
+    -- the content box renders at OUR capped fit (see
+    -- _computeFitScaleFactor: up to 150% of native size, never more than
+    -- what fits) instead of the widget's own best-fit, which would blow
+    -- it up all the way to fill the box with no cap at all.
     local wg_scale = self.scale_factor
     if wg_scale == 0 then
         local fit = self:_computeFitScaleFactor()
         if fit and fit >= 1 then
-            wg_scale = 1
+            wg_scale = fit
         end
     end
     self._image_wg = ImageWidget:new{
@@ -1430,8 +1452,9 @@ function GlimpseViewer:_buildGallery()
     local grid = OverlapGroup:new{
         dimen = Geom:new{ w = self.width, h = self.img_container_h },
     }
-    -- heading, top-left on the close button's baseline: how much there
-    -- is to browse, and how much the chapter scope is holding back
+    -- heading, top-left: how much there is to browse, and how much the
+    -- chapter scope is holding back. The Back button now lives at the
+    -- bottom, so the whole top band is free of chrome to dodge.
     if self._gallery_heading then
         self._gallery_heading:free()
         self._gallery_heading = nil
@@ -1450,9 +1473,7 @@ function GlimpseViewer:_buildGallery()
         face = Font:getFace("cfont", 16),
         bold = true,
         fgcolor = Blitbuffer.COLOR_BLACK,
-        -- stop short of the top-right Close button
-        max_width = m.area_w - 2 * m.pad
-            - Screen:scaleBySize(40) - m.gap,
+        max_width = m.area_w - 2 * m.pad,
     }
     local hh = self._gallery_heading:getSize().h
     self._gallery_heading.overlap_offset = {
@@ -1642,12 +1663,11 @@ function GlimpseViewer:_checkDoubleTap(ges)
 end
 
 -- Double-tap: photo-app convention — back to fit when zoomed, zoom in
--- when at fit. The target depends on whether the image is "fitted" (too
--- big for the box, fit < 1, the usual case): then 2× the on-screen fit,
--- as before. A small image already shows at its true 100% (fit capped
--- to 1, see _computeFitScaleFactor) — for those, 2× overshoots past the
--- point of legible extra detail, so the target is a flat 150% of the
--- image's own natural size instead.
+-- when at fit, always to 2× whatever fit resolves to. Small images
+-- already open boosted (up to 150% of native size, see
+-- _computeFitScaleFactor), so this naturally lands them around 300% —
+-- a further, deliberate step for inspecting detail, on top of the
+-- bigger-by-default resting view.
 function GlimpseViewer:onGlimpseDoubleTap(_, ges)
     if self.scale_factor == 0 then
         local wg = self._image_wg
@@ -1660,8 +1680,7 @@ function GlimpseViewer:onGlimpseDoubleTap(_, ges)
                 wg:getPanByCenterRatio(ges.pos.x - cx, ges.pos.y - cy)
         end
         self:_refreshScaleFactor() -- resolve fit into a number
-        local fit = self.scale_factor
-        self:_applyNewScaleFactor(fit >= 1 and 1.5 or fit * 2)
+        self:_applyNewScaleFactor(self.scale_factor * 2)
     else
         self.scale_factor = 0
         self._center_x_ratio, self._center_y_ratio = 0.5, 0.5
@@ -1897,11 +1916,15 @@ function GlimpseViewer:_computeFitScaleFactor()
         if self._cur_rotation == 90 or self._cur_rotation == 270 then
             iw, ih = ih, iw
         end
-        -- capped at 1: an image smaller than the content box shows at
-        -- 100% instead of being blown up to fill (upscaling only costs
-        -- quality); this is also the zoom-out floor, so such an image
-        -- can't be zoomed below its natural size either
-        return math.min(1,
+        -- capped at 1.5: an image smaller than the content box shows a
+        -- bit larger than its native pixel size instead of being blown
+        -- up all the way to fill the box (the old cap of exactly 1 read
+        -- as needlessly tiny for genuinely small images) — but never
+        -- more than what actually fits without spilling over the edges,
+        -- so an image with less than 50% headroom just fills the box
+        -- instead. This is also the zoom-out floor: such an image can't
+        -- be zoomed below this boosted size either.
+        return math.min(1.5,
             (self.width - self.image_padding * 2) / iw,
             (self.img_container_h - self.image_padding * 2) / ih)
     end
