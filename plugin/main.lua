@@ -1150,14 +1150,19 @@ function GlimpseViewer:onCloseWidget()
     ImageViewer.onCloseWidget(self)
     -- upstream only refreshes main_frame.dimen; also push the strip right
     -- of the panel where our gradient shadow was, or it lingers on screen.
-    -- FULL (flashing) refresh: the drawer covered most of the page and a
-    -- plain "ui" refresh leaves visible ghosting on e-ink.
+    -- "ui" (non-flashing): the drawer covers most of the page, but KOReader's
+    -- own menus close the same way and rely on the normal partial-refresh
+    -- promotion cadence to mop up any ghosting, rather than forcing a flash
+    -- on every single close — matches that convention instead of "full"
+    -- (2026-07-21: was flashing here on every close, worst at night; if
+    -- ghosting turns out to be visible on device, "flashui" is the next
+    -- step up — see uimanager.lua's refreshtype docs).
     UIManager:setDirty(nil, function()
         local d = self.main_frame.dimen:copy()
         -- cover the shadow at its widest (night mode = 2× shadow_width)
         d.w = math.min(Screen:getWidth() - d.x,
             d.w + 2 * self.shadow_width - self.shadow_overlap + 1)
-        return "full", d
+        return "ui", d
     end)
 end
 
