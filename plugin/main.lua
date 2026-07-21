@@ -1160,9 +1160,23 @@ function GlimpseViewer:onCloseWidget()
         end
         self._thumb_bbs = nil
     end
+    -- ImageViewer.onCloseWidget() does necessary cleanup (frees self.image,
+    -- title_bar, button_container, etc.) but ALSO unconditionally queues
+    -- its OWN "flashui" refresh of main_frame.dimen at the very end (see
+    -- imageviewer.lua ~886-889) — the exact same pattern as the onShow()
+    -- bug fixed earlier this session, just on the close side instead:
+    -- "flashui" outranks our own "ui" request (refresh_modes: flashui=7 >
+    -- ui=3, see uimanager.lua ~1060), so it silently wins whenever the two
+    -- deferred refresh callbacks get merged, no matter what we ask for.
+    -- Confirmed via a headless refresh-queue trace (2026-07-21): closing
+    -- was NOT triggering KOReader's normal partial-refresh-count flash
+    -- promotion (measured zero "partial" ticks across several open/close
+    -- cycles) — it's this direct, unconditional "flashui" request, every
+    -- single time. Pop the just-queued upstream callback off the refresh
+    -- func stack before pushing our own, keeping the cleanup but dropping
+    -- the forced flash.
     ImageViewer.onCloseWidget(self)
-    -- upstream only refreshes main_frame.dimen; also push the strip right
-    -- of the panel where our gradient shadow was, or it lingers on screen.
+    table.remove(UIManager._refresh_func_stack)
     -- "ui" (non-flashing): the drawer covers most of the page, but KOReader's
     -- own menus close the same way and rely on the normal partial-refresh
     -- promotion cadence to mop up any ghosting, rather than forcing a flash
