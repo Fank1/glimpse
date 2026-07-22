@@ -224,6 +224,50 @@ function GlimpsePill:free(...)
     WidgetContainer.free(self, ...)
 end
 
+-- A small numbered badge for a gallery thumbnail's corner: white rounded
+-- square, thin black border, bold black number — so the reading order is
+-- explicit and a specific image is findable, without disturbing the
+-- masonry layout. Day polarity (night's fb inversion → dark badge, light
+-- number), same as the rest of the chrome. Widens for 2+ digit numbers.
+local GlimpseBadge = Widget:extend{
+    num = 1,
+    height = Screen:scaleBySize(17),
+    radius = Screen:scaleBySize(4),
+    stroke = Screen:scaleBySize(1),
+    pad_h = Screen:scaleBySize(4),
+}
+
+function GlimpseBadge:init()
+    self._txt = TextWidget:new{
+        text = tostring(self.num),
+        face = Font:getFace("cfont", 11),
+        bold = true,
+        fgcolor = Blitbuffer.COLOR_BLACK,
+    }
+    self._w = math.max(self.height, self._txt:getSize().w + 2 * self.pad_h)
+end
+
+function GlimpseBadge:getSize()
+    return Geom:new{ w = self._w, h = self.height }
+end
+
+function GlimpseBadge:paintTo(bb, x, y)
+    self.dimen = Geom:new{ x = x, y = y, w = self._w, h = self.height }
+    if not self._bg_bb then
+        self._bg_bb = make_rounded_stencil(self._w, self.height,
+            self.radius, self.stroke, 0xFF, 0x00)
+    end
+    bb:alphablitFrom(self._bg_bb, x, y, 0, 0, self._w, self.height)
+    local ts = self._txt:getSize()
+    self._txt:paintTo(bb, x + math.floor((self._w - ts.w) / 2),
+        y + math.floor((self.height - ts.h) / 2))
+end
+
+function GlimpseBadge:free()
+    if self._bg_bb then self._bg_bb:free(); self._bg_bb = nil end
+    if self._txt then self._txt:free() end
+end
+
 -- The ⋯ button: solid white rounded square with an anti-aliased 2px black
 -- border, so it stays visible over any image. `disabled` grays the border
 -- and icon (used by prev/next at the ends of the image list); `inverted`
@@ -1288,6 +1332,10 @@ function GlimpseViewer:onCloseWidget()
         self._gallery_heading:free()
         self._gallery_heading = nil
     end
+    if self._gallery_badges then
+        for _, b in ipairs(self._gallery_badges) do b:free() end
+        self._gallery_badges = nil
+    end
     if self._caption_wg then
         self._caption_wg:free()
         self._caption_wg = nil
@@ -1671,6 +1719,10 @@ function GlimpseViewer:_buildGallery()
         self._gallery_heading:free()
         self._gallery_heading = nil
     end
+    if self._gallery_badges then
+        for _, b in ipairs(self._gallery_badges) do b:free() end
+    end
+    self._gallery_badges = {}
     local nb = self._images_list_nb or 1
     local hidden = self.gallery_hidden_count or 0
     local heading_text
@@ -1726,6 +1778,16 @@ function GlimpseViewer:_buildGallery()
             table.insert(grid, cell)
             table.insert(self._gallery_cells,
                 { x = c.x, y = c.y, w = c.w, h = c.h, idx = c.idx })
+            -- reading-order badge in the thumbnail's top-left corner, so
+            -- the (masonry) layout's order is legible and a given image is
+            -- findable; added AFTER the cell so it paints on top
+            local badge = GlimpseBadge:new{ num = c.idx }
+            badge.overlap_offset = {
+                c.x + m.inset + Screen:scaleBySize(3),
+                c.y + m.inset + Screen:scaleBySize(3),
+            }
+            table.insert(grid, badge)
+            table.insert(self._gallery_badges, badge)
         end
     end
     self.image_container = grid

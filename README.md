@@ -69,10 +69,10 @@ opens Glimpse, at the top of the list.
 
 ⋯ → *Gallery* shows every image as a Pinterest-style masonry grid, each
 thumbnail with a subtle rounded outline (a heavier one marks the image
-you're currently on), keeping its own aspect ratio instead of being
-cropped to a uniform tile. Paged when there are enough to browse; a
-*Back* button returns to the normal viewer. Tap a thumbnail to jump
-straight to that image instead.
+you're currently on) and a small number badge showing its reading order,
+keeping its own aspect ratio instead of being cropped to a uniform tile.
+Paged when there are enough to browse; a *Back* button returns to the
+normal viewer. Tap a thumbnail to jump straight to that image instead.
 
 ### Releasing
 
