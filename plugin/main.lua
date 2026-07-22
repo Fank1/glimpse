@@ -970,24 +970,44 @@ function GlimpseViewer:_paintPanel(bb, x, y)
         self._shadow_night = skey
         self._shadow_bb = Blitbuffer.new(swidth, shadow_h,
             Blitbuffer.TYPE_BBRGB32)
-        for i = 0, swidth - 1 do
-            local t = (i + 0.5) / swidth
-            local frac
+        local function origFrac(tt)
             if night then
                 -- night: hold most of the darkness through the left half
                 -- (a strong contact band that reads as "above the page"),
                 -- then fall off quadratically so the right half is much
                 -- lighter than a straight ramp; continuous at t = 0.5
-                frac = t < 0.5 and (1 - 0.8 * t)
-                    or 0.6 * (1 - (t - 0.5) * 2) ^ 2
+                return tt < 0.5 and (1 - 0.8 * tt)
+                    or 0.6 * (1 - (tt - 0.5) * 2) ^ 2
             else
-                frac = 1 - t
+                return 1 - tt
             end
+        end
+        -- BOOSTED NEAR-EDGE ZONE (2026-07-22): the outer taper (t >= edge)
+        -- is untouched — user confirmed it flashing-free already. Within
+        -- the first `edge` of the width, density eases from `peak_level`
+        -- down to whatever the untouched formula already gives at t=edge
+        -- (so there's no visible seam), holding closer to peak_level for
+        -- longer via the `^boost_k` easing rather than a straight line —
+        -- for Night (already at peak_level=1.0, the density max) that's
+        -- the only way to make the band read stronger at all, since the
+        -- instantaneous peak can't exceed fully solid.
+        local edge = 0.25
+        local boost_k = 2
+        local peak_level = night and 1.0 or 0.7
+        local edge_level = speak * origFrac(edge)
+        for i = 0, swidth - 1 do
+            local t = (i + 0.5) / swidth
             -- desired LOCAL darkness at this column, 0..255 — compared
             -- against the tiled Bayer matrix per-pixel below rather than
             -- written as a per-pixel alpha, so the result is always fully
             -- opaque or fully transparent (a dot, or no dot)
-            local level = speak * frac * 255
+            local level
+            if t < edge then
+                local u = t / edge
+                level = (peak_level - (peak_level - edge_level) * u ^ boost_k) * 255
+            else
+                level = speak * origFrac(t) * 255
+            end
             local col = (i % 8) + 1
             for j = 0, shadow_h - 1 do
                 local threshold = (SHADOW_BAYER8[col][(j % 8) + 1] + 0.5) * 4
