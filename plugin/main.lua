@@ -963,9 +963,9 @@ function GlimpseViewer:_paintPanel(bb, x, y)
     local sv = inv and 0x00 or (night and 0xFF or 0x00)
     local speak = night and 1.0 or 0.5
     -- night mode gets a wider gradient so it reaches further onto the page
-    -- (user tuning 2026-07-22: 2x read as reaching too far across the page
-    -- — this is the shortest of several width options rendered for them)
-    local swidth = night and math.floor(self.shadow_width * 1.25 + 0.5) or self.shadow_width
+    -- (user tuning 2026-07-22: 2x read as reaching too far, 1.25x as too
+    -- narrow — splitting the difference)
+    local swidth = night and math.floor(self.shadow_width * 1.5 + 0.5) or self.shadow_width
     if not self._shadow_bb or self._shadow_bb:getHeight() ~= shadow_h
             or self._shadow_night ~= skey then
         if self._shadow_bb then self._shadow_bb:free() end
@@ -984,42 +984,36 @@ function GlimpseViewer:_paintPanel(bb, x, y)
                 return 1 - tt
             end
         end
-        -- BOOSTED NEAR-EDGE ZONE (2026-07-22, corrected same day): the
-        -- first `shadow_overlap` columns (t < vis0) are painted OVER by
-        -- the panel body itself along every straight edge — they only
-        -- ever show through the small rounded-corner notches — so a
-        -- boost anchored to t=0 (the original attempt) was invisible for
-        -- ~95% of the panel's height, which is exactly why raising
-        -- peak_level alone did nothing the user could see. Anchor the
-        -- boost to vis0 (the first column that's actually ever visible)
-        -- instead: density eases from `peak_level` down to whatever the
-        -- untouched formula already gives at the boosted zone's end (so
-        -- there's no seam), over the first `vis_edge` fraction of the
-        -- VISIBLE width, then the outer taper (unchanged, user-approved)
-        -- takes over. Holding closer to peak_level for longer via
-        -- `^boost_k` rather than a straight line is what makes Night
-        -- read stronger too, since its instantaneous peak is already 1.0
-        -- (fully solid) and can't go higher — only the AVERAGE over the
-        -- band can increase.
+        -- BOOSTED NEAR-EDGE ZONE (2026-07-22, corrected twice same day):
+        -- the first `shadow_overlap` columns (t < vis0) are painted OVER
+        -- by the panel body along every straight edge — only the small
+        -- rounded-corner notches ever expose them — so a boost anchored
+        -- to t=0 (1st attempt) was invisible for ~95% of the panel's
+        -- height. Anchoring to vis0 instead (2nd attempt) fixed
+        -- visibility but introduced a real seam: it jumped straight to
+        -- `peak_level` AT vis0, discontinuous with whatever origFrac(t)
+        -- was doing just below vis0 — invisible along a straight edge
+        -- (the panel itself covers t < vis0 there) but the corner's
+        -- notch exposes BOTH sides of that jump within one small curved
+        -- area, so it read as a hard block breaking the curve instead of
+        -- following it ("the dithering missed the rounding of the
+        -- corner"). Fixed by boosting with a smooth bump added ON TOP OF
+        -- the untouched curve — continuous everywhere, including t <
+        -- vis0, so whatever the corner exposes always tapers smoothly,
+        -- no matter how much of the buffer that turns out to be.
         local vis0 = self.shadow_overlap / swidth
-        local vis_edge = 0.25
-        local edge_t = vis0 + vis_edge * (1 - vis0)
-        local boost_k = 2
-        local peak_level = night and 1.0 or 0.95
-        local edge_level = speak * origFrac(edge_t)
+        local peak_level = night and 1.0 or 0.85
+        local bump_width = 0.18 -- in units of t; how far the bump reaches
         for i = 0, swidth - 1 do
             local t = (i + 0.5) / swidth
+            local orig_level = speak * origFrac(t)
+            local dist = math.abs(t - vis0) / bump_width
+            local bump = dist < 1 and 0.5 * (1 + math.cos(math.pi * dist)) or 0
             -- desired LOCAL darkness at this column, 0..255 — compared
             -- against the tiled Bayer matrix per-pixel below rather than
             -- written as a per-pixel alpha, so the result is always fully
             -- opaque or fully transparent (a dot, or no dot)
-            local level
-            if t >= vis0 and t < edge_t then
-                local u = (t - vis0) / (edge_t - vis0)
-                level = (peak_level - (peak_level - edge_level) * u ^ boost_k) * 255
-            else
-                level = speak * origFrac(t) * 255
-            end
+            local level = (orig_level + bump * (peak_level - orig_level)) * 255
             local col = (i % 8) + 1
             for j = 0, shadow_h - 1 do
                 local threshold = (SHADOW_BAYER8[col][(j % 8) + 1] + 0.5) * 4
