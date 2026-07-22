@@ -907,12 +907,31 @@ function GlimpseViewer:update()
     self.alpha = alpha
 end
 
--- Paints the drawer at (x, y): first the gradient shadow (pure black
--- fading rightwards, blended over the live page), then the panel body
--- from a cached stencil — opaque white with a black border, anti-aliased
--- rounded corners on the right side only, transparent corner notches.
--- Blending is safe against accumulation because self.alpha makes
--- UIManager repaint the windows below us first (see the class comment).
+-- 8x8 Bayer ordered-dither matrix (values 0..63), used to turn the
+-- shadow's continuous falloff curve into a binary dot pattern (see
+-- _paintPanel below): e-ink panels have few native gray levels and
+-- crush a true alpha gradient into visible bands no matter what dither
+-- hint accompanies the refresh; a pattern that's only ever pure
+-- black/white (dot DENSITY encoding the darkness, not per-pixel alpha)
+-- leaves nothing for the hardware to quantize.
+local SHADOW_BAYER8 = {
+    { 0, 32,  8, 40,  2, 34, 10, 42},
+    {48, 16, 56, 24, 50, 18, 58, 26},
+    {12, 44,  4, 36, 14, 46,  6, 38},
+    {60, 28, 52, 20, 62, 30, 54, 22},
+    { 3, 35, 11, 43,  1, 33,  9, 41},
+    {51, 19, 59, 27, 49, 17, 57, 25},
+    {15, 47,  7, 39, 13, 45,  5, 37},
+    {63, 31, 55, 23, 61, 29, 53, 21},
+}
+
+-- Paints the drawer at (x, y): first the dithered dot-pattern shadow
+-- (pure black stipple fading rightwards, blended over the live page),
+-- then the panel body from a cached stencil — opaque white with a
+-- black border, anti-aliased rounded corners on the right side only,
+-- transparent corner notches. Blending is safe against accumulation
+-- because self.alpha makes UIManager repaint the windows below us
+-- first (see the class comment).
 function GlimpseViewer:_paintPanel(bb, x, y)
     local w, h = self._panel_w, self._panel_h
     local py = y + self.panel_vgap
@@ -933,9 +952,11 @@ function GlimpseViewer:_paintPanel(bb, x, y)
     local inv = bb.getInverse and bb:getInverse() == 1
     local skey = tostring(night) .. tostring(inv)
 
-    -- shadow: cached gradient stencil, alpha peak → 0 across shadow_width,
-    -- starting shadow_overlap left of the panel edge (that part only shows
-    -- through the rounded corner notches); full screen height.
+    -- shadow: cached DOT-PATTERN stencil (ordered/Bayer dithering, not a
+    -- true alpha gradient — see SHADOW_BAYER8 above), density peak → 0
+    -- across shadow_width, starting shadow_overlap left of the panel edge
+    -- (that part only shows through the rounded corner notches); full
+    -- screen height.
     local shadow_h = h + 2 * self.panel_vgap
     -- logical shadow color is white in night (inverts to dark); with the
     -- SW-invert flag set we store the final dark value directly instead
@@ -962,8 +983,15 @@ function GlimpseViewer:_paintPanel(bb, x, y)
             else
                 frac = 1 - t
             end
-            local a = math.floor(speak * frac * 255 + 0.5)
+            -- desired LOCAL darkness at this column, 0..255 — compared
+            -- against the tiled Bayer matrix per-pixel below rather than
+            -- written as a per-pixel alpha, so the result is always fully
+            -- opaque or fully transparent (a dot, or no dot)
+            local level = speak * frac * 255
+            local col = (i % 8) + 1
             for j = 0, shadow_h - 1 do
+                local threshold = (SHADOW_BAYER8[col][(j % 8) + 1] + 0.5) * 4
+                local a = level > threshold and 255 or 0
                 self._shadow_bb:setPixel(i, j, Blitbuffer.ColorRGB32(sv, sv, sv, a))
             end
         end
