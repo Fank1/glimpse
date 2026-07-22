@@ -7,3 +7,4 @@ analysis-report.txt
 builder/fixture.epub
 builder/fixture_extracted/
 .claude/
+.previews/
