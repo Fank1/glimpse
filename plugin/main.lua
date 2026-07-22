@@ -2377,7 +2377,7 @@ function Glimpse:onDispatcherRegisterActions()
     Dispatcher:registerAction("glimpse_show", {
         category = "none",
         event = "GlimpseShow",
-        title = _("Glimpse: book images"),
+        title = _("Open Glimpse"),
         reader = true,
     })
 end
@@ -3211,11 +3211,11 @@ function Glimpse:_menuItems()
             -- (dimmed so it doesn't read as an action)
             text_func = function() return self:_gestureLabel() end,
             enabled_func = function() return false end,
-            help_text = _("Assign or change it under Taps and gestures → Gesture manager → (pick a gesture) → Reader → 'Glimpse: book images'."),
+            help_text = _("Assign or change it under Taps and gestures → Gesture manager → (pick a gesture) → Reader → 'Open Glimpse'."),
         },
         {
-            text = _("Show book images"),
-            help_text = _("Browse the maps, family trees and other reference images found in this book, without losing your reading position. Tip: bind the gesture action 'Glimpse: book images' for one-touch access."),
+            text = _("Open Glimpse"),
+            help_text = _("Browse the maps, family trees and other reference images found in this book, without losing your reading position. Tip: bind the gesture action 'Open Glimpse' for one-touch access."),
             callback = function(touchmenu_instance)
                 if touchmenu_instance then
                     touchmenu_instance:closeMenu()
@@ -3226,13 +3226,14 @@ function Glimpse:_menuItems()
                     self:showViewer()
                 end)
             end,
-            separator = true,
         },
         {
+            -- the full option name, not an abbreviation, so the current
+            -- mode is unambiguous at a glance
             text_func = function()
                 return self:getScope() == "whole_book"
-                    and _("Mode: all images")
-                    or _("Mode: up to current chapter")
+                    and _("Mode: Show all images")
+                    or _("Mode: Show images up to current chapter")
             end,
             sub_item_table = {
                 scope_item("read_so_far", _("Show images up to current chapter"),
@@ -3240,6 +3241,7 @@ function Glimpse:_menuItems()
                 scope_item("whole_book", _("Show all images"),
                     _("Show reference images from anywhere in the book, including parts you haven't reached yet.")),
             },
+            separator = true,
         },
         {
             text = _("Invert in Night Mode"),
@@ -3274,34 +3276,12 @@ function Glimpse:_menuItems()
             help_text = _("Bring back images removed with 'Remove image from collection' in the viewer's ⋯ menu. Removal is remembered per book."),
             enabled_func = function() return self:_hiddenCount() > 0 end,
             keep_menu_open = true,
+            separator = true,
             callback = function(touchmenu_instance)
                 self.ui.doc_settings:delSetting("glimpse_hidden")
                 UIManager:show(Notification:new{ text = _("Hidden images restored.") })
                 if touchmenu_instance then
                     touchmenu_instance:updateItems()
-                end
-            end,
-        },
-        {
-            text = _("Rescan this book"),
-            help_text = _("Glimpse caches its scan of the book. Use this if the book file was replaced or images seem out of date."),
-            keep_menu_open = true,
-            separator = true,
-            callback = function()
-                local okay = self:_supportedReason()
-                if not okay then return end
-                self._scan = nil
-                local info = InfoMessage:new{ text = _("Scanning book for images…") }
-                UIManager:show(info)
-                UIManager:forceRePaint()
-                local scan = self:_getScan(true)
-                UIManager:close(info)
-                if scan then
-                    UIManager:show(Notification:new{
-                        text = T(_("Found %1 image(s)."), #scan.images),
-                    })
-                else
-                    UIManager:show(Notification:new{ text = _("Scan failed.") })
                 end
             end,
         },
@@ -3338,6 +3318,30 @@ function Glimpse:_menuItems()
                     end,
                     callback = function()
                         G_reader_settings:flipNilOrTrue(TOP_MENU_KEY)
+                    end,
+                    separator = true,
+                },
+                {
+                    -- rarely needed, so tucked in here rather than the main list
+                    text = _("Rescan this book"),
+                    help_text = _("Glimpse caches its scan of the book. Use this if the book file was replaced or images seem out of date."),
+                    keep_menu_open = true,
+                    callback = function()
+                        local okay = self:_supportedReason()
+                        if not okay then return end
+                        self._scan = nil
+                        local info = InfoMessage:new{ text = _("Scanning book for images…") }
+                        UIManager:show(info)
+                        UIManager:forceRePaint()
+                        local scan = self:_getScan(true)
+                        UIManager:close(info)
+                        if scan then
+                            UIManager:show(Notification:new{
+                                text = T(_("Found %1 image(s)."), #scan.images),
+                            })
+                        else
+                            UIManager:show(Notification:new{ text = _("Scan failed.") })
+                        end
                     end,
                 },
             },

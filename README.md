@@ -36,29 +36,29 @@ Updates → *Check for updates*.
 
 ## Usage
 
-- **Menu:** with a book open: Tools (wrench icon) → Glimpse → *Show book
-  images*.
+- **Menu:** with a book open: Tools (wrench icon) → Glimpse → *Open
+  Glimpse*.
 - **Gesture (recommended):** Settings → Taps and gestures → Gesture manager →
-  pick a gesture → *Reader* → **Glimpse: book images**. One-touch access is
+  pick a gesture → *Reader* → **Open Glimpse**. One-touch access is
   the whole point of the plugin.
 - **Dot indicator:** tap it to jump near that image directly, not just
   swipe through one at a time; its tap target is padded well beyond the
   dots themselves. A small image opens a bit larger than its native
   size already (up to 150%, never more than actually fits); double-tap
-  to zoom in further (2× that) and again to return. A "Fit" button only
+  to zoom in further (2× that) and again to return. A "Reset" button only
   appears once you're actually zoomed past the resting view.
 
 ### Settings (Tools → Glimpse)
 
 | Setting | Meaning |
 | --- | --- |
-| Mode: up to current chapter *(default)* | Images past your current chapter stay hidden (no spoilers). |
-| Mode: all images | Everything, incl. parts you haven't reached. |
+| Mode: Show images up to current chapter *(default)* | Images past your current chapter stay hidden (no spoilers). |
+| Mode: Show all images | Everything, incl. parts you haven't reached. |
 | Restore hidden images | Undo the viewer's per-book **Remove image from collection**. |
-| Rescan this book | Drop the cached scan (scans are cached per book file). |
 | Advanced → Hide irrelevant images *(checkbox, on)* | Hides covers, publisher logos, ornaments and other non-reference imagery. Off = every image in the book. |
 | Advanced → Show image captions (beta) *(checkbox, on)* | Overlay the image's caption from the book in the viewer's top-left corner. |
 | Advanced → Enable top menu tap zone *(checkbox, on)* | While the viewer is open, a tap along the top edge opens KOReader's top menu (only that one, never the bottom menu) over the drawer. Off leaves the top edge inert. |
+| Advanced → Rescan this book | Drop the cached scan (scans are cached per book file); use if the file was replaced or images seem out of date. |
 | Updates → Check for updates | Fetch the latest GitHub release and install it in place (with backup and rollback), then offer a restart. |
 | Updates → Include pre-release versions *(checkbox, off)* | Also offer releases marked pre-release on GitHub: test builds, at your own risk. Normal update checks never see those. |
 
