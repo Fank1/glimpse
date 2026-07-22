@@ -64,6 +64,24 @@ local TOP_MENU_KEY = "glimpse_top_menu_zone"   -- tap top strip → KOReader top
 
 -- ── overlay chrome: dot pill and ⋯ button (from the Figma design) ──────────
 
+-- 8x8 Bayer ordered-dither matrix (values 0..63): turns a continuous
+-- darkness level into a binary black/white DOT PATTERN. e-ink panels have
+-- few native gray levels and crush a true alpha gradient into visible
+-- bands no matter what dither hint accompanies the refresh; a pattern
+-- that's only ever fully opaque or fully transparent (dot DENSITY
+-- encoding the darkness) leaves nothing for the hardware to quantize.
+-- Used by the drawer shadow (_paintPanel) and the caption scrim.
+local SHADOW_BAYER8 = {
+    { 0, 32,  8, 40,  2, 34, 10, 42},
+    {48, 16, 56, 24, 50, 18, 58, 26},
+    {12, 44,  4, 36, 14, 46,  6, 38},
+    {60, 28, 52, 20, 62, 30, 54, 22},
+    { 3, 35, 11, 43,  1, 33,  9, 41},
+    {51, 19, 59, 27, 49, 17, 57, 25},
+    {15, 47,  7, 39, 13, 45,  5, 37},
+    {63, 31, 55, 23, 61, 29, 53, 21},
+}
+
 -- Anti-aliased filled circle blending fg over bg by edge coverage
 -- (paintCircle is hard-edged and looks jagged at dot sizes). All chrome is
 -- drawn black-on-white; night mode inverts the framebuffer for free, which
@@ -211,7 +229,7 @@ end
 -- and icon (used by prev/next at the ends of the image list); `inverted`
 -- is the pressed state.
 local GlimpseMoreButton = Widget:extend{
-    size = Screen:scaleBySize(40),
+    size = Screen:scaleBySize(42),       -- 2px larger than the old 40 (icon/border unchanged)
     radius = Screen:scaleBySize(8),
     stroke = Screen:scaleBySize(2),
     icon = nil,                          -- SVG path; nil draws the ⋯ glyph
@@ -295,13 +313,17 @@ function GlimpseMoreButton:free()
 end
 
 -- Caption overlay: white text with a 2px black outline (offset copies of
--- the text in black under a white copy), so it stays readable over any
--- image. Painted in day polarity — night mode's inversion turns it into
--- black text with a white outline, per the design. Truncates to max_width.
+-- the text in black under a white copy) over a dithered dark scrim, so it
+-- stays readable over any image. Painted in day polarity — night mode's
+-- inversion turns it into black text + white outline over a light scrim,
+-- keeping contrast either way. Truncates to max_width.
 local GlimpseCaption = Widget:extend{
     text = "",
     max_width = 0,
     outline = 2,
+    pad = Screen:scaleBySize(7),  -- scrim cushion around the text box
+    scrim_left = 0.62,            -- dot density behind the start of the text
+    scrim_right = 0.18,           -- ... fading across to the right
 }
 
 function GlimpseCaption:init()
@@ -318,28 +340,59 @@ end
 
 function GlimpseCaption:getSize()
     local s = self._white:getSize()
-    return Geom:new{ w = s.w + 2 * self.outline, h = s.h + 2 * self.outline }
+    local extra = 2 * self.outline + 2 * self.pad
+    return Geom:new{ w = s.w + extra, h = s.h + extra }
+end
+
+-- Dithered dark backdrop behind the caption text: a horizontal gradient
+-- (denser at the left, where the text starts) feathered to transparent
+-- at all four edges over `pad`, so it reads as a soft scrim rather than a
+-- hard box. Black dots in day polarity; night's fb inversion flips it to
+-- a light backdrop behind the then-dark text — contrast holds both ways.
+function GlimpseCaption:_buildScrim(w, h)
+    self._scrim_bb = Blitbuffer.new(w, h, Blitbuffer.TYPE_BBRGB32)
+    local pad = self.pad
+    for px = 0, w - 1 do
+        local gx = w > 1 and px / (w - 1) or 0
+        local base = self.scrim_left + (self.scrim_right - self.scrim_left) * gx
+        local fx = math.min(px, w - 1 - px) / pad
+        if fx > 1 then fx = 1 end
+        local col = (px % 8) + 1
+        for py = 0, h - 1 do
+            local fy = math.min(py, h - 1 - py) / pad
+            if fy > 1 then fy = 1 end
+            local level = base * fx * fy * 255
+            local thr = (SHADOW_BAYER8[col][(py % 8) + 1] + 0.5) * 4
+            local a = level > thr and 255 or 0
+            self._scrim_bb:setPixel(px, py, Blitbuffer.ColorRGB32(0, 0, 0, a))
+        end
+    end
 end
 
 function GlimpseCaption:paintTo(bb, x, y)
-    local o = self.outline
+    local o, pad = self.outline, self.pad
     self.dimen = self:getSize()
     self.dimen.x, self.dimen.y = x, y
-    -- step 1 (not o): every offset within the radius, so a 2px outline
+    local w, h = self.dimen.w, self.dimen.h
+    if not self._scrim_bb then self:_buildScrim(w, h) end
+    bb:alphablitFrom(self._scrim_bb, x, y, 0, 0, w, h)
+    -- text sits inside the pad cushion; step 1 (not o) so a 2px outline
     -- has no gaps at the ±1 ring
+    local tx, ty = x + pad, y + pad
     for dy = -o, o do
         for dx = -o, o do
             if dx ~= 0 or dy ~= 0 then
-                self._black:paintTo(bb, x + o + dx, y + o + dy)
+                self._black:paintTo(bb, tx + o + dx, ty + o + dy)
             end
         end
     end
-    self._white:paintTo(bb, x + o, y + o)
+    self._white:paintTo(bb, tx + o, ty + o)
 end
 
 function GlimpseCaption:free()
     self._black:free()
     self._white:free()
+    if self._scrim_bb then self._scrim_bb:free(); self._scrim_bb = nil end
 end
 
 -- A pill-shaped text button in the SAME style as the ⋯ button: solid white
@@ -352,7 +405,7 @@ local GlimpseTextButton = Widget:extend{
     icon = nil,                          -- absolute path to an SVG, or nil
     icon_size = Screen:scaleBySize(16),
     icon_gap = Screen:scaleBySize(7),
-    height = Screen:scaleBySize(40),
+    height = Screen:scaleBySize(42),     -- 2px larger than the old 40 (icon/border unchanged)
     radius = Screen:scaleBySize(8),
     stroke = Screen:scaleBySize(2),
     padding_h = Screen:scaleBySize(14),
@@ -744,7 +797,9 @@ function GlimpseViewer:update()
     -- chrome is centered/aligned on the image area (content minus the gap
     -- that keeps it clear of the rounded right edge), like the design
     local image_area_w = self.width - self.image_right_gap
-    local btn_inset = Screen:scaleBySize(16)
+    -- 14, not 16: the bottom row sits 2px closer to the drawer's bottom
+    -- edge than before (the buttons also grew 2px, see GlimpseMoreButton)
+    local btn_inset = Screen:scaleBySize(14)
     local btn_gap = Screen:scaleBySize(10)
     -- optional prev/next buttons: always shown while the toggle is on
     -- (zoomed too — switching lands the next image at fit); at the ends
@@ -865,8 +920,12 @@ function GlimpseViewer:update()
                 text = caption,
                 max_width = image_area_w - 2 * Screen:scaleBySize(16),
             }
+            -- pull the box in by the scrim's own pad so the TEXT still
+            -- lands at ~16/12 from the corner (the scrim feathers out over
+            -- that pad, so its faint edge reaching nearer the corner is fine)
             self._caption_wg.overlap_offset = {
-                Screen:scaleBySize(16), Screen:scaleBySize(12),
+                Screen:scaleBySize(16) - self._caption_wg.pad,
+                Screen:scaleBySize(12) - self._caption_wg.pad,
             }
             table.insert(overlay, self._caption_wg)
         end
@@ -931,24 +990,6 @@ function GlimpseViewer:update()
     end)
     self.alpha = alpha
 end
-
--- 8x8 Bayer ordered-dither matrix (values 0..63), used to turn the
--- shadow's continuous falloff curve into a binary dot pattern (see
--- _paintPanel below): e-ink panels have few native gray levels and
--- crush a true alpha gradient into visible bands no matter what dither
--- hint accompanies the refresh; a pattern that's only ever pure
--- black/white (dot DENSITY encoding the darkness, not per-pixel alpha)
--- leaves nothing for the hardware to quantize.
-local SHADOW_BAYER8 = {
-    { 0, 32,  8, 40,  2, 34, 10, 42},
-    {48, 16, 56, 24, 50, 18, 58, 26},
-    {12, 44,  4, 36, 14, 46,  6, 38},
-    {60, 28, 52, 20, 62, 30, 54, 22},
-    { 3, 35, 11, 43,  1, 33,  9, 41},
-    {51, 19, 59, 27, 49, 17, 57, 25},
-    {15, 47,  7, 39, 13, 45,  5, 37},
-    {63, 31, 55, 23, 61, 29, 53, 21},
-}
 
 -- Paints the drawer at (x, y): first the dithered dot-pattern shadow
 -- (pure black stipple fading rightwards, blended over the live page),
@@ -1374,16 +1415,17 @@ function GlimpseViewer:_buildPill()
         self._pill_frame = GlimpsePill:new{ inverted = true, inner = TextWidget:new{
             text = T(_("Page %1 of %2"), self._gallery_page or 1, pages),
             face = Font:getFace("cfont", 12),
+            bold = true,
             fgcolor = Blitbuffer.COLOR_BLACK,
         } }
         return
     end
     if self:_isOverFit() then
         -- genuinely spilling past fit: image switching is disabled, and
-        -- the indicator becomes a tappable "back to fit" button, styled
+        -- the indicator becomes a tappable "reset to fit" button, styled
         -- to match the ⋯ button (see onTap)
         self._pill_frame = GlimpseTextButton:new{
-            text = _("Fit"),
+            text = _("Reset"),
             bold = true,
             icon = _PLUGIN_DIR .. "/assets/zoom.svg",
         }
@@ -1421,6 +1463,7 @@ function GlimpseViewer:_buildPill()
             inner = TextWidget:new{
                 text = string.format("%d / %d", self._images_list_cur or 1, nb),
                 face = Font:getFace("cfont", 12),
+                bold = true,
                 fgcolor = Blitbuffer.COLOR_BLACK,
             },
         }
