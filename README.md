@@ -58,6 +58,7 @@ Updates → *Check for updates*.
 | Rescan this book | Drop the cached scan (scans are cached per book file). |
 | Advanced → Hide irrelevant images *(checkbox, on)* | Hides covers, publisher logos, ornaments and other non-reference imagery. Off = every image in the book. |
 | Advanced → Show image captions (beta) *(checkbox, on)* | Overlay the image's caption from the book in the viewer's top-left corner. |
+| Advanced → Enable top menu tap zone *(checkbox, on)* | While the viewer is open, a tap along the top edge opens KOReader's top menu (only that one, never the bottom menu) over the drawer. Off leaves the top edge inert. |
 | Updates → Check for updates | Fetch the latest GitHub release and install it in place (with backup and rollback), then offer a restart. |
 | Updates → Include pre-release versions *(checkbox, off)* | Also offer releases marked pre-release on GitHub: test builds, at your own risk. Normal update checks never see those. |
 

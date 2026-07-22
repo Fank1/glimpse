@@ -14,6 +14,7 @@ local ConfirmBox = require("ui/widget/confirmbox")
 local DataStorage = require("datastorage")
 local Device = require("device")
 local Dispatcher = require("dispatcher")
+local Event = require("ui/event")
 local Font = require("ui/font")
 local FrameContainer = require("ui/widget/container/framecontainer")
 local Geom = require("ui/geometry")
@@ -59,6 +60,7 @@ local FILTER_KEY = "glimpse_filter"
 local INVERT_KEY = "glimpse_invert_night"
 local NAV_BUTTONS_KEY = "glimpse_nav_buttons" -- prev/next buttons, off by default
 local CAPTIONS_KEY = "glimpse_captions"        -- caption overlay, ON by default (nilOrTrue)
+local TOP_MENU_KEY = "glimpse_top_menu_zone"   -- tap top strip → KOReader top menu, ON by default (nilOrTrue)
 
 -- ── overlay chrome: dot pill and ⋯ button (from the Figma design) ──────────
 
@@ -642,6 +644,7 @@ local GlimpseViewer = ImageViewer:extend{
     on_hide = nil,         -- function(meta)
     on_show_in_book = nil, -- function(meta): jump the reader to the image
     on_rotate = nil,       -- function(rotation): re-layout + reopen
+    on_show_menu = nil,    -- function(): open KOReader's top menu (only)
     get_pref = nil,        -- function(meta) -> per-image prefs {rotation=}
     set_pref = nil,        -- function(meta, key, value)
     -- gallery masonry (⋯ → Gallery): fixed-width columns, variable heights
@@ -1878,10 +1881,37 @@ function GlimpseViewer:_flashButton(frame, action)
     action()
 end
 
--- Tap: outside closes; on the ⋯ button opens the menu. Image switching is
--- swipe-only (or the optional buttons), which leaves the whole image as a
--- double-tap zoom surface.
+-- KOReader's configurable top-menu tap zone (DTAP_ZONE_MENU, default the
+-- top 1/8 of the screen, full width), as a screen rect. Falls back to the
+-- default if the global defaults table isn't reachable for any reason.
+function GlimpseViewer:_inTopMenuZone(pos)
+    local z = { x = 0, y = 0, w = 1, h = 1 / 8 }
+    if G_defaults then
+        local zz = G_defaults:readSetting("DTAP_ZONE_MENU")
+        if zz then z = zz end
+    end
+    local sw, sh = Screen:getWidth(), Screen:getHeight()
+    return pos:intersectWith(Geom:new{
+        x = z.x * sw, y = z.y * sh, w = z.w * sw, h = z.h * sh })
+end
+
+-- Tap: the top-menu zone opens KOReader's top menu (see onTap); a tap
+-- elsewhere outside the drawer closes; on the ⋯ button opens the menu.
+-- Image switching is swipe-only (or the optional buttons), which leaves
+-- the rest of the image as a double-tap zoom surface.
 function GlimpseViewer:onTap(_, ges)
+    -- Respect KOReader's own top-of-screen menu trigger: a tap in that
+    -- zone opens ONLY the top menu, over the still-open drawer (the ⋯
+    -- button was moved to the bottom row precisely to keep this strip
+    -- clear). We open the top menu directly rather than letting the tap
+    -- fall through to ReaderMenu:onTapShowMenu, which would ALSO open the
+    -- bottom config menu whenever the user's show_bottom_menu setting is
+    -- on (the default) — here we never want that second menu.
+    if self.on_show_menu and G_reader_settings:nilOrTrue(TOP_MENU_KEY)
+       and self:_inTopMenuZone(ges.pos) then
+        self.on_show_menu()
+        return true
+    end
     if ges.pos:notIntersectWith(self.main_frame.dimen) then
         self:onClose()
         return true
@@ -2653,6 +2683,12 @@ function Glimpse:showViewer(whole_book_once)
             self.ui.view:onSetRotationMode(rotation)
             self:showViewer(whole_book_once)
         end,
+        -- a tap in KOReader's top-menu zone opens ONLY the top menu, over
+        -- the still-open drawer (ShowMenu, not onTapShowMenu, so the
+        -- bottom config menu never tags along regardless of show_bottom_menu)
+        on_show_menu = function()
+            self.ui:handleEvent(Event:new("ShowMenu"))
+        end,
     }
     self._viewer = viewer
     -- release the fallback archive handle together with the viewer; also
@@ -3187,6 +3223,16 @@ function Glimpse:_menuItems()
                     end,
                     callback = function()
                         G_reader_settings:flipNilOrTrue(CAPTIONS_KEY)
+                    end,
+                },
+                {
+                    text = _("Enable top menu tap zone"),
+                    help_text = _("While the viewer is open, a tap along the top edge of the screen opens KOReader's top menu (only the top menu, never the bottom one) over the drawer, instead of doing nothing. Turn off to keep the top edge inert."),
+                    checked_func = function()
+                        return G_reader_settings:nilOrTrue(TOP_MENU_KEY)
+                    end,
+                    callback = function()
+                        G_reader_settings:flipNilOrTrue(TOP_MENU_KEY)
                     end,
                 },
             },
