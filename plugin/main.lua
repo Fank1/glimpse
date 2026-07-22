@@ -81,6 +81,9 @@ end
 
 -- One dot per image, drawn on the pill's black background: current one
 -- white, the others 40% white (per the design SVG — same size, dimmed).
+-- `pitch` is set by the caller from the space actually available between
+-- the chrome buttons (so more images stay dots before the "n / N"
+-- fallback kicks in).
 local GlimpseDots = Widget:extend{
     nb = 1,
     cur = 1,
@@ -150,13 +153,17 @@ local function make_rounded_stencil(w, h, r, stroke, fill, outline)
     return bb
 end
 
--- The black stadium-shaped pill behind the dots / "n / N" counter, with a
--- 2px white stroke (per the design — keeps it legible over dark images).
+-- The stadium-shaped pill behind the dots / "n / N" counter. Default is
+-- the design's black fill + 2px white stroke (keeps the dots legible over
+-- dark images). `inverted` flips it to a white fill + black stroke: used
+-- for the "n / N" text fallback, which as a solid black block with white
+-- text drew far more attention than the light dots pill it replaces.
 local GlimpsePill = WidgetContainer:extend{
     inner = nil, -- content, centered
     padding_h = Screen:scaleBySize(9),
     height = Screen:scaleBySize(21),
     stroke = Screen:scaleBySize(2),
+    inverted = nil,
 }
 
 function GlimpsePill:init()
@@ -177,7 +184,9 @@ function GlimpsePill:paintTo(bb, x, y)
     self.dimen = Geom:new{ x = x, y = y, w = w, h = h }
     if not self._bg_bb or self._bg_w ~= w or self._bg_h ~= h then
         if self._bg_bb then self._bg_bb:free() end
-        self._bg_bb = make_rounded_stencil(w, h, h / 2, self.stroke, 0x00, 0xFF)
+        local fill = self.inverted and 0xFF or 0x00
+        local outline = self.inverted and 0x00 or 0xFF
+        self._bg_bb = make_rounded_stencil(w, h, h / 2, self.stroke, fill, outline)
         self._bg_w, self._bg_h = w, h
     end
     bb:alphablitFrom(self._bg_bb, x, y, 0, 0, w, h)
@@ -553,9 +562,6 @@ function GlimpsePopupMenu:init()
             bordersize = Screen:scaleBySize(2),
             radius = Screen:scaleBySize(9),
             padding = 0,
-            -- the last row otherwise butts straight against the rounded
-            -- bottom border with no breathing room
-            padding_bottom = Screen:scaleBySize(8),
             margin = 0,
             vg,
         },
@@ -619,7 +625,8 @@ end
 -- per-image render functions, captions and resource cleanup. We add:
 --   * horizontal swipe switches images while in fit-to-screen mode
 --     (when zoomed in, swipe keeps panning, as upstream)
---   * a dot indicator instead of the progress bar (up to dots_max images)
+--   * a dot indicator instead of the progress bar (as many dots as fit
+--     between the chrome buttons; an "n / N" counter beyond that)
 --   * a ⋯ overlay button with remove/rotate/invert actions
 -- Layout (Figma "New Design", drawn at 630×730): a full-height drawer
 -- anchored to the LEFT screen edge, ~80% of the screen wide, with a strip
@@ -637,7 +644,6 @@ local GlimpseViewer = ImageViewer:extend{
     on_rotate = nil,       -- function(rotation): re-layout + reopen
     get_pref = nil,        -- function(meta) -> per-image prefs {rotation=}
     set_pref = nil,        -- function(meta, key, value)
-    dots_max = 15,         -- more images than this: "n / N" text in the pill
     -- gallery masonry (⋯ → Gallery): fixed-width columns, variable heights
     gallery_cols = 3,
     -- No title bar and no button row: everything is image. Position comes
@@ -818,8 +824,24 @@ function GlimpseViewer:update()
         -- pill uses a larger inset so its centre still lines up
         local bottom_inset = self:_isOverFit()
             and btn_inset or Screen:scaleBySize(25)
+        -- centre the pill in the span between whatever sits on its left
+        -- (the Prev button, or the left inset) and the nearest right-side
+        -- chrome (⋯ / Back / Next), so a wide dot row expands to fill that
+        -- gap without ever overlapping a button
+        local left_bound = Screen:scaleBySize(16)
+        if self._nav_prev_frame and self._nav_prev_frame.overlap_offset then
+            left_bound = self._nav_prev_frame.overlap_offset[1]
+                + self._nav_prev_frame.size
+        end
+        local right_bound = image_area_w
+        for _, f in ipairs({ self._more_frame, self._close_frame,
+                self._nav_next_frame }) do
+            if f and f.overlap_offset then
+                right_bound = math.min(right_bound, f.overlap_offset[1])
+            end
+        end
         self._pill_frame.overlap_offset = {
-            math.floor((image_area_w - pill_size.w) / 2),
+            math.floor(left_bound + (right_bound - left_bound - pill_size.w) / 2),
             self.height - pill_size.h - bottom_inset,
         }
         table.insert(overlay, self._pill_frame)
@@ -1002,7 +1024,7 @@ function GlimpseViewer:_paintPanel(bb, x, y)
         -- vis0, so whatever the corner exposes always tapers smoothly,
         -- no matter how much of the buffer that turns out to be.
         local vis0 = self.shadow_overlap / swidth
-        local peak_level = night and 1.0 or 0.72
+        local peak_level = night and 1.0 or 0.62
         -- how far the boost tapers back to the plain curve on the VISIBLE
         -- (page) side of the panel edge
         local bump_width = 0.18
@@ -1332,7 +1354,7 @@ function GlimpseViewer:_new_image_wg()
     }
 end
 
--- Black pill: dots up to dots_max images, "n / N" text beyond. Rebuilt on
+-- Pill: as many dots as fit between the chrome buttons, "n / N" beyond. Rebuilt on
 -- every update (position/count/text all change together).
 function GlimpseViewer:_buildPill()
     if self._pill_frame then
@@ -1342,13 +1364,14 @@ function GlimpseViewer:_buildPill()
     self._pill_dots = nil -- only set back below when dots are actually built
     if self._gallery_mode then
         -- gallery: explicit "Page X of Y" — dots here would read as the
-        -- single-view image indicator and confuse the two states
+        -- single-view image indicator and confuse the two states. Inverted
+        -- (light pill, dark text), same as the "n / N" fallback below.
         local pages = self:_galleryPages()
         if pages <= 1 then return end
-        self._pill_frame = GlimpsePill:new{ inner = TextWidget:new{
+        self._pill_frame = GlimpsePill:new{ inverted = true, inner = TextWidget:new{
             text = T(_("Page %1 of %2"), self._gallery_page or 1, pages),
             face = Font:getFace("cfont", 12),
-            fgcolor = Blitbuffer.COLOR_WHITE,
+            fgcolor = Blitbuffer.COLOR_BLACK,
         } }
         return
     end
@@ -1363,26 +1386,60 @@ function GlimpseViewer:_buildPill()
         }
         return
     end
-    local inner
-    if self._images_list and self._images_list_nb > 1 then
-        if self._images_list_nb <= self.dots_max then
-            inner = GlimpseDots:new{
-                nb = self._images_list_nb,
-                cur = self._images_list_cur or 1,
-            }
-            self._pill_dots = inner
-        else
-            inner = TextWidget:new{
-                text = string.format("%d / %d",
-                    self._images_list_cur or 1, self._images_list_nb),
-                face = Font:getFace("cfont", 12),
-                fgcolor = Blitbuffer.COLOR_WHITE,
-            }
-        end
-    else
-        return
+    if not (self._images_list and self._images_list_nb > 1) then return end
+    local nb = self._images_list_nb
+    -- Fit as many dots as the space between the chrome buttons allows,
+    -- compressing the pitch down toward the dots' own diameter before
+    -- giving up. Only when even that won't fit do we fall back to "n / N".
+    local dot_r = GlimpseDots.dot_r
+    local natural_pitch = GlimpseDots.pitch
+    local min_pitch = 2 * dot_r + Screen:scaleBySize(2)
+    local budget = self:_pillAvailWidth() - 2 * GlimpsePill.padding_h
+    local pitch = natural_pitch
+    if nb > 1 then
+        -- pitch that would exactly fill the budget; keep small counts
+        -- compact by never exceeding the natural pitch
+        pitch = math.min(natural_pitch, (budget - 2 * dot_r) / (nb - 1))
     end
-    self._pill_frame = GlimpsePill:new{ inner = inner }
+    if pitch >= min_pitch then
+        local inner = GlimpseDots:new{
+            nb = nb,
+            cur = self._images_list_cur or 1,
+            pitch = math.floor(pitch),
+        }
+        self._pill_dots = inner
+        self._pill_frame = GlimpsePill:new{ inner = inner }
+    else
+        -- truly too many to fit even compressed: "n / N" counter, INVERTED
+        -- (light pill + dark text). As a solid black block with white text
+        -- it drew far more attention than the dots pill it stands in for.
+        self._pill_frame = GlimpsePill:new{
+            inverted = true,
+            inner = TextWidget:new{
+                text = string.format("%d / %d", self._images_list_cur or 1, nb),
+                face = Font:getFace("cfont", 12),
+                fgcolor = Blitbuffer.COLOR_BLACK,
+            },
+        }
+    end
+end
+
+-- Horizontal room the dot pill has between the bottom-row chrome buttons:
+-- from the Prev button's right edge (or the left inset when nav buttons
+-- are off) to the ⋯/more button's left edge, less a gap on each side.
+-- Mirrors the button geometry in update() so it can run before layout.
+function GlimpseViewer:_pillAvailWidth()
+    local image_area_w = self.width - self.image_right_gap
+    local btn_inset = Screen:scaleBySize(16)
+    local btn_gap = Screen:scaleBySize(10)
+    local btn_size = GlimpseMoreButton.size
+    local nav = G_reader_settings:isTrue(NAV_BUTTONS_KEY)
+        and self._images_list and (self._images_list_nb or 1) > 1
+    local more_left = nav
+        and (image_area_w - 2 * btn_size - btn_gap)
+        or (image_area_w - btn_size)
+    local left_bound = nav and (btn_inset + btn_size) or btn_inset
+    return more_left - left_bound - 2 * btn_gap
 end
 
 function GlimpseViewer:_buildMoreButton()
@@ -1672,18 +1729,22 @@ function GlimpseViewer:_showMoreMenu()
     local menu
     menu = GlimpsePopupMenu:new{
         items = items,
-        -- pop DOWN from the top-right ⋯ button instead of centering on
-        -- the screen: right edge on the button's right edge, below it
-        -- with a small gap (MovableContainer left-aligns on the anchor,
-        -- so shift left by our own width, which is known by the time
-        -- ensureAnchor calls this; second return = prefers_pop_down)
+        -- anchor to the ⋯ button (bottom row): right edge aligned to the
+        -- button's right edge (MovableContainer left-aligns on the anchor,
+        -- so shift left by our own width, known by the time ensureAnchor
+        -- calls this). The button sits near the screen bottom, so the menu
+        -- has no room below and pops UP — its bottom lands at the anchor's
+        -- y. Lifting y by `gap` above the button top puts a real margin
+        -- OUTSIDE the popup, between it and the button (an earlier attempt
+        -- put padding INSIDE, under the last row, which was wrong).
         anchor = function()
             local d = self._more_frame and self._more_frame.dimen
             if not d then return end
             local mov = menu.movable
             local w = mov and mov.dimen and mov.dimen.w or 0
-            return Geom:new{ x = d.x + d.w - w, y = d.y,
-                w = 0, h = d.h + Screen:scaleBySize(8) }, true
+            local gap = Screen:scaleBySize(10)
+            return Geom:new{ x = d.x + d.w - w, y = d.y - gap,
+                w = 0, h = d.h }, true
         end,
     }
     -- when the menu closes, also repaint the ⋯ button so its pressed
