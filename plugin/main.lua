@@ -1002,13 +1002,31 @@ function GlimpseViewer:_paintPanel(bb, x, y)
         -- vis0, so whatever the corner exposes always tapers smoothly,
         -- no matter how much of the buffer that turns out to be.
         local vis0 = self.shadow_overlap / swidth
-        local peak_level = night and 1.0 or 0.85
-        local bump_width = 0.18 -- in units of t; how far the bump reaches
+        local peak_level = night and 1.0 or 0.72
+        -- how far the boost tapers back to the plain curve on the VISIBLE
+        -- (page) side of the panel edge
+        local bump_width = 0.18
         for i = 0, swidth - 1 do
             local t = (i + 0.5) / swidth
             local orig_level = speak * origFrac(t)
-            local dist = math.abs(t - vis0) / bump_width
-            local bump = dist < 1 and 0.5 * (1 + math.cos(math.pi * dist)) or 0
+            -- boost = a bump peaking at peak_level right at the panel edge
+            -- (vis0). LEFT of the edge (t <= vis0) it stays FLAT at the peak:
+            -- that region is hidden under the opaque panel along straight
+            -- edges and only ever shows through the rounded-corner notches,
+            -- where a solid dark band that runs back under the panel reads
+            -- as the shadow continuing UNDER the overlay (the illusion the
+            -- user wanted). RIGHT of the edge it tapers to the plain curve
+            -- over bump_width via a raised cosine. Both pieces meet at vis0
+            -- at exactly peak_level with slope ~0, so the whole curve is
+            -- seamless — a discontinuity here is what broke the corner in
+            -- v0.1.13 (the notch exposes both sides of the edge at once).
+            local bump
+            if t <= vis0 then
+                bump = 1
+            else
+                local dist = (t - vis0) / bump_width
+                bump = dist < 1 and 0.5 * (1 + math.cos(math.pi * dist)) or 0
+            end
             -- desired LOCAL darkness at this column, 0..255 — compared
             -- against the tiled Bayer matrix per-pixel below rather than
             -- written as a per-pixel alpha, so the result is always fully
