@@ -795,7 +795,7 @@ function GlimpseViewer:update()
         self._close_frame = GlimpseTextButton:new{
             text = _("Back"),
             bold = true,
-            icon = _PLUGIN_DIR .. "/assets/prev.svg",
+            icon = _PLUGIN_DIR .. "/assets/back.svg",
         }
         local size = self._close_frame:getSize()
         local x = self._nav_next_frame
@@ -1711,6 +1711,7 @@ function GlimpseViewer:_showMoreMenu()
     if (self._cur_rotation or 0) ~= 0 then
         items[#items + 1] = {
             text = _("Reset Rotation"),
+            icon = _PLUGIN_DIR .. "/assets/reset-rotation.svg",
             callback = function() self:_setRotation(0) end,
         }
     end
