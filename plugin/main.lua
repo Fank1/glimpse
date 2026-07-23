@@ -956,34 +956,6 @@ function GlimpseViewer:update()
         }
         table.insert(overlay, self._pill_frame)
     end
-    -- read-so-far scope hint: let the user know reference images exist
-    -- further in the book (held back here, not spoiled) without revealing
-    -- them. Dim, informational; sits one line above the highest bottom
-    -- chrome (the ⋯ button), centred on the image area. Single view only —
-    -- the gallery heading already carries this count.
-    if self._ahead_hint then
-        self._ahead_hint:free()
-        self._ahead_hint = nil
-    end
-    local ahead = self.gallery_hidden_count or 0
-    if not self._gallery_mode and ahead > 0 and self._more_frame
-            and self._more_frame.overlap_offset then
-        local txt = ahead == 1
-            and _("1 more image later in the book")
-            or T(_("%1 more images later in the book"), ahead)
-        self._ahead_hint = TextWidget:new{
-            text = txt,
-            face = Font:getFace("cfont", 14),
-            fgcolor = Blitbuffer.COLOR_DARK_GRAY,
-            max_width = image_area_w - 2 * Screen:scaleBySize(16),
-        }
-        local hs = self._ahead_hint:getSize()
-        self._ahead_hint.overlap_offset = {
-            math.floor((image_area_w - hs.w) / 2),
-            self._more_frame.overlap_offset[2] - Screen:scaleBySize(6) - hs.h,
-        }
-        table.insert(overlay, self._ahead_hint)
-    end
     -- caption overlay, top-left on the image (toggleable, on by default)
     if self._caption_wg then
         self._caption_wg:free()
@@ -1375,10 +1347,6 @@ function GlimpseViewer:onCloseWidget()
     if self._caption_wg then
         self._caption_wg:free()
         self._caption_wg = nil
-    end
-    if self._ahead_hint then
-        self._ahead_hint:free()
-        self._ahead_hint = nil
     end
     if self._thumb_bbs then
         for _, t in pairs(self._thumb_bbs) do
@@ -1852,12 +1820,11 @@ function GlimpseViewer:_showMoreMenu()
         },
         {
             -- scope switch: reflects the current view, tap flips it and
-            -- reopens. Neutral wording (no "spoiler") to match the "N more
-            -- later in the book" hint the read-so-far view shows. No icon
-            -- (it reads as a state line; goto.svg is already Show in Book).
+            -- reopens. No icon (it reads as a state line; goto.svg is
+            -- already Show in Book).
             text = self.scope == "whole_book"
-                and _("Showing: whole book")
-                or _("Showing: up to here"),
+                and _("Mode: All images")
+                or _("Mode: Images up to here"),
             callback = function()
                 if self.on_toggle_scope then self.on_toggle_scope() end
             end,

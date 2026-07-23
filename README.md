@@ -50,11 +50,10 @@ Updates → *Check for updates*.
   size already (up to 150%, never more than actually fits); double-tap
   to zoom in further (2× that) and again to return. A "Reset" button only
   appears once you're actually zoomed past the resting view.
-- **Scope switch (⋯ menu):** the viewer's ⋯ menu shows *Showing: up to
-  here* / *Showing: whole book*; tap it to flip the mode and reopen on the
-  same image where possible. When you're browsing only up to your current
-  chapter and more reference images exist further on, the viewer notes how
-  many ("*N more images later in the book*") without revealing them.
+- **Mode switch (⋯ menu):** the viewer's ⋯ menu shows *Mode: Images up to
+  here* / *Mode: All images*; tap it to flip the mode and reopen on the
+  same image where possible. The gallery heading tells you how many images
+  the chapter scope is holding back.
 
 ### Settings (Tools → Glimpse)
 
