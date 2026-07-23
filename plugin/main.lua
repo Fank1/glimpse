@@ -951,7 +951,7 @@ function GlimpseViewer:update()
             self.height - size.h - btn_inset,
         }
         table.insert(overlay, self._close_frame)
-    elseif self._more_frame then
+    elseif self._more_frame and self:_hasQuickActions() then
         local more_size = self._more_frame:getSize()
         local more_x, more_y
         if self._nav_next_frame then
@@ -966,6 +966,13 @@ function GlimpseViewer:update()
         end
         self._more_frame.overlap_offset = { more_x, more_y }
         table.insert(overlay, self._more_frame)
+    elseif self._more_frame then
+        -- every Quick Action turned off: hide the ⋯ button entirely. Clear
+        -- its geometry so the pill reclaims the space (the right-bound loop
+        -- skips a nil overlap_offset) and a tap where it used to be can't hit
+        -- a stale dimen (see onTap).
+        self._more_frame.overlap_offset = nil
+        self._more_frame.dimen = nil
     end
     if self._pill_frame then
         local pill_size = self._pill_frame:getSize()
@@ -1577,9 +1584,15 @@ function GlimpseViewer:_pillAvailWidth()
     local btn_size = GlimpseMoreButton.size
     local nav = G_reader_settings:isTrue(NAV_BUTTONS_KEY)
         and self._images_list and (self._images_list_nb or 1) > 1
-    local more_left = nav
-        and (image_area_w - 2 * btn_size - btn_gap)
-        or (image_area_w - btn_size)
+    local more_left
+    if nav then
+        more_left = image_area_w - 2 * btn_size - btn_gap
+    elseif self:_hasQuickActions() then
+        more_left = image_area_w - btn_size
+    else
+        -- ⋯ hidden (no Quick Actions) and no Next: the pill gets the full width
+        more_left = image_area_w
+    end
     local left_bound = nav and (btn_inset + btn_size) or btn_inset
     return more_left - left_bound - 2 * btn_gap
 end
@@ -1841,6 +1854,25 @@ function GlimpseViewer:_buildGallery()
     self.image_container = grid
 end
 
+-- Would the ⋯ popup have at least one row? Mirrors the gating in
+-- _showMoreMenu so update() can hide the ⋯ button entirely when the user
+-- has turned every Quick Action off (restore only counts when something is
+-- actually hidden; the rest are unconditional).
+function GlimpseViewer:_hasQuickActions()
+    for _, d in ipairs(QUICK_ACTIONS) do
+        if _quick_enabled(d.key) then
+            if d.key == "restore" then
+                if self.hidden_count and self.hidden_count() > 0 then
+                    return true
+                end
+            else
+                return true
+            end
+        end
+    end
+    return false
+end
+
 -- The ⋯ menu (from the design): gallery, remove from collection, rotate
 -- 90° (remembered per image, plus a reset once rotated), show in book,
 -- invert in night mode (the global setting, also in the plugin menu).
@@ -1932,14 +1964,9 @@ function GlimpseViewer:_showMoreMenu()
             callback = function() self:_toggleInvert() end,
         }
     end
-    if #items == 0 then
-        -- every quick action disabled: nothing to show. Point the user at
-        -- the config rather than popping an empty card.
-        UIManager:show(Notification:new{
-            text = _("No Quick Actions enabled (Glimpse menu → Quick Actions)."),
-        })
-        return
-    end
+    -- Defensive: with every Quick Action off the ⋯ button is hidden (see
+    -- update()/_hasQuickActions), so this normally can't be reached empty.
+    if #items == 0 then return end
     local menu
     menu = GlimpsePopupMenu:new{
         items = items,
