@@ -910,13 +910,18 @@ function GlimpseViewer:update()
         table.insert(overlay, self._close_frame)
     elseif self._more_frame then
         local more_size = self._more_frame:getSize()
-        local more_x = self._nav_next_frame
-            and (self._nav_next_frame.overlap_offset[1] - btn_gap - more_size.w)
-            or (image_area_w - more_size.w)
-        self._more_frame.overlap_offset = {
-            more_x,
-            self.height - more_size.h - btn_inset,
-        }
+        local more_x, more_y
+        if self._nav_next_frame then
+            -- nav on: ⋯ stacks directly ABOVE Next (same right edge), with
+            -- the same gap it used to keep to Next's left now below it
+            more_x = self._nav_next_frame.overlap_offset[1]
+            more_y = self._nav_next_frame.overlap_offset[2] - btn_gap - more_size.h
+        else
+            -- nav off: ⋯ takes the bottom-right slot Next would have used
+            more_x = image_area_w - more_size.w
+            more_y = self.height - more_size.h - btn_inset
+        end
+        self._more_frame.overlap_offset = { more_x, more_y }
         table.insert(overlay, self._more_frame)
     end
     if self._pill_frame then
