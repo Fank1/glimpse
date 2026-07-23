@@ -1820,11 +1820,11 @@ function GlimpseViewer:_showMoreMenu()
         },
         {
             -- scope switch: reflects the current view, tap flips it and
-            -- reopens. No icon (it reads as a state line; goto.svg is
-            -- already Show in Book).
+            -- reopens
             text = self.scope == "whole_book"
                 and _("Mode: All images")
                 or _("Mode: Images up to here"),
+            icon = _PLUGIN_DIR .. "/assets/mode.svg",
             callback = function()
                 if self.on_toggle_scope then self.on_toggle_scope() end
             end,
