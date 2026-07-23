@@ -40,13 +40,21 @@ Updates → *Check for updates*.
   Glimpse*.
 - **Gesture (recommended):** Settings → Taps and gestures → Gesture manager →
   pick a gesture → *Reader* → **Open Glimpse**. One-touch access is
-  the whole point of the plugin.
+  the whole point of the plugin. The Glimpse menu's top row shows which
+  gesture (if any) currently opens it; tap that row for the exact steps,
+  and the first time you open Glimpse from the menu without a gesture bound
+  you get a one-time reminder to set one.
 - **Dot indicator:** tap it to jump near that image directly, not just
   swipe through one at a time; its tap target is padded well beyond the
   dots themselves. A small image opens a bit larger than its native
   size already (up to 150%, never more than actually fits); double-tap
   to zoom in further (2× that) and again to return. A "Reset" button only
   appears once you're actually zoomed past the resting view.
+- **Scope switch (⋯ menu):** the viewer's ⋯ menu shows *Showing: up to
+  here* / *Showing: whole book*; tap it to flip the mode and reopen on the
+  same image where possible. When you're browsing only up to your current
+  chapter and more reference images exist further on, the viewer notes how
+  many ("*N more images later in the book*") without revealing them.
 
 ### Settings (Tools → Glimpse)
 

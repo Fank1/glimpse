@@ -61,6 +61,7 @@ local INVERT_KEY = "glimpse_invert_night"
 local NAV_BUTTONS_KEY = "glimpse_nav_buttons" -- prev/next buttons, off by default
 local CAPTIONS_KEY = "glimpse_captions"        -- caption overlay, ON by default (nilOrTrue)
 local TOP_MENU_KEY = "glimpse_top_menu_zone"   -- tap top strip → KOReader top menu, ON by default (nilOrTrue)
+local GESTURE_TIP_KEY = "glimpse_gesture_tip_shown" -- one-time menu-open nudge to bind a gesture
 
 -- ── overlay chrome: dot pill and ⋯ button (from the Figma design) ──────────
 
@@ -742,6 +743,8 @@ local GlimpseViewer = ImageViewer:extend{
     on_show_in_book = nil, -- function(meta): jump the reader to the image
     on_rotate = nil,       -- function(rotation): re-layout + reopen
     on_show_menu = nil,    -- function(): open KOReader's top menu (only)
+    scope = nil,           -- effective scope: "read_so_far" | "whole_book"
+    on_toggle_scope = nil, -- function(): flip the scope setting and reopen
     get_pref = nil,        -- function(meta) -> per-image prefs {rotation=}
     set_pref = nil,        -- function(meta, key, value)
     -- gallery masonry (⋯ → Gallery): fixed-width columns, variable heights
@@ -952,6 +955,34 @@ function GlimpseViewer:update()
             self.height - pill_size.h - bottom_inset,
         }
         table.insert(overlay, self._pill_frame)
+    end
+    -- read-so-far scope hint: let the user know reference images exist
+    -- further in the book (held back here, not spoiled) without revealing
+    -- them. Dim, informational; sits one line above the highest bottom
+    -- chrome (the ⋯ button), centred on the image area. Single view only —
+    -- the gallery heading already carries this count.
+    if self._ahead_hint then
+        self._ahead_hint:free()
+        self._ahead_hint = nil
+    end
+    local ahead = self.gallery_hidden_count or 0
+    if not self._gallery_mode and ahead > 0 and self._more_frame
+            and self._more_frame.overlap_offset then
+        local txt = ahead == 1
+            and _("1 more image later in the book")
+            or T(_("%1 more images later in the book"), ahead)
+        self._ahead_hint = TextWidget:new{
+            text = txt,
+            face = Font:getFace("cfont", 14),
+            fgcolor = Blitbuffer.COLOR_DARK_GRAY,
+            max_width = image_area_w - 2 * Screen:scaleBySize(16),
+        }
+        local hs = self._ahead_hint:getSize()
+        self._ahead_hint.overlap_offset = {
+            math.floor((image_area_w - hs.w) / 2),
+            self._more_frame.overlap_offset[2] - Screen:scaleBySize(6) - hs.h,
+        }
+        table.insert(overlay, self._ahead_hint)
     end
     -- caption overlay, top-left on the image (toggleable, on by default)
     if self._caption_wg then
@@ -1344,6 +1375,10 @@ function GlimpseViewer:onCloseWidget()
     if self._caption_wg then
         self._caption_wg:free()
         self._caption_wg = nil
+    end
+    if self._ahead_hint then
+        self._ahead_hint:free()
+        self._ahead_hint = nil
     end
     if self._thumb_bbs then
         for _, t in pairs(self._thumb_bbs) do
@@ -1814,6 +1849,18 @@ function GlimpseViewer:_showMoreMenu()
             text = _("Hide Image"),
             icon = _PLUGIN_DIR .. "/assets/hide.svg",
             callback = function() self:_hideCurrentImage() end,
+        },
+        {
+            -- scope switch: reflects the current view, tap flips it and
+            -- reopens. Neutral wording (no "spoiler") to match the "N more
+            -- later in the book" hint the read-so-far view shows. No icon
+            -- (it reads as a state line; goto.svg is already Show in Book).
+            text = self.scope == "whole_book"
+                and _("Showing: whole book")
+                or _("Showing: up to here"),
+            callback = function()
+                if self.on_toggle_scope then self.on_toggle_scope() end
+            end,
         },
         {
             text = _("Rotate 90°"),
@@ -2756,6 +2803,12 @@ function Glimpse:showViewer(whole_book_once)
         end
     end
 
+    -- effective scope of THIS opening: whole_book_once (the empty-state
+    -- "search whole book" path) shows everything even while the setting
+    -- stays read_so_far, so the viewer's scope label must reflect that.
+    local effective_scope = (self:getScope() == "read_so_far"
+        and not whole_book_once) and "read_so_far" or "whole_book"
+
     local viewer
     viewer = GlimpseViewer:new{
         image = images_list,
@@ -2798,6 +2851,19 @@ function Glimpse:showViewer(whole_book_once)
         -- bottom config menu never tags along regardless of show_bottom_menu)
         on_show_menu = function()
             self.ui:handleEvent(Event:new("ShowMenu"))
+        end,
+        scope = effective_scope,
+        -- ⋯ → "Showing: …": flip the persistent scope to the opposite of
+        -- what's on screen, then close and reopen so the image list rebuilds
+        -- (onClose runs onCloseWidget synchronously, clearing self._viewer,
+        -- so showViewer opens fresh rather than toggling itself shut).
+        -- glimpse_last lands us on the same image when it's still in scope.
+        on_toggle_scope = function()
+            local new_scope = effective_scope == "whole_book"
+                and "read_so_far" or "whole_book"
+            G_reader_settings:saveSetting(SCOPE_KEY, new_scope)
+            if self._viewer then self._viewer:onClose() end
+            self:showViewer()
         end,
     }
     self._viewer = viewer
@@ -3180,6 +3246,21 @@ end
 -- (reader vs file manager). Keys are prettified ("hold_top_left_corner"
 -- → "Hold top left corner"); the friendly-name table is a local of the
 -- gestures plugin and not reachable.
+-- Is any gesture in the current context bound to open Glimpse? Used to
+-- gate the one-time "bind a gesture" nudge (no point nagging someone who
+-- already has one).
+function Glimpse:_hasGesture()
+    local g = self.ui and self.ui.gestures
+    if g and type(g.gestures) == "table" then
+        for _, actions in pairs(g.gestures) do
+            if type(actions) == "table" and actions.glimpse_show then
+                return true
+            end
+        end
+    end
+    return false
+end
+
 function Glimpse:_gestureLabel()
     local g = self.ui and self.ui.gestures
     local found = {}
@@ -3212,11 +3293,19 @@ function Glimpse:_menuItems()
     end
     return {
         {
-            -- read-only info row: which gesture opens Glimpse here
-            -- (dimmed so it doesn't read as an action)
+            -- which gesture opens Glimpse here; tap for the how-to (KOReader
+            -- has no API to deep-link the gesture manager, so we spell out
+            -- the path). This is the plugin's main onboarding affordance —
+            -- one-touch access is the whole point — so it's an action, not a
+            -- dimmed label.
             text_func = function() return self:_gestureLabel() end,
-            enabled_func = function() return false end,
+            keep_menu_open = true,
             help_text = _("Assign or change it under Taps and gestures → Gesture manager → (pick a gesture) → Reader → 'Open Glimpse'."),
+            callback = function()
+                UIManager:show(InfoMessage:new{
+                    text = _("To open Glimpse with a single gesture:\n\nSettings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'."),
+                })
+            end,
         },
         {
             text = _("Open Glimpse"),
@@ -3229,6 +3318,16 @@ function Glimpse:_menuItems()
                 -- lands on top of the viewer
                 UIManager:scheduleIn(0.3, function()
                     self:showViewer()
+                    -- first menu-open without a gesture bound: nudge once,
+                    -- on top of the now-open drawer (gated on the viewer
+                    -- actually opening, so unsupported/empty books don't tip)
+                    if self._viewer and not self:_hasGesture()
+                            and not G_reader_settings:isTrue(GESTURE_TIP_KEY) then
+                        G_reader_settings:saveSetting(GESTURE_TIP_KEY, true)
+                        UIManager:show(InfoMessage:new{
+                            text = _("Tip: open Glimpse instantly with a gesture.\n\nSet one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n\n(This tip is shown only once.)"),
+                        })
+                    end
                 end)
             end,
         },
