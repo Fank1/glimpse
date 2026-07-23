@@ -62,6 +62,44 @@ local NAV_BUTTONS_KEY = "glimpse_nav_buttons" -- prev/next buttons, off by defau
 local CAPTIONS_KEY = "glimpse_captions"        -- caption overlay, ON by default (nilOrTrue)
 local TOP_MENU_KEY = "glimpse_top_menu_zone"   -- tap top strip → KOReader top menu, ON by default (nilOrTrue)
 local GESTURE_TIP_KEY = "glimpse_gesture_tip_shown" -- one-time menu-open nudge to bind a gesture
+-- Which actions appear in the viewer's ⋯ popup ("Quick Actions", configured
+-- from the plugin menu). Table order = popup order; `default` = shown unless
+-- the user has toggled it. The six that were always in the popup default ON;
+-- the three promoted from the plugin menu (restore/prevnext/captions) default
+-- OFF, so out of the box the popup is exactly what it was before.
+local QUICK_ACTIONS_KEY = "glimpse_quick_actions"
+local QUICK_ACTIONS = {
+    { key = "gallery",    default = true  },
+    { key = "hide",       default = true  },
+    { key = "mode",       default = true  },
+    { key = "rotate",     default = true  },
+    { key = "showinbook", default = true  },
+    { key = "restore",    default = false },
+    { key = "prevnext",   default = false },
+    { key = "captions",   default = false },
+    { key = "invert",     default = true  },
+}
+local function _quick_enabled(key)
+    local cfg = G_reader_settings:readSetting(QUICK_ACTIONS_KEY)
+    if type(cfg) == "table" and cfg[key] ~= nil then return cfg[key] end
+    for _, d in ipairs(QUICK_ACTIONS) do
+        if d.key == key then return d.default end
+    end
+    return false
+end
+local function _quick_label(key)
+    return ({
+        gallery    = _("Gallery"),
+        hide       = _("Hide Image"),
+        mode       = _("Mode switch"),
+        rotate     = _("Rotate 90°"),
+        showinbook = _("Show in Book"),
+        restore    = _("Restore hidden images"),
+        prevnext   = _("Show Prev/Next Buttons"),
+        captions   = _("Show Image Captions"),
+        invert     = _("Invert in Night Mode"),
+    })[key] or key
+end
 
 -- ── overlay chrome: dot pill and ⋯ button (from the Figma design) ──────────
 
@@ -745,6 +783,8 @@ local GlimpseViewer = ImageViewer:extend{
     on_show_menu = nil,    -- function(): open KOReader's top menu (only)
     scope = nil,           -- effective scope: "read_so_far" | "whole_book"
     on_toggle_scope = nil, -- function(): flip the scope setting and reopen
+    hidden_count = nil,    -- function() -> number of per-book hidden images
+    on_restore_hidden = nil, -- function(): restore hidden images and reopen
     get_pref = nil,        -- function(meta) -> per-image prefs {rotation=}
     set_pref = nil,        -- function(meta, key, value)
     -- gallery masonry (⋯ → Gallery): fixed-width columns, variable heights
@@ -1807,20 +1847,28 @@ end
 -- The gallery has no ⋯ button (it shows a Close button instead), so this
 -- only ever runs on the single-image view.
 function GlimpseViewer:_showMoreMenu()
-    local items = {
-        {
+    -- Which rows appear is user-configurable ("Quick Actions" in the plugin
+    -- menu, see QUICK_ACTIONS). Order here = the canonical popup order; each
+    -- block is gated on its own flag. Toggle rows (prevnext/captions/invert)
+    -- draw a checkbox in the icon column and flip the matching setting live.
+    local items = {}
+    if _quick_enabled("gallery") then
+        items[#items + 1] = {
             text = _("Gallery"),
             icon = _PLUGIN_DIR .. "/assets/gallery.svg",
             callback = function() self:_enterGallery() end,
-        },
-        {
+        }
+    end
+    if _quick_enabled("hide") then
+        items[#items + 1] = {
             text = _("Hide Image"),
             icon = _PLUGIN_DIR .. "/assets/hide.svg",
             callback = function() self:_hideCurrentImage() end,
-        },
-        {
-            -- scope switch: reflects the current view, tap flips it and
-            -- reopens
+        }
+    end
+    if _quick_enabled("mode") then
+        items[#items + 1] = {
+            -- scope switch: reflects the current view, tap flips it and reopens
             text = self.scope == "whole_book"
                 and _("Mode: All images")
                 or _("Mode: Images up to here"),
@@ -1828,32 +1876,70 @@ function GlimpseViewer:_showMoreMenu()
             callback = function()
                 if self.on_toggle_scope then self.on_toggle_scope() end
             end,
-        },
-        {
+        }
+    end
+    if _quick_enabled("rotate") then
+        items[#items + 1] = {
             text = _("Rotate 90°"),
             icon = _PLUGIN_DIR .. "/assets/rotate.svg",
             callback = function() self:_rotateCurrent() end,
-        },
-    }
-    if (self._cur_rotation or 0) ~= 0 then
+        }
+        -- Reset Rotation rides with Rotate, shown only while rotated
+        if (self._cur_rotation or 0) ~= 0 then
+            items[#items + 1] = {
+                text = _("Reset Rotation"),
+                icon = _PLUGIN_DIR .. "/assets/reset-rotation.svg",
+                callback = function() self:_setRotation(0) end,
+            }
+        end
+    end
+    if _quick_enabled("showinbook") then
         items[#items + 1] = {
-            text = _("Reset Rotation"),
-            icon = _PLUGIN_DIR .. "/assets/reset-rotation.svg",
-            callback = function() self:_setRotation(0) end,
+            text = _("Show in Book"),
+            icon = _PLUGIN_DIR .. "/assets/goto.svg",
+            callback = function() self:_showInBook() end,
         }
     end
-    items[#items + 1] = {
-        text = _("Show in Book"),
-        icon = _PLUGIN_DIR .. "/assets/goto.svg",
-        callback = function() self:_showInBook() end,
-    }
-    items[#items + 1] = {
-        -- checkbox drawn in the icon column (see GlimpseMenuRow),
-        -- so it lines up with the icons above it
-        text = _("Invert in Night Mode"),
-        check = G_reader_settings:isTrue(INVERT_KEY),
-        callback = function() self:_toggleInvert() end,
-    }
+    if _quick_enabled("restore") and self.hidden_count
+            and self.hidden_count() > 0 then
+        items[#items + 1] = {
+            text = _("Restore hidden images"),
+            callback = function()
+                if self.on_restore_hidden then self.on_restore_hidden() end
+            end,
+        }
+    end
+    if _quick_enabled("prevnext") then
+        items[#items + 1] = {
+            text = _("Show Prev/Next Buttons"),
+            check = G_reader_settings:isTrue(NAV_BUTTONS_KEY),
+            callback = function() self:_togglePrevNext() end,
+        }
+    end
+    if _quick_enabled("captions") then
+        items[#items + 1] = {
+            text = _("Show Image Captions"),
+            check = G_reader_settings:nilOrTrue(CAPTIONS_KEY),
+            callback = function() self:_toggleCaptions() end,
+        }
+    end
+    if _quick_enabled("invert") then
+        items[#items + 1] = {
+            -- checkbox drawn in the icon column (see GlimpseMenuRow),
+            -- so it lines up with the icons above it
+            text = _("Invert in Night Mode"),
+            check = G_reader_settings:isTrue(INVERT_KEY),
+            callback = function() self:_toggleInvert() end,
+        }
+    end
+    if #items == 0 then
+        -- every quick action disabled: nothing to show. Point the user at
+        -- the config rather than popping an empty card.
+        UIManager:show(Notification:new{
+            text = _("No Quick Actions enabled (Glimpse menu → Quick Actions)."),
+        })
+        return
+    end
     local menu
     menu = GlimpsePopupMenu:new{
         items = items,
@@ -1940,6 +2026,20 @@ function GlimpseViewer:_toggleInvert()
     if type(self.image) == "function" then
         self.image = self.image()
     end
+    self:update()
+end
+
+-- ⋯ toggle rows for the two viewer-appearance settings (also in the plugin
+-- menu): flip the global setting and re-lay-out so the change shows at once.
+function GlimpseViewer:_togglePrevNext()
+    G_reader_settings:saveSetting(NAV_BUTTONS_KEY,
+        not G_reader_settings:isTrue(NAV_BUTTONS_KEY))
+    self:update()
+end
+
+function GlimpseViewer:_toggleCaptions()
+    G_reader_settings:saveSetting(CAPTIONS_KEY,
+        not G_reader_settings:nilOrTrue(CAPTIONS_KEY))
     self:update()
 end
 
@@ -2832,6 +2932,14 @@ function Glimpse:showViewer(whole_book_once)
             if self._viewer then self._viewer:onClose() end
             self:showViewer()
         end,
+        -- ⋯ → Restore hidden images (only offered when some are hidden):
+        -- clear the per-book hide list, then close+reopen so they return.
+        hidden_count = function() return self:_hiddenCount() end,
+        on_restore_hidden = function()
+            self.ui.doc_settings:delSetting("glimpse_hidden")
+            if self._viewer then self._viewer:onClose() end
+            self:showViewer()
+        end,
     }
     self._viewer = viewer
     -- release the fallback archive handle together with the viewer; also
@@ -3335,6 +3443,28 @@ function Glimpse:_menuItems()
                 G_reader_settings:saveSetting(NAV_BUTTONS_KEY,
                     not G_reader_settings:isTrue(NAV_BUTTONS_KEY))
             end,
+        },
+        {
+            text = _("Quick Actions"),
+            help_text = _("Choose which actions appear in the viewer's ⋯ menu. Reset Rotation is automatic (shown while an image is rotated) and Restore hidden images only appears when some are hidden."),
+            sub_item_table = (function()
+                local t = {}
+                for _, d in ipairs(QUICK_ACTIONS) do
+                    local key = d.key
+                    t[#t + 1] = {
+                        text = _quick_label(key),
+                        checked_func = function() return _quick_enabled(key) end,
+                        keep_menu_open = true,
+                        callback = function()
+                            local cfg = G_reader_settings:readSetting(QUICK_ACTIONS_KEY)
+                            if type(cfg) ~= "table" then cfg = {} end
+                            cfg[key] = not _quick_enabled(key)
+                            G_reader_settings:saveSetting(QUICK_ACTIONS_KEY, cfg)
+                        end,
+                    }
+                end
+                return t
+            end)(),
         },
         {
             text_func = function()
