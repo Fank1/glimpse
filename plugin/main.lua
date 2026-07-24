@@ -2785,11 +2785,19 @@ function Glimpse:showViewer(whole_book_once)
     end
 
     if #imgs == 0 then
-        if self:getScope() == "read_so_far" and not whole_book_once then
-            -- "yet" hints that more may unlock as you read; offer a
-            -- one-time whole-book look without changing the setting
+        -- Only offer "Search whole book" when the read-so-far scope is
+        -- actually holding images back (scope_hidden > 0) — i.e. the search
+        -- WILL return something. Offering it when the whole book has none
+        -- (scope_hidden == 0) misleads: it implies images exist, then finds
+        -- nothing. In that case just say so plainly.
+        if self:getScope() == "read_so_far" and not whole_book_once
+                and scope_hidden > 0 then
+            local msg = scope_hidden == 1
+                and _("No images up to here yet — 1 further in the book.")
+                or T(_("No images up to here yet — %1 further in the book."),
+                    scope_hidden)
             UIManager:show(ConfirmBox:new{
-                text = _("No images to show yet."),
+                text = msg,
                 ok_text = _("Search whole book"),
                 ok_callback = function()
                     self:showViewer(true)
