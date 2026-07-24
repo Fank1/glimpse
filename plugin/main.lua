@@ -404,9 +404,10 @@ end
 local GlimpseCaption = Widget:extend{
     text = "",
     max_width = 0,
-    pad_left = Screen:scaleBySize(4),  -- left text inset (tight to the corner)
+    pad_left = Screen:scaleBySize(6),  -- left text inset (tight to the corner)
     pad_right = Screen:scaleBySize(8), -- right text inset
-    pad_y = 0,                         -- vertical text inset (flush top/bottom)
+    pad_top = 0,                       -- top text inset (flush)
+    pad_bottom = Screen:scaleBySize(2),-- bottom text inset
     radius = Screen:scaleBySize(10),   -- bottom-right corner only
 }
 
@@ -424,7 +425,7 @@ function GlimpseCaption:getSize()
     local s = self._text:getSize()
     return Geom:new{
         w = s.w + self.pad_left + self.pad_right,
-        h = s.h + 2 * self.pad_y,
+        h = s.h + self.pad_top + self.pad_bottom,
     }
 end
 
@@ -455,7 +456,7 @@ function GlimpseCaption:paintTo(bb, x, y)
     local w, h = self.dimen.w, self.dimen.h
     if not self._bg_bb then self:_buildBg(w, h) end
     bb:alphablitFrom(self._bg_bb, x, y, 0, 0, w, h)
-    self._text:paintTo(bb, x + self.pad_left, y + self.pad_y)
+    self._text:paintTo(bb, x + self.pad_left, y + self.pad_top)
 end
 
 function GlimpseCaption:free()
