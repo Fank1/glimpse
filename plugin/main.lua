@@ -395,87 +395,67 @@ function GlimpseMoreButton:free()
     end
 end
 
--- Caption overlay: white text with a 2px black outline (offset copies of
--- the text in black under a white copy) over a dithered dark scrim, so it
--- stays readable over any image. Painted in day polarity — night mode's
--- inversion turns it into black text + white outline over a light scrim,
--- keeping contrast either way. Truncates to max_width.
+-- Caption overlay: the image's caption tucked into the top-left corner of
+-- the drawer as a solid tab — white fill, black text, ONLY the bottom-right
+-- corner rounded (the other three sit flush in the screen corner). Painted
+-- in DAY polarity, so night mode's framebuffer inversion flips it to a black
+-- tab with white text automatically — the wanted look holds both ways with
+-- no per-mode branching. Truncates to max_width.
 local GlimpseCaption = Widget:extend{
     text = "",
     max_width = 0,
-    outline = 2,
-    pad = Screen:scaleBySize(7),  -- scrim cushion around the text box
-    scrim_left = 0.62,            -- dot density behind the start of the text
-    scrim_right = 0.18,           -- ... fading across to the right
+    pad = Screen:scaleBySize(10),      -- text inset inside the tab
+    radius = Screen:scaleBySize(10),   -- bottom-right corner only
 }
 
 function GlimpseCaption:init()
-    local face = Font:getFace("cfont", 14)
-    self._black = TextWidget:new{
-        text = self.text, face = face, bold = true,
-        fgcolor = Blitbuffer.COLOR_BLACK, max_width = self.max_width,
-    }
-    self._white = TextWidget:new{
-        text = self.text, face = face, bold = true,
-        fgcolor = Blitbuffer.COLOR_WHITE, max_width = self.max_width,
+    self._text = TextWidget:new{
+        text = self.text,
+        face = Font:getFace("cfont", 14),
+        bold = true,
+        fgcolor = Blitbuffer.COLOR_BLACK,
+        max_width = self.max_width,
     }
 end
 
 function GlimpseCaption:getSize()
-    local s = self._white:getSize()
-    local extra = 2 * self.outline + 2 * self.pad
-    return Geom:new{ w = s.w + extra, h = s.h + extra }
+    local s = self._text:getSize()
+    return Geom:new{ w = s.w + 2 * self.pad, h = s.h + 2 * self.pad }
 end
 
--- Dithered dark backdrop behind the caption text: a horizontal gradient
--- (denser at the left, where the text starts) feathered to transparent
--- at all four edges over `pad`, so it reads as a soft scrim rather than a
--- hard box. Black dots in day polarity; night's fb inversion flips it to
--- a light backdrop behind the then-dark text — contrast holds both ways.
-function GlimpseCaption:_buildScrim(w, h)
-    self._scrim_bb = Blitbuffer.new(w, h, Blitbuffer.TYPE_BBRGB32)
-    local pad = self.pad
-    for px = 0, w - 1 do
-        local gx = w > 1 and px / (w - 1) or 0
-        local base = self.scrim_left + (self.scrim_right - self.scrim_left) * gx
-        local fx = math.min(px, w - 1 - px) / pad
-        if fx > 1 then fx = 1 end
-        local col = (px % 8) + 1
-        for py = 0, h - 1 do
-            local fy = math.min(py, h - 1 - py) / pad
-            if fy > 1 then fy = 1 end
-            local level = base * fx * fy * 255
-            local thr = (SHADOW_BAYER8[col][(py % 8) + 1] + 0.5) * 4
-            local a = level > thr and 255 or 0
-            self._scrim_bb:setPixel(px, py, Blitbuffer.ColorRGB32(0, 0, 0, a))
+-- Solid white tab background, only the bottom-right corner rounded
+-- (anti-aliased). Opaque everywhere except the carved corner, so it reads as
+-- a clean-edged tab over the image and inverts to solid black at night.
+function GlimpseCaption:_buildBg(w, h)
+    self._bg_bb = Blitbuffer.new(w, h, Blitbuffer.TYPE_BBRGB32)
+    local r = self.radius
+    local cx, cy = w - r, h - r  -- arc centre of the bottom-right corner
+    for py = 0, h - 1 do
+        for px = 0, w - 1 do
+            local a = 255
+            if r > 0 and px >= cx and py >= cy then
+                local dx, dy = px + 0.5 - cx, py + 0.5 - cy
+                local cov = r - math.sqrt(dx * dx + dy * dy) + 0.5
+                if cov <= 0 then a = 0
+                elseif cov < 1 then a = math.floor(cov * 255 + 0.5) end
+            end
+            self._bg_bb:setPixel(px, py, Blitbuffer.ColorRGB32(255, 255, 255, a))
         end
     end
 end
 
 function GlimpseCaption:paintTo(bb, x, y)
-    local o, pad = self.outline, self.pad
     self.dimen = self:getSize()
     self.dimen.x, self.dimen.y = x, y
     local w, h = self.dimen.w, self.dimen.h
-    if not self._scrim_bb then self:_buildScrim(w, h) end
-    bb:alphablitFrom(self._scrim_bb, x, y, 0, 0, w, h)
-    -- text sits inside the pad cushion; step 1 (not o) so a 2px outline
-    -- has no gaps at the ±1 ring
-    local tx, ty = x + pad, y + pad
-    for dy = -o, o do
-        for dx = -o, o do
-            if dx ~= 0 or dy ~= 0 then
-                self._black:paintTo(bb, tx + o + dx, ty + o + dy)
-            end
-        end
-    end
-    self._white:paintTo(bb, tx + o, ty + o)
+    if not self._bg_bb then self:_buildBg(w, h) end
+    bb:alphablitFrom(self._bg_bb, x, y, 0, 0, w, h)
+    self._text:paintTo(bb, x + self.pad, y + self.pad)
 end
 
 function GlimpseCaption:free()
-    self._black:free()
-    self._white:free()
-    if self._scrim_bb then self._scrim_bb:free(); self._scrim_bb = nil end
+    if self._text then self._text:free() end
+    if self._bg_bb then self._bg_bb:free(); self._bg_bb = nil end
 end
 
 -- A pill-shaped text button in the SAME style as the ⋯ button: solid white
@@ -1013,19 +993,14 @@ function GlimpseViewer:update()
             and self.image_metas[self._images_list_cur or 1]
         local caption = meta and meta.caption
         if caption and caption ~= "" then
-            -- the top-right corner is clear now that ⋯ lives at the
-            -- bottom, so the caption only needs its own side margins
             self._caption_wg = GlimpseCaption:new{
                 text = caption,
                 max_width = image_area_w - 2 * Screen:scaleBySize(16),
             }
-            -- pull the box in by the scrim's own pad so the TEXT still
-            -- lands at ~16/12 from the corner (the scrim feathers out over
-            -- that pad, so its faint edge reaching nearer the corner is fine)
-            self._caption_wg.overlap_offset = {
-                Screen:scaleBySize(16) - self._caption_wg.pad,
-                Screen:scaleBySize(12) - self._caption_wg.pad,
-            }
+            -- flush into the drawer's top-left corner: the tab's own three
+            -- square corners sit in the screen corner, only its bottom-right
+            -- is rounded (see GlimpseCaption)
+            self._caption_wg.overlap_offset = { 0, 0 }
             table.insert(overlay, self._caption_wg)
         end
     end
