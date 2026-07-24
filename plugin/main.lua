@@ -404,8 +404,9 @@ end
 local GlimpseCaption = Widget:extend{
     text = "",
     max_width = 0,
-    pad_x = Screen:scaleBySize(8),     -- horizontal text inset (wider)
-    pad_y = Screen:scaleBySize(2),     -- vertical text inset (tighter)
+    pad_left = Screen:scaleBySize(4),  -- left text inset (tight to the corner)
+    pad_right = Screen:scaleBySize(8), -- right text inset
+    pad_y = 0,                         -- vertical text inset (flush top/bottom)
     radius = Screen:scaleBySize(10),   -- bottom-right corner only
 }
 
@@ -421,7 +422,10 @@ end
 
 function GlimpseCaption:getSize()
     local s = self._text:getSize()
-    return Geom:new{ w = s.w + 2 * self.pad_x, h = s.h + 2 * self.pad_y }
+    return Geom:new{
+        w = s.w + self.pad_left + self.pad_right,
+        h = s.h + 2 * self.pad_y,
+    }
 end
 
 -- Solid white tab background, only the bottom-right corner rounded
@@ -451,7 +455,7 @@ function GlimpseCaption:paintTo(bb, x, y)
     local w, h = self.dimen.w, self.dimen.h
     if not self._bg_bb then self:_buildBg(w, h) end
     bb:alphablitFrom(self._bg_bb, x, y, 0, 0, w, h)
-    self._text:paintTo(bb, x + self.pad_x, y + self.pad_y)
+    self._text:paintTo(bb, x + self.pad_left, y + self.pad_y)
 end
 
 function GlimpseCaption:free()
