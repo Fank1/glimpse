@@ -404,8 +404,8 @@ end
 local GlimpseCaption = Widget:extend{
     text = "",
     max_width = 0,
-    pad_x = Screen:scaleBySize(10),    -- horizontal text inset (wider)
-    pad_y = Screen:scaleBySize(3),     -- vertical text inset (tighter)
+    pad_x = Screen:scaleBySize(8),     -- horizontal text inset (wider)
+    pad_y = Screen:scaleBySize(2),     -- vertical text inset (tighter)
     radius = Screen:scaleBySize(10),   -- bottom-right corner only
 }
 
