@@ -191,9 +191,12 @@ end
 -- anti-aliased `stroke`-wide outline; `fill` and `outline` are 0–255
 -- grays. Alpha-blitting this paints smooth rounded shapes over any
 -- background — FrameContainer radii are hard-edged and look jagged at
--- chrome sizes. r = h/2 gives a stadium.
+-- chrome sizes. r = h/2 gives a stadium. Pass fill = nil for a border-ONLY
+-- stencil (transparent interior): just the outline ring, so whatever is
+-- behind shows through the middle.
 local function make_rounded_stencil(w, h, r, stroke, fill, outline)
     local bb = Blitbuffer.new(w, h, Blitbuffer.TYPE_BBRGB32)
+    local no_fill = fill == nil
     for py = 0, h - 1 do
         for px = 0, w - 1 do
             local sx = math.min(math.max(px + 0.5, r), w - r)
@@ -203,9 +206,20 @@ local function make_rounded_stencil(w, h, r, stroke, fill, outline)
             local cov = math.min(math.max(r - d + 0.5, 0), 1)
             if cov > 0 then
                 local t_in = math.min(math.max((r - stroke) - d + 0.5, 0), 1)
-                local g = math.floor(outline + t_in * (fill - outline) + 0.5)
-                bb:setPixel(px, py,
-                    Blitbuffer.ColorRGB32(g, g, g, math.floor(cov * 255 + 0.5)))
+                if no_fill then
+                    -- keep only the ring: full alpha in the stroke band,
+                    -- fading to transparent as t_in rises into the interior
+                    local a = cov * (1 - t_in)
+                    if a > 0 then
+                        bb:setPixel(px, py, Blitbuffer.ColorRGB32(
+                            outline, outline, outline,
+                            math.floor(a * 255 + 0.5)))
+                    end
+                else
+                    local g = math.floor(outline + t_in * (fill - outline) + 0.5)
+                    bb:setPixel(px, py, Blitbuffer.ColorRGB32(
+                        g, g, g, math.floor(cov * 255 + 0.5)))
+                end
             end
         end
     end
@@ -328,8 +342,12 @@ end
 function GlimpseMoreButton:paintTo(bb, x, y)
     self.dimen = Geom:new{ x = x, y = y, w = self.size, h = self.size }
     if not self._bg_bb then
+        -- disabled (dead-end prev/next): no white fill — just the dimmed
+        -- outline ring (fill=nil) so the image shows through; the icon is
+        -- lifted to the same gray below
         self._bg_bb = make_rounded_stencil(self.size, self.size,
-            self.radius, self.stroke, 0xFF,
+            self.radius, self.stroke,
+            self.disabled and nil or 0xFF,
             self.disabled and self.disabled_gray or 0x00)
     end
     bb:alphablitFrom(self._bg_bb, x, y, 0, 0, self.size, self.size)
