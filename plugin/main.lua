@@ -404,15 +404,15 @@ end
 local GlimpseCaption = Widget:extend{
     text = "",
     max_width = 0,
-    pad_x = Screen:scaleBySize(15),    -- horizontal text inset (wider)
-    pad_y = Screen:scaleBySize(5),     -- vertical text inset (tighter)
+    pad_x = Screen:scaleBySize(12),    -- horizontal text inset (wider)
+    pad_y = Screen:scaleBySize(4),     -- vertical text inset (tighter)
     radius = Screen:scaleBySize(10),   -- bottom-right corner only
 }
 
 function GlimpseCaption:init()
     self._text = TextWidget:new{
         text = self.text,
-        face = Font:getFace("cfont", 14),
+        face = Font:getFace("cfont", 12),
         bold = true,
         fgcolor = Blitbuffer.COLOR_BLACK,
         max_width = self.max_width,
