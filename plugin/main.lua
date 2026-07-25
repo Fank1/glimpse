@@ -95,9 +95,9 @@ local function _quick_label(key)
         rotate     = _("Rotate 90°"),
         showinbook = _("Show in Book"),
         restore    = _("Restore hidden images"),
-        prevnext   = _("Show Prev/Next Buttons"),
-        captions   = _("Show Image Captions"),
-        invert     = _("Invert in Night Mode"),
+        prevnext   = _("Show Nav Buttons Toggle"),
+        captions   = _("Show Image Captions Toggle"),
+        invert     = _("Invert in Night Mode Toggle"),
     })[key] or key
 end
 
@@ -1705,11 +1705,13 @@ function GlimpseViewer:_galleryMetrics()
     return {
         area_w = self.width,
         pad = Screen:scaleBySize(16),
-        top = Screen:scaleBySize(16 + 40 + 10),
+        -- 8 top margin (matches the heading offset) + 40 heading band + 13
+        -- margin below (was 18 effective; trimmed ~30%)
+        top = Screen:scaleBySize(8 + 40 + 13),
         bottom = Screen:scaleBySize(60),
         gap = Screen:scaleBySize(10),
         inset = Screen:scaleBySize(4),
-        grid_h = self.img_container_h - Screen:scaleBySize(16 + 40 + 10)
+        grid_h = self.img_container_h - Screen:scaleBySize(8 + 40 + 13)
             - Screen:scaleBySize(60),
     }
 end
@@ -1945,7 +1947,7 @@ function GlimpseViewer:_showMoreMenu()
     end
     if _quick_enabled("prevnext") then
         items[#items + 1] = {
-            text = _("Show Prev/Next Buttons"),
+            text = _("Show Nav Buttons"),
             check = G_reader_settings:isTrue(NAV_BUTTONS_KEY),
             callback = function() self:_togglePrevNext() end,
         }
@@ -3471,7 +3473,7 @@ function Glimpse:_menuItems()
             end,
         },
         {
-            text = _("Show Prev/Next Buttons"),
+            text = _("Show Nav Buttons"),
             help_text = _("Show ‹ and › buttons in the viewer for switching between images, as an alternative to swiping. A button is grayed out when there is no image on its side."),
             checked_func = function()
                 return G_reader_settings:isTrue(NAV_BUTTONS_KEY)

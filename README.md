@@ -56,7 +56,7 @@ Updates → *Check for updates*.
   the chapter scope is holding back.
 - **Quick Actions:** the contents of the ⋯ menu are configurable under
   Tools → Glimpse → *Quick Actions* — hide the rows you don't use, or add
-  Prev/Next buttons, captions and Restore hidden images to it.
+  nav buttons, captions and Restore hidden images to it.
 
 ### Settings (Tools → Glimpse)
 
@@ -64,7 +64,7 @@ Updates → *Check for updates*.
 | --- | --- |
 | Mode: Show images up to current chapter *(default)* | Images past your current chapter stay hidden (no spoilers). |
 | Mode: Show all images | Everything, incl. parts you haven't reached. |
-| Quick Actions | Choose which actions appear in the viewer's ⋯ menu: Gallery, Hide Image, the Mode switch, Rotate 90°, Show in Book, Restore hidden images, Show Prev/Next Buttons, Show Image Captions and Invert in Night Mode. Defaults to the original six; the last three are off until you add them. (Reset Rotation is automatic; Restore only appears when something is hidden.) |
+| Quick Actions | Choose which actions appear in the viewer's ⋯ menu: Gallery, Hide Image, the Mode switch, Rotate 90°, Show in Book, Restore hidden images, Show Nav Buttons, Show Image Captions and Invert in Night Mode. Defaults to the original six; the last three are off until you add them. (Reset Rotation is automatic; Restore only appears when something is hidden.) |
 | Restore hidden images | Undo the viewer's per-book **Remove image from collection**. |
 | Advanced → Hide irrelevant images *(checkbox, on)* | Hides covers, publisher logos, ornaments and other non-reference imagery. Off = every image in the book. |
 | Advanced → Show image captions (beta) *(checkbox, on)* | Show the image's caption from the book as a solid tab tucked into the viewer's top-left corner (white with black text in day mode, black with white text at night). |
