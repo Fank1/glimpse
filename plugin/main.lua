@@ -344,10 +344,13 @@ function GlimpseMoreButton:paintTo(bb, x, y)
     if not self._bg_bb then
         -- disabled (dead-end prev/next): no white fill — just the dimmed
         -- outline ring (fill=nil) so the image shows through; the icon is
-        -- lifted to the same gray below
+        -- lifted to the same gray below. NB: an explicit if, not
+        -- `disabled and nil or 0xFF` — that idiom returns 0xFF when the
+        -- middle value is nil, which is exactly the disabled case.
+        local fill = 0xFF
+        if self.disabled then fill = nil end
         self._bg_bb = make_rounded_stencil(self.size, self.size,
-            self.radius, self.stroke,
-            self.disabled and nil or 0xFF,
+            self.radius, self.stroke, fill,
             self.disabled and self.disabled_gray or 0x00)
     end
     bb:alphablitFrom(self._bg_bb, x, y, 0, 0, self.size, self.size)
@@ -1802,7 +1805,7 @@ function GlimpseViewer:_buildGallery()
     local hh = self._gallery_heading:getSize().h
     self._gallery_heading.overlap_offset = {
         m.pad,
-        Screen:scaleBySize(16)
+        Screen:scaleBySize(8)
             + math.floor((Screen:scaleBySize(40) - hh) / 2),
     }
     table.insert(grid, self._gallery_heading)
