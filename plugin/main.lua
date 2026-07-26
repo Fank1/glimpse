@@ -1724,13 +1724,13 @@ function GlimpseViewer:_galleryMetrics()
     return {
         area_w = self.width,
         pad = Screen:scaleBySize(16),
-        -- 6 top margin (matches the heading offset) + 40 heading band + 8
-        -- margin below (top -25%, bottom -40% from 8/40/13)
-        top = Screen:scaleBySize(6 + 40 + 8),
+        -- 3 top margin (matches the heading offset) + 40 heading band + 4
+        -- margin below (tightened further from 6/40/8)
+        top = Screen:scaleBySize(3 + 40 + 4),
         bottom = Screen:scaleBySize(60),
         gap = Screen:scaleBySize(10),
         inset = Screen:scaleBySize(4),
-        grid_h = self.img_container_h - Screen:scaleBySize(6 + 40 + 8)
+        grid_h = self.img_container_h - Screen:scaleBySize(3 + 40 + 4)
             - Screen:scaleBySize(60),
     }
 end
@@ -1826,7 +1826,7 @@ function GlimpseViewer:_buildGallery()
     local hh = self._gallery_heading:getSize().h
     self._gallery_heading.overlap_offset = {
         m.pad,
-        Screen:scaleBySize(6)
+        Screen:scaleBySize(3)
             + math.floor((Screen:scaleBySize(40) - hh) / 2),
     }
     table.insert(grid, self._gallery_heading)
