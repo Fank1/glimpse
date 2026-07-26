@@ -3473,6 +3473,8 @@ function Glimpse:_menuItems()
         {
             text = _("Open Glimpse"),
             help_text = _("Browse the maps, family trees and other reference images found in this book, without losing your reading position. Tip: bind the gesture action 'Open Glimpse' for one-touch access."),
+            -- greyed out with no book open (e.g. from the file manager)
+            enabled_func = function() return self.ui and self.ui.document ~= nil end,
             callback = function(touchmenu_instance)
                 if touchmenu_instance then
                     touchmenu_instance:closeMenu()
