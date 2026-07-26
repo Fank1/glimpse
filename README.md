@@ -8,9 +8,11 @@ open Glimpse (ideally via a gesture), swipe through the reference images the
 book contains, zoom and pan, and close it. You're still exactly where you
 were.
 
-![Glimpse in action — swiping through a book's maps and reference images without leaving your page](https://github.com/Fank1/glimpse/releases/download/v0.1.43/example-video.gif)
-
-![A reference map opened full-screen in the Glimpse viewer](https://github.com/Fank1/glimpse/releases/download/v0.1.43/map.png)
+<p align="center">
+  <img width="380" alt="Glimpse in action — swiping through a book's maps and reference images without leaving your page" src="https://github.com/Fank1/glimpse/releases/download/v0.1.43/example-video-framed.gif">
+  &nbsp;
+  <img width="380" alt="A reference map opened full-screen in the Glimpse viewer" src="https://github.com/Fank1/glimpse/releases/download/v0.1.43/map-framed.png">
+</p>
 
 ## What it does
 
