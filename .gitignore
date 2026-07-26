@@ -8,3 +8,6 @@ builder/fixture.epub
 builder/fixture_extracted/
 .claude/
 .previews/
+
+# Local README/Reddit media (hosted as GitHub release assets, not committed)
+for-readme-and-reddit/

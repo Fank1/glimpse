@@ -8,6 +8,10 @@ open Glimpse (ideally via a gesture), swipe through the reference images the
 book contains, zoom and pan, and close it. You're still exactly where you
 were.
 
+![Glimpse in action — swiping through a book's maps and reference images without leaving your page](https://github.com/Fank1/glimpse/releases/download/v0.1.43/example-video.gif)
+
+![A reference map opened full-screen in the Glimpse viewer](https://github.com/Fank1/glimpse/releases/download/v0.1.43/map.png)
+
 ## What it does
 
 - Scans the EPUB's HTML directly for images and **filters out ornaments,
@@ -22,6 +26,9 @@ were.
   (per chapter); switchable to the whole book. When nothing has appeared
   yet, the empty state offers a **one-time whole-book search** without
   changing the setting.
+- **Night-mode friendly:** line-art illustrations with transparent
+  backgrounds get a white backing so they stay visible (and clean-edged)
+  in night mode instead of vanishing against the dark page.
 
 ## Installation
 
@@ -37,7 +44,7 @@ Updates → *Check for updates*.
 ## Usage
 
 - **Menu:** with a book open: Tools (wrench icon) → Glimpse → *Open
-  Glimpse*.
+  Glimpse* (greyed out when no book is open).
 - **Gesture (recommended):** Settings → Taps and gestures → Gesture manager →
   pick a gesture → *Reader* → **Open Glimpse**. One-touch access is
   the whole point of the plugin. The Glimpse menu's top row shows which
@@ -52,8 +59,9 @@ Updates → *Check for updates*.
   appears once you're actually zoomed past the resting view.
 - **Mode switch (⋯ menu):** the viewer's ⋯ menu shows *Mode: Images up to
   here* / *Mode: All images*; tap it to flip the mode and reopen on the
-  same image where possible. The gallery heading tells you how many images
-  the chapter scope is holding back.
+  same image where possible, with a brief notice naming the mode you
+  switched to. The gallery heading tells you how many images the chapter
+  scope is holding back.
 - **Quick Actions:** the contents of the ⋯ menu are configurable under
   Tools → Glimpse → *Quick Actions* — hide the rows you don't use, or add
   nav buttons, captions and Restore hidden images to it.
@@ -67,7 +75,7 @@ Updates → *Check for updates*.
 | Quick Actions | Choose which actions appear in the viewer's ⋯ menu: Gallery, Hide Image, the Mode switch, Rotate 90°, Show in Book, Restore hidden images, Show Nav Buttons, Show Image Captions and Invert in Night Mode. Defaults to the original six; the last three are off until you add them. (Reset Rotation is automatic; Restore only appears when something is hidden.) |
 | Restore hidden images | Undo the viewer's per-book **Remove image from collection**. |
 | Advanced → Hide irrelevant images *(checkbox, on)* | Hides covers, publisher logos, ornaments and other non-reference imagery. Off = every image in the book. |
-| Advanced → Show image captions (beta) *(checkbox, on)* | Show the image's caption from the book as a solid tab tucked into the viewer's top-left corner (white with black text in day mode, black with white text at night). |
+| Advanced → Show image captions (beta) *(checkbox, on)* | Show the image's caption from the book as a solid tab tucked into the viewer's top-left corner (white with black text in day mode, black with white text at night), wrapping onto multiple lines for longer captions. |
 | Advanced → Enable top menu tap zone *(checkbox, on)* | While the viewer is open, a tap along the top edge opens KOReader's top menu (only that one, never the bottom menu) over the drawer. Off leaves the top edge inert. |
 | Advanced → Rescan this book | Drop the cached scan (scans are cached per book file); use if the file was replaced or images seem out of date. |
 | Updates → Check for updates | Fetch the latest GitHub release and install it in place (with backup and rollback), then offer a restart. |
