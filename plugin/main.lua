@@ -30,6 +30,7 @@ local Notification = require("ui/widget/notification")
 local OverlapGroup = require("ui/widget/overlapgroup")
 local RenderImage = require("ui/renderimage")
 local TextWidget = require("ui/widget/textwidget")
+local TextBoxWidget = require("ui/widget/textboxwidget")
 local UIManager = require("ui/uimanager")
 local VerticalGroup = require("ui/widget/verticalgroup")
 local Widget = require("ui/widget/widget")
@@ -433,12 +434,22 @@ local GlimpseCaption = Widget:extend{
 }
 
 function GlimpseCaption:init()
-    self._text = TextWidget:new{
+    local face = Font:getFace("cfont", 12)
+    -- Measure the caption's natural single-line width so a short caption keeps
+    -- a snug tab, and only wrap (grow downward) when it would exceed max_width.
+    local probe = TextWidget:new{ text = self.text, face = face, bold = true }
+    local natural = probe:getSize().w
+    probe:free()
+    local box_w = math.min(natural + Screen:scaleBySize(1), self.max_width)
+    if box_w < 1 then box_w = 1 end
+    self._text = TextBoxWidget:new{
         text = self.text,
-        face = Font:getFace("cfont", 12),
+        face = face,
         bold = true,
         fgcolor = Blitbuffer.COLOR_BLACK,
-        max_width = self.max_width,
+        width = box_w,
+        alignment = "left",
+        -- height omitted -> auto, grows with the number of wrapped lines
     }
 end
 
@@ -450,23 +461,32 @@ function GlimpseCaption:getSize()
     }
 end
 
--- Solid white tab background, only the bottom-right corner rounded
--- (anti-aliased). Opaque everywhere except the carved corner, so it reads as
--- a clean-edged tab over the image and inverts to solid black at night.
+-- Solid white tab with the caption text baked in, only the bottom-right corner
+-- rounded (anti-aliased). TextBoxWidget:paintTo blits an opaque rectangle, so
+-- the text is composited FIRST and the corner is carved LAST — otherwise the
+-- opaque text box would refill the rounded corner. Opaque everywhere except
+-- the carved corner, so it reads as a clean-edged tab over the image and
+-- inverts to solid black at night.
 function GlimpseCaption:_buildBg(w, h)
     self._bg_bb = Blitbuffer.new(w, h, Blitbuffer.TYPE_BBRGB32)
+    self._bg_bb:fill(Blitbuffer.ColorRGB32(255, 255, 255, 255))
+    -- Bake the wrapped text onto the white tab.
+    self._text:paintTo(self._bg_bb, self.pad_left, self.pad_top)
+    -- Carve the anti-aliased bottom-right corner on the finished composite.
     local r = self.radius
-    local cx, cy = w - r, h - r  -- arc centre of the bottom-right corner
-    for py = 0, h - 1 do
-        for px = 0, w - 1 do
-            local a = 255
-            if r > 0 and px >= cx and py >= cy then
+    if r > 0 then
+        local cx, cy = w - r, h - r  -- arc centre of the bottom-right corner
+        for py = math.floor(cy), h - 1 do
+            for px = math.floor(cx), w - 1 do
                 local dx, dy = px + 0.5 - cx, py + 0.5 - cy
                 local cov = r - math.sqrt(dx * dx + dy * dy) + 0.5
+                local a
                 if cov <= 0 then a = 0
                 elseif cov < 1 then a = math.floor(cov * 255 + 0.5) end
+                if a then
+                    self._bg_bb:setPixel(px, py, Blitbuffer.ColorRGB32(255, 255, 255, a))
+                end
             end
-            self._bg_bb:setPixel(px, py, Blitbuffer.ColorRGB32(255, 255, 255, a))
         end
     end
 end
@@ -477,7 +497,6 @@ function GlimpseCaption:paintTo(bb, x, y)
     local w, h = self.dimen.w, self.dimen.h
     if not self._bg_bb then self:_buildBg(w, h) end
     bb:alphablitFrom(self._bg_bb, x, y, 0, 0, w, h)
-    self._text:paintTo(bb, x + self.pad_left, y + self.pad_top)
 end
 
 function GlimpseCaption:free()
