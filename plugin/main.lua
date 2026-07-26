@@ -2730,6 +2730,30 @@ end
 
 -- ── rendering ───────────────────────────────────────────────────────────────
 
+-- Flatten a rendered image onto opaque white. PNGs (and SVGs) with a
+-- transparent background are usually black line art meant to sit on the page;
+-- left transparent they vanish in night mode (black lines over the black
+-- backdrop) and their anti-aliased edges invert into jaggies. Compositing onto
+-- white makes every pixel opaque, so night-mode framebuffer inversion turns it
+-- into clean white-on-black. A no-op for images that carry no alpha channel.
+local function _flatten_on_white(bb)
+    if not bb then return bb end
+    local ok, btype = pcall(function() return bb:getType() end)
+    if not ok then return bb end
+    if btype ~= Blitbuffer.TYPE_BB8A and btype ~= Blitbuffer.TYPE_BBRGB32 then
+        return bb  -- no alpha channel, nothing to flatten
+    end
+    local w, h = bb:getWidth(), bb:getHeight()
+    -- opaque target of a matching family (colour stays colour, gray stays gray)
+    local out_type = (btype == Blitbuffer.TYPE_BBRGB32)
+        and Blitbuffer.TYPE_BBRGB32 or Blitbuffer.TYPE_BB8
+    local flat = Blitbuffer.new(w, h, out_type)
+    flat:fill(Blitbuffer.COLOR_WHITE)
+    flat:alphablitFrom(bb, 0, 0, 0, 0, w, h)
+    bb:free()
+    return flat
+end
+
 function Glimpse:_render(read_file, im)
     local data = read_file(im.path)
     if not data and im.raw_path and im.raw_path ~= im.path then
@@ -2755,7 +2779,7 @@ function Glimpse:_render(read_file, im)
             math.floor(Screen:getHeight() / 2),
             Screen.bb:getType())
     end
-    return bb
+    return _flatten_on_white(bb)
 end
 
 -- ── the viewer flow ─────────────────────────────────────────────────────────
