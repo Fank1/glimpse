@@ -1724,13 +1724,13 @@ function GlimpseViewer:_galleryMetrics()
     return {
         area_w = self.width,
         pad = Screen:scaleBySize(16),
-        -- 8 top margin (matches the heading offset) + 40 heading band + 13
-        -- margin below (was 18 effective; trimmed ~30%)
-        top = Screen:scaleBySize(8 + 40 + 13),
+        -- 6 top margin (matches the heading offset) + 40 heading band + 8
+        -- margin below (top -25%, bottom -40% from 8/40/13)
+        top = Screen:scaleBySize(6 + 40 + 8),
         bottom = Screen:scaleBySize(60),
         gap = Screen:scaleBySize(10),
         inset = Screen:scaleBySize(4),
-        grid_h = self.img_container_h - Screen:scaleBySize(8 + 40 + 13)
+        grid_h = self.img_container_h - Screen:scaleBySize(6 + 40 + 8)
             - Screen:scaleBySize(60),
     }
 end
@@ -1818,7 +1818,7 @@ function GlimpseViewer:_buildGallery()
     end
     self._gallery_heading = TextWidget:new{
         text = heading_text,
-        face = Font:getFace("cfont", 16),
+        face = Font:getFace("cfont", 14),
         bold = true,
         fgcolor = Blitbuffer.COLOR_BLACK,
         max_width = m.area_w - 2 * m.pad,
@@ -1826,7 +1826,7 @@ function GlimpseViewer:_buildGallery()
     local hh = self._gallery_heading:getSize().h
     self._gallery_heading.overlap_offset = {
         m.pad,
-        Screen:scaleBySize(8)
+        Screen:scaleBySize(6)
             + math.floor((Screen:scaleBySize(40) - hh) / 2),
     }
     table.insert(grid, self._gallery_heading)
@@ -2989,6 +2989,12 @@ function Glimpse:showViewer(whole_book_once)
             G_reader_settings:saveSetting(SCOPE_KEY, new_scope)
             if self._viewer then self._viewer:onClose() end
             self:showViewer()
+            -- name the mode the user just switched to (Quick Actions ⋯ row)
+            UIManager:show(Notification:new{
+                text = new_scope == "whole_book"
+                    and _("Mode: All images")
+                    or _("Mode: Images up to here"),
+            })
         end,
         -- ⋯ → Restore hidden images (only offered when some are hidden):
         -- clear the per-book hide list, then close+reopen so they return.
