@@ -62,6 +62,8 @@ local INVERT_KEY = "glimpse_invert_night"
 local NAV_BUTTONS_KEY = "glimpse_nav_buttons" -- prev/next buttons, off by default
 local CAPTIONS_KEY = "glimpse_captions"        -- caption overlay, ON by default (nilOrTrue)
 local TOP_MENU_KEY = "glimpse_top_menu_zone"   -- tap top strip → KOReader top menu, ON by default (nilOrTrue)
+local SHADOW_KEY = "glimpse_disable_shadow"    -- drop the drawer's gradient shadow, OFF by default (e-ink ghost source)
+local FLASH_CLOSE_KEY = "glimpse_flash_on_close" -- flash-clear the drawer area on close, OFF by default
 local GESTURE_TIP_KEY = "glimpse_gesture_tip_shown" -- one-time menu-open nudge to bind a gesture
 -- Which actions appear in the viewer's ⋯ popup ("Quick Actions", configured
 -- from the plugin menu). Table order = popup order; `default` = shown unless
@@ -1137,6 +1139,9 @@ function GlimpseViewer:_paintPanel(bb, x, y)
     local night = G_reader_settings:isTrue("night_mode")
     local inv = bb.getInverse and bb:getInverse() == 1
     local skey = tostring(night) .. tostring(inv)
+    -- Advanced → Disable shadow: skip the gradient entirely. The dithered
+    -- shadow is the main e-ink ghost source, so some users prefer it off.
+    local shadow_disabled = G_reader_settings:isTrue(SHADOW_KEY)
 
     -- shadow: cached DOT-PATTERN stencil (ordered/Bayer dithering, not a
     -- true alpha gradient — see SHADOW_BAYER8 above), density peak → 0
@@ -1152,8 +1157,9 @@ function GlimpseViewer:_paintPanel(bb, x, y)
     -- (user tuning 2026-07-22: 2x read as reaching too far, 1.25x as too
     -- narrow — splitting the difference)
     local swidth = night and math.floor(self.shadow_width * 1.5 + 0.5) or self.shadow_width
-    if not self._shadow_bb or self._shadow_bb:getHeight() ~= shadow_h
-            or self._shadow_night ~= skey then
+    if not shadow_disabled and (not self._shadow_bb
+            or self._shadow_bb:getHeight() ~= shadow_h
+            or self._shadow_night ~= skey) then
         if self._shadow_bb then self._shadow_bb:free() end
         self._shadow_night = skey
         self._shadow_bb = Blitbuffer.new(swidth, shadow_h,
@@ -1231,7 +1237,7 @@ function GlimpseViewer:_paintPanel(bb, x, y)
     -- shadow wasn't repainted, so blending again would accumulate
     local skip_shadow = self._skip_shadow_paint
     self._skip_shadow_paint = nil
-    if not skip_shadow then
+    if not skip_shadow and not shadow_disabled then
         bb:alphablitFrom(self._shadow_bb, x + w - self.shadow_overlap, y,
             0, 0, swidth, shadow_h)
     end
@@ -1456,7 +1462,14 @@ function GlimpseViewer:onCloseWidget()
         -- cover the shadow at its widest (night mode = 2× shadow_width)
         d.w = math.min(Screen:getWidth() - d.x,
             d.w + 2 * self.shadow_width - self.shadow_overlap + 1)
-        return "ui", d, true
+        -- Advanced → Full Refresh on Close: "flashpartial" runs the ghost-
+        -- clearing waveform over the drawer area. On REAGL panels (most
+        -- Kindles) it does NOT flash; elsewhere it briefly flashes that
+        -- region. Default stays "ui" (no flash, relies on KOReader's normal
+        -- partial-refresh promotion to mop up ghosting).
+        local rtype = G_reader_settings:isTrue(FLASH_CLOSE_KEY)
+            and "flashpartial" or "ui"
+        return rtype, d, true
     end)
 end
 
@@ -3609,6 +3622,29 @@ function Glimpse:_menuItems()
                     end,
                     callback = function()
                         G_reader_settings:flipNilOrTrue(TOP_MENU_KEY)
+                    end,
+                    separator = true,
+                },
+                {
+                    text = _("Disable shadow"),
+                    help_text = _("Remove the drawer's drop shadow. The shadow is a dithered gradient — the main cause of e-ink ghosting behind the drawer — so turn it off if a ghost lingers after closing Glimpse. No visible effect on LCD screens."),
+                    checked_func = function()
+                        return G_reader_settings:isTrue(SHADOW_KEY)
+                    end,
+                    callback = function()
+                        G_reader_settings:saveSetting(SHADOW_KEY,
+                            not G_reader_settings:isTrue(SHADOW_KEY))
+                    end,
+                },
+                {
+                    text = _("Full Refresh on Close"),
+                    help_text = _("When closing Glimpse, run a stronger screen refresh over the drawer area to clear e-ink ghosting. On REAGL panels (most Kindles) this does not flash; on other e-ink it briefly flashes that area. Leave off on LCD or the emulator."),
+                    checked_func = function()
+                        return G_reader_settings:isTrue(FLASH_CLOSE_KEY)
+                    end,
+                    callback = function()
+                        G_reader_settings:saveSetting(FLASH_CLOSE_KEY,
+                            not G_reader_settings:isTrue(FLASH_CLOSE_KEY))
                     end,
                     separator = true,
                 },
