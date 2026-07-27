@@ -1459,9 +1459,13 @@ function GlimpseViewer:onCloseWidget()
     -- just far less visible against an already-dark background).
     UIManager:setDirty(nil, function()
         local d = self.main_frame.dimen:copy()
-        -- cover the shadow at its widest (night mode = 2× shadow_width)
-        d.w = math.min(Screen:getWidth() - d.x,
-            d.w + 2 * self.shadow_width - self.shadow_overlap + 1)
+        -- cover the shadow at its widest (night mode = 2× shadow_width) — but
+        -- only when the shadow is on. With it off, keep the region to the
+        -- drawer so a promoted/flash refresh never reaches the book page.
+        if not G_reader_settings:isTrue(SHADOW_KEY) then
+            d.w = math.min(Screen:getWidth() - d.x,
+                d.w + 2 * self.shadow_width - self.shadow_overlap + 1)
+        end
         -- Advanced → Full Refresh on Close: "flashpartial" runs the ghost-
         -- clearing waveform over the drawer area. On REAGL panels (most
         -- Kindles) it does NOT flash; elsewhere it briefly flashes that
@@ -3100,12 +3104,20 @@ function Glimpse:showViewer(whole_book_once)
     -- still paints it before us, so the blend stays accumulation-free.
     -- false, not nil: nil falls back to the class alpha via the metatable.
     viewer.alpha = false
-    -- one dithered refresh covering the drawer and its gradient shadow
+    -- one dithered refresh covering the drawer (plus its gradient shadow when
+    -- the shadow is on — it falls onto the page). With the shadow OFF, refresh
+    -- ONLY the drawer, so the book area to its right is never in the region:
+    -- otherwise KOReader's periodic promotion of this refresh to a flashing
+    -- full flashes the page black even though nothing there changed.
+    local open_w = viewer._panel_w + 2
+    if not G_reader_settings:isTrue(SHADOW_KEY) then
+        open_w = viewer._panel_w
+            + 2 * viewer.shadow_width - viewer.shadow_overlap + 1
+    end
     UIManager:show(viewer, Device:hasKaleidoWfm() and "partial" or "ui",
         Geom:new{
             x = 0, y = 0,
-            w = math.min(Screen:getWidth(), viewer._panel_w
-                + 2 * viewer.shadow_width - viewer.shadow_overlap + 1),
+            w = math.min(Screen:getWidth(), open_w),
             h = Screen:getHeight(),
         }, nil, nil, true)
     viewer.alpha = nil -- back to the class default for later paths
