@@ -1089,6 +1089,17 @@ function GlimpseViewer:update()
     local wfm_mode = Device:hasKaleidoWfm() and "partial" or "ui"
     local fast = self._fast_refresh
     self._fast_refresh = nil
+    -- Image switch: flash this (panel-only) region so the previous image's
+    -- ink is fully cleared instead of ghosting through the new one. The
+    -- plain "ui"/"partial" waveforms skip the black→white→black clear cycle,
+    -- so on e-ink the old image lingers — most visible in Night Mode (the
+    -- black card makes faint ghosts obvious). "flashui" always flashes and
+    -- is region-limited, so only the drawer flashes, never the whole screen;
+    -- zoom/pan steps (fast) stay flashless. Consumed before the suppress
+    -- return so an open-time switch never leaves the flag dangling.
+    local flash_switch = self._flash_switch
+    self._flash_switch = nil
+    if flash_switch and not fast then wfm_mode = "flashui" end
     self.dithered = not fast
     if self._suppress_refresh then
         -- showViewer builds the full initial state (remembered image,
@@ -2336,6 +2347,10 @@ function GlimpseViewer:switchToImageNum(image_num)
     self._cur_rotation = self:_prefFor(image_num).rotation or 0
     self._fit_scale_factor = nil -- different image, different fit
     self._scale_factor_0 = nil
+    -- New image content: flash the panel region on the resulting refresh so
+    -- the previous image doesn't ghost through (see the refresh policy in
+    -- update()). switchToImageNum → ImageViewer.switchToImageNum → update().
+    self._flash_switch = true
     ImageViewer.switchToImageNum(self, image_num)
     local meta = self.image_metas and self.image_metas[image_num]
     if meta and self.on_image_shown then
