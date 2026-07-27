@@ -656,6 +656,7 @@ end
 -- our own style instead of ButtonDialog because a ButtonDialog button
 -- shows an icon OR text, never both.
 local GlimpsePopupMenu = InputContainer:extend{
+    pause_reading = true,
     items = nil,    -- { {text=, icon=<svg path or nil>, callback=}, ... }
     anchor = nil,   -- function -> Geom (like MovableContainer's anchor)
     pad_left = Screen:scaleBySize(16),
@@ -803,6 +804,7 @@ end
 -- _paintPanel (FrameContainer can't do per-corner radii).
 
 local GlimpseViewer = ImageViewer:extend{
+    pause_reading = true,
     image_metas = nil,     -- parallel to the image list: scanner records
     gallery_hidden_count = 0, -- images the chapter scope holds back (heading)
     on_image_shown = nil,  -- function(meta, index)
@@ -1537,6 +1539,12 @@ function GlimpseViewer:onCloseWidget()
     -- black-on-light shadow; the same banding was there in Night mode too,
     -- just far less visible against an already-dark background).
     UIManager:setDirty(nil, function()
+        if self:_isFullscreen() then
+            -- The frame's last painted dimen may still be the old drawer
+            -- width when fullscreen is entered and closed quickly. Always
+            -- restore the complete page so no image strip survives at right.
+            return "ui", Screen:getSize(), true
+        end
         local d = self.main_frame.dimen:copy()
         -- cover the shadow at its widest (night mode = 2× shadow_width)
         d.w = math.min(Screen:getWidth() - d.x,
@@ -2308,7 +2316,12 @@ function GlimpseViewer:onTap(_, ges)
         return true
     end
     if not self:_isFullscreen()
-       and ges.pos:notIntersectWith(self.main_frame.dimen) then
+       and ges.pos:notIntersectWith(Geom:new{
+           x = 0, y = 0, w = self._panel_w, h = Screen:getHeight(),
+       }) then
+        -- Use the current logical drawer footprint, not main_frame.dimen:
+        -- immediately after leaving fullscreen the latter may still describe
+        -- the previously painted full-screen frame.
         self:onClose()
         return true
     end
@@ -2443,7 +2456,7 @@ function GlimpseViewer:switchToImageNum(image_num)
 end
 
 -- In fit-to-screen mode panning is a no-op, so horizontal swipes act as
--- prev/next (feels like page turns) and other directions are swallowed —
+-- loopable prev/next page turns and other directions are swallowed —
 -- upstream would close the viewer on swipe-south at fit, too easy to hit
 -- accidentally now that switching is swipe-only (closing stays on
 -- tap-outside). Zoomed in, delegate to upstream so swipes keep panning.
@@ -2462,11 +2475,15 @@ function GlimpseViewer:onSwipe(arg, ges)
         if self._images_list and (d == "west" or d == "east") then
             local forward = d == "west"
             if BD.mirroredUILayout() then forward = not forward end
+            local cur = self._images_list_cur or 1
+            local nb = self._images_list_nb or #self._images_list
+            local target
             if forward then
-                self:onShowNextImage()
+                target = cur < nb and cur + 1 or 1
             else
-                self:onShowPrevImage()
+                target = cur > 1 and cur - 1 or nb
             end
+            self:switchToImageNum(target)
         end
         return true
     end
@@ -3020,14 +3037,10 @@ function Glimpse:showViewer(whole_book_once)
     --     inversion restores the original look.
     local read_file, close_reader = self:_makeReader()
     local images_list = { image_disposable = true }
-    -- Cap decoded bitmaps at 2× the drawer's content box (one C-speed,
-    -- aspect-preserving downscale at load): ImageWidget rescales from the
-    -- source bitmap on EVERY zoom/pan render, so multi-megapixel originals
-    -- make each pinch step (and the night-mode image blit) proportionally
-    -- slower. Fit and double zoom stay 1:1 sharp; only zooming beyond 2×
-    -- upscales slightly.
-    local cap_w = 2 * math.floor(Screen:getWidth() * GlimpseViewer.panel_ratio)
-    local cap_h = 2 * Screen:getHeight()
+    -- Keep each decoded bitmap at its original resolution. ImageWidget
+    -- derives fit and zoom renders from this source, so pre-scaling it to
+    -- the drawer size would permanently discard detail and make zoomed
+    -- maps, diagrams and other fine artwork look blurry.
     for i, im in ipairs(imgs) do
         images_list[i] = function()
             local night = G_reader_settings:isTrue("night_mode")
@@ -3035,8 +3048,8 @@ function Glimpse:showViewer(whole_book_once)
             local checked = G_reader_settings:isTrue(INVERT_KEY)
             -- single-slot decoded-bitmap cache: reopening on the image
             -- you left (the common "peek at the map again" flow) skips
-            -- the decode and cap-scale — on device that is most of the
-            -- open time. The key bakes in everything baked into pixels.
+            -- the decode — on device that is most of the open time. The
+            -- key bakes in everything baked into pixels.
             local key = im.path .. "|" .. tostring(night)
                 .. tostring(checked) .. tostring(sw)
             local slot = self._bb_cache
@@ -3045,15 +3058,6 @@ function Glimpse:showViewer(whole_book_once)
                 return slot.bb:copy()
             end
             local bb = self:_render(read_file, im)
-            if bb then
-                local w, h = bb:getWidth(), bb:getHeight()
-                local s = math.min(1, cap_w / w, cap_h / h)
-                if s < 1 then
-                    local scaled = RenderImage:scaleBlitBuffer(bb,
-                        math.floor(w * s + 0.5), math.floor(h * s + 0.5), true)
-                    if scaled then bb = scaled end
-                end
-            end
             if bb and night and (sw and checked or not sw and not checked) then
                 pcall(bb.invertRect, bb, 0, 0, bb:getWidth(), bb:getHeight())
             end
