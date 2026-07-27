@@ -3173,8 +3173,31 @@ function Glimpse:showViewer(whole_book_once)
             if self.ui.link then
                 self.ui.link:addCurrentLocationToStack()
             end
-            self.ui.rolling:onGotoXPointer(
-                string.format("/body/DocFragment[%d]", meta.spine_index))
+            -- Chapter-level target is always available; try to refine it to
+            -- the exact image first. The scanner's node_path is derived from
+            -- raw HTML, so crengine's normalized DOM can disagree — validate
+            -- the built xpointer resolves to THIS image (its filename appears
+            -- in the element's HTML) before trusting it, else fall back to the
+            -- chapter top (the pre-fix behaviour).
+            local target = string.format("/body/DocFragment[%d]", meta.spine_index)
+            local doc = self.ui.document
+            if meta.node_path and doc and doc.isXPointerInDocument then
+                local xp = string.format("/body/DocFragment[%d]/body/%s",
+                    meta.spine_index, meta.node_path)
+                local ok = pcall(function() return doc:isXPointerInDocument(xp) end)
+                    and doc:isXPointerInDocument(xp)
+                if ok then
+                    local fname = meta.path and meta.path:match("[^/]+$")
+                    local ok2, html = pcall(function()
+                        return doc:getHTMLFromXPointer(xp, 0)
+                    end)
+                    if ok2 and html and fname
+                            and html:find(fname, 1, true) then
+                        target = xp
+                    end
+                end
+            end
+            self.ui.rolling:onGotoXPointer(target)
         end,
         -- the viewer closed itself on a G-sensor rotation: re-layout the
         -- reader, then reopen (zoom/pan persistence restores the view)

@@ -26,7 +26,7 @@ local M = {}
 
 -- Bump when scan output format or discovery logic changes, so cached scans
 -- (stored in Glimpse's sidecar) are invalidated on plugin upgrade.
-M.VERSION = 4
+M.VERSION = 5
 
 -- ── small string helpers ────────────────────────────────────────────────────
 
@@ -531,11 +531,92 @@ end
 
 -- Returns a list of occurrences: { src, alt, title, class, attr_w, attr_h,
 -- figcaption, in_figure }
+-- Void elements never hold children, so they're not pushed onto the tag
+-- stack when tracing element paths.
+local VOID_TAGS = {
+    img = true, image = true, br = true, hr = true, meta = true, link = true,
+    input = true, area = true, base = true, col = true, embed = true,
+    param = true, source = true, track = true, wbr = true,
+}
+
+-- Element path (a crengine xpath, relative to the fragment's <body>) for
+-- every <img>/<image>, so "Show in Book" can jump to the exact image instead
+-- of the chapter top. crengine indexes among SAME-TAG siblings (div[2] = 2nd
+-- <div> child) and needs the full ancestor chain — there's no descendant
+-- shortcut — so we walk the tags with a stack, counting per-tag siblings in
+-- each parent. Keyed by the "<" offset into `html`, which matches the <img>
+-- match offsets extract_images uses (same comment-stripped string; lowercase
+-- doesn't shift byte offsets). Best-effort: crengine may normalize the DOM
+-- (insert tbody, fix nesting), so a path can be off — the caller validates
+-- each against the image's filename and falls back to the chapter if wrong.
+local function element_path_map(html)
+    local paths = {}
+    local stack = {}       -- open elements: { tag=, index=, counts={} }
+    local body_depth = nil -- stack position of the fragment <body>
+    local n = #html
+    local pos = 1
+    while pos <= n do
+        local s = html:find("<", pos, true)
+        if not s then break end
+        local c = html:sub(s + 1, s + 1)
+        if c == "/" then
+            local e = html:find(">", s + 1, true) or n
+            local name = html:sub(s + 2, e - 1):match("^%s*([%w:_%-]+)")
+            name = name and name:lower()
+            if name then
+                for i = #stack, 1, -1 do
+                    if stack[i].tag == name then
+                        for _ = i, #stack do table.remove(stack) end
+                        if body_depth and body_depth > #stack then
+                            body_depth = nil
+                        end
+                        break
+                    end
+                end
+            end
+            pos = e + 1
+        elseif c:match("%a") then
+            local e = html:find(">", s + 1, true) or n
+            local tagtext = html:sub(s, e)
+            local name = tagtext:match("^<%s*([%w:_%-]+)")
+            name = name and name:lower()
+            if name then
+                local parent = stack[#stack]
+                local index = 1
+                if parent then
+                    parent.counts[name] = (parent.counts[name] or 0) + 1
+                    index = parent.counts[name]
+                end
+                if (name == "img" or name == "image") and body_depth then
+                    local parts = {}
+                    for i = body_depth + 1, #stack do
+                        parts[#parts + 1] =
+                            stack[i].tag .. "[" .. stack[i].index .. "]"
+                    end
+                    parts[#parts + 1] = name .. "[" .. index .. "]"
+                    paths[s] = table.concat(parts, "/")
+                end
+                if not (VOID_TAGS[name] or tagtext:match("/%s*>$")) then
+                    stack[#stack + 1] = { tag = name, index = index, counts = {} }
+                    if name == "body" and not body_depth then
+                        body_depth = #stack
+                    end
+                end
+            end
+            pos = e + 1
+        else
+            pos = s + 1
+        end
+    end
+    return paths
+end
+
 function M.extract_images(html)
     -- strip comments so commented-out markup is invisible
     html = html:gsub("<!%-%-.-%-%->", "")
     local lower = html:lower()
     local figures = find_figures(lower, html)
+    local paths = element_path_map(html)
     local out = {}
 
     local function fig_at(pos)
@@ -558,6 +639,7 @@ function M.extract_images(html)
             attr_h = px(attr(tag, "height")),
             figcaption = f and f.caption or nil,
             in_figure = f ~= nil,
+            node_path = paths[pos],
         }
     end
 
@@ -625,6 +707,9 @@ function M.scan(read_file)
                 path = dec_path,
                 raw_path = raw_path,
                 spine_index = spine_index,
+                -- first occurrence's DOM path, so it matches spine_index's
+                -- document (nil for cover/SVG-doc synth records)
+                node_path = occ and occ.node_path,
                 order = order,
                 files_count = 0,
                 total_count = 0,
