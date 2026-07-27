@@ -820,6 +820,10 @@ local GlimpseViewer = ImageViewer:extend{
     -- from the dot pill, actions from the ⋯ button, closing from
     -- tap-outside, multiswipe or Back.
     with_title_bar = false,
+    -- Zoom ceiling as a multiple of the image's native resolution: pinch may
+    -- push a little past 100% (actual pixel size) for readability, but not so
+    -- far that upscaling turns to mush. Double-tap still stops at 100%.
+    max_zoom_of_native = 1.5,
     -- Drawer metrics from the design (design px == px at the reference DPI)
     panel_ratio = 505 / 630,               -- of screen width
     panel_vgap = 0,                        -- full height, border included
@@ -2210,12 +2214,12 @@ function GlimpseViewer:_checkDoubleTap(ges)
     end
 end
 
--- Double-tap: toggle between best-fit and 100% (actual pixel size), centered
--- on the tapped point. From fit it jumps straight to 100% — the full-res
--- decode swaps in (see _new_image_wg) so it's pixel-sharp, not upscaled;
--- from any zoomed state it snaps back to fit. Pinch covers everything in
--- between, stepless. (For small images 100% is at or below fit, so double-tap
--- simply stays at the fit view — there's no real detail to zoom into.)
+-- Double-tap: toggle between best-fit and the max zoom (150% of native,
+-- max_zoom_of_native), centered on the tapped point. From fit it jumps
+-- straight to max — the full-res decode swaps in (see _new_image_wg) so it's
+-- as sharp as the source allows; from any zoomed state it snaps back to fit.
+-- Pinch covers everything in between, stepless. (For small images the max is
+-- at or below fit, so double-tap just stays at the fit view.)
 function GlimpseViewer:onGlimpseDoubleTap(_, ges)
     local was_fit = self.scale_factor == 0
     -- re-center the zoom on the tapped point (harmless when we end up
@@ -2231,8 +2235,9 @@ function GlimpseViewer:onGlimpseDoubleTap(_, ges)
     end
     self:_refreshScaleFactor() -- resolve fit (scale 0) into a number
     if was_fit then
-        -- to 100% (clamped to fit for small images by _applyNewScaleFactor)
-        self:_applyNewScaleFactor(self:_nativeScaleCeiling() or self.scale_factor)
+        -- jump to the max zoom (clamped to fit for small images by
+        -- _applyNewScaleFactor, which also enforces the same ceiling)
+        self:_applyNewScaleFactor(self:_maxScale() or self.scale_factor)
     else
         self.scale_factor = 0
         self._center_x_ratio, self._center_y_ratio = 0.5, 0.5
@@ -2458,6 +2463,15 @@ function GlimpseViewer:onSwipe(arg, ges)
     return ImageViewer.onSwipe(self, arg, ges)
 end
 
+-- Upstream ImageViewer closes on ANY multiswipe (a direction-changing
+-- gesture). While panning a zoomed image, a curved or hooked drag is very
+-- easily reclassified from a pan into a multiswipe, which would close the
+-- drawer mid-pan — the "panning sometimes just closes Glimpse" bug. Glimpse
+-- closes by tapping outside the panel instead, so swallow multiswipes here.
+function GlimpseViewer:onMultiSwipe(_, ges)
+    return true
+end
+
 -- On the SDL emulator, mouse wheel / two-finger trackpad scroll arrives as
 -- a fake pan gesture tagged mousewheel_direction (real devices never send
 -- it): treat it as zoom, so pinch can be tested without a touchscreen.
@@ -2555,10 +2569,10 @@ function GlimpseViewer:_applyNewScaleFactor(new_factor)
         fit = self:_computeFitScaleFactor()
         self._fit_scale_factor = fit
     end
-    -- Ceiling: never magnify past the image's own resolution (1 image pixel
-    -- to 1 screen pixel = 100%). Zooming further only upscales — no new
-    -- detail — so cap here. This bounds pinch and double-tap alike.
-    local ceil = self:_nativeScaleCeiling()
+    -- Ceiling: pinch may push a little past 100% (up to max_zoom_of_native)
+    -- for readability, but no further — beyond that it's pure upscaling with
+    -- no new detail. Bounds both pinch and any programmatic zoom.
+    local ceil = self:_maxScale()
     if ceil and new_factor > ceil then new_factor = ceil end
     if fit and new_factor <= fit then
         if self.scale_factor ~= 0 then
@@ -2577,7 +2591,7 @@ end
 -- was never capped (small/medium images) 100% is just 1.0. Rotation doesn't
 -- affect the ratio (both widths are pre-rotation). Returns nil if we can't
 -- tell, leaving the memory-based extrema as the only ceiling.
-function GlimpseViewer:_nativeScaleCeiling()
+function GlimpseViewer:_nativeScale()
     local lo = self.image
     if not lo or not lo.getWidth then return nil end
     local lo_w = lo:getWidth()
@@ -2586,6 +2600,14 @@ function GlimpseViewer:_nativeScaleCeiling()
     local nat_w = meta and meta.width
     if not nat_w or nat_w <= lo_w then return 1.0 end
     return nat_w / lo_w
+end
+
+-- Zoom ceiling in capped-bitmap units: native size × the readability
+-- multiplier (max_zoom_of_native). Both the pinch clamp and the double-tap
+-- target land here.
+function GlimpseViewer:_maxScale()
+    local nat = self:_nativeScale()
+    return nat and nat * self.max_zoom_of_native
 end
 
 -- Forked from ImageWidget:panBy — the same crop-offset math on the
