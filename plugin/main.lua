@@ -1489,10 +1489,13 @@ function GlimpseViewer:onCloseWidget()
             d.w = math.min(Screen:getWidth() - d.x,
                 d.w + 2 * self.shadow_width - self.shadow_overlap + 1)
         end
-        -- "ui": no flash on close (the drawer just lifts away). The page
-        -- below is repainted first via the numeric alpha, so nothing of the
-        -- drawer is left behind that would need a clearing flash.
-        return "ui", d, true
+        -- "full": a GC16 clearing refresh over the drawer (and its shadow)
+        -- area on every close — the ghosting the drawer/shadow leaves on
+        -- e-ink, worst at night, is scrubbed as it lifts away. This is the
+        -- former "Full Refresh on Close" option, now baked in as the default
+        -- (same reliable GC16 waveform the image-switch clear uses); it stays
+        -- regional so the rest of the page is never flashed.
+        return "full", d, true
     end)
     -- Refresh isolation (see showViewer): hand the reader back its own
     -- ghost-clear counter, on nextTick so the close's below-repaint runs while
@@ -1526,14 +1529,15 @@ function GlimpseViewer:_new_image_wg()
         if fit and fit >= 1 then
             wg_scale = fit
         end
-    else
-        -- Zoomed past fit: swap in the sharp full-resolution decode (lazily
-        -- created, see _getHiRes) so magnifying shows real detail instead of
-        -- upscaling the resting-view's capped bitmap. self.scale_factor stays
-        -- expressed against the capped bitmap everywhere (fit floor, extrema,
-        -- save/restore all in those units); we only divide the WIDGET's scale
-        -- by the resolution ratio here so the on-screen size is byte-identical
-        -- — just crisper. The capped bitmap is still shown at/near fit.
+    elseif wg_scale > 1 then
+        -- Zoomed past 1:1 of the capped bitmap: below this it's still
+        -- downscaling the cap (sharp) and fast, but beyond it the cap would
+        -- upscale, so swap in the sharp full-resolution decode (lazily
+        -- created, see _getHiRes) — this is what makes approaching 100% show
+        -- real detail. self.scale_factor stays expressed against the capped
+        -- bitmap everywhere (fit floor, ceiling, save/restore all in those
+        -- units); we only divide the WIDGET's scale by the resolution ratio
+        -- here so the on-screen size is byte-identical — just crisper.
         local hi = self:_getHiRes()
         if hi then
             local r = hi:getWidth() / self.image:getWidth()
@@ -2206,12 +2210,12 @@ function GlimpseViewer:_checkDoubleTap(ges)
     end
 end
 
--- Double-tap: photo-app convention, cycling fit → 2× → 4× → fit, each
--- zoom-in step re-centered on the tapped point. The 4× stop lets you get
--- right into fine map detail; zooming past fit lazily swaps in the full-res
--- decode (see _new_image_wg), so 4× is genuinely sharper, not upscaled.
--- Small images open boosted (up to 150% of native, see
--- _computeFitScaleFactor), so their steps land proportionally higher.
+-- Double-tap: toggle between best-fit and 100% (actual pixel size), centered
+-- on the tapped point. From fit it jumps straight to 100% — the full-res
+-- decode swaps in (see _new_image_wg) so it's pixel-sharp, not upscaled;
+-- from any zoomed state it snaps back to fit. Pinch covers everything in
+-- between, stepless. (For small images 100% is at or below fit, so double-tap
+-- simply stays at the fit view — there's no real detail to zoom into.)
 function GlimpseViewer:onGlimpseDoubleTap(_, ges)
     local was_fit = self.scale_factor == 0
     -- re-center the zoom on the tapped point (harmless when we end up
@@ -2226,11 +2230,9 @@ function GlimpseViewer:onGlimpseDoubleTap(_, ges)
             wg:getPanByCenterRatio(ges.pos.x - cx, ges.pos.y - cy)
     end
     self:_refreshScaleFactor() -- resolve fit (scale 0) into a number
-    local fit = self._fit_scale_factor or self:_computeFitScaleFactor()
     if was_fit then
-        self:_applyNewScaleFactor((fit or self.scale_factor) * 2)
-    elseif fit and self.scale_factor < fit * 3 then
-        self:_applyNewScaleFactor(fit * 4) -- 2× → 4×, deeper detail
+        -- to 100% (clamped to fit for small images by _applyNewScaleFactor)
+        self:_applyNewScaleFactor(self:_nativeScaleCeiling() or self.scale_factor)
     else
         self.scale_factor = 0
         self._center_x_ratio, self._center_y_ratio = 0.5, 0.5
@@ -2553,6 +2555,11 @@ function GlimpseViewer:_applyNewScaleFactor(new_factor)
         fit = self:_computeFitScaleFactor()
         self._fit_scale_factor = fit
     end
+    -- Ceiling: never magnify past the image's own resolution (1 image pixel
+    -- to 1 screen pixel = 100%). Zooming further only upscales — no new
+    -- detail — so cap here. This bounds pinch and double-tap alike.
+    local ceil = self:_nativeScaleCeiling()
+    if ceil and new_factor > ceil then new_factor = ceil end
     if fit and new_factor <= fit then
         if self.scale_factor ~= 0 then
             self.scale_factor = 0
@@ -2562,6 +2569,23 @@ function GlimpseViewer:_applyNewScaleFactor(new_factor)
         return
     end
     ImageViewer._applyNewScaleFactor(self, new_factor)
+end
+
+-- The scale_factor (in capped-bitmap units) at which the image shows at
+-- exactly 100% — 1 native image pixel per screen pixel. Native dimensions
+-- come from the scanner's header sniff (meta.width); when the resting bitmap
+-- was never capped (small/medium images) 100% is just 1.0. Rotation doesn't
+-- affect the ratio (both widths are pre-rotation). Returns nil if we can't
+-- tell, leaving the memory-based extrema as the only ceiling.
+function GlimpseViewer:_nativeScaleCeiling()
+    local lo = self.image
+    if not lo or not lo.getWidth then return nil end
+    local lo_w = lo:getWidth()
+    if lo_w <= 0 then return nil end
+    local meta = self.image_metas and self.image_metas[self._images_list_cur or 1]
+    local nat_w = meta and meta.width
+    if not nat_w or nat_w <= lo_w then return 1.0 end
+    return nat_w / lo_w
 end
 
 -- Forked from ImageWidget:panBy — the same crop-offset math on the
