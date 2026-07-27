@@ -1475,6 +1475,15 @@ function GlimpseViewer:onCloseWidget()
             and "flashpartial" or "ui"
         return rtype, d, true
     end)
+    -- Refresh isolation (see showViewer): hand the reader back its own
+    -- ghost-clear counter, on nextTick so the close's below-repaint runs while
+    -- the count is still Glimpse's (0) and can't flash from the reader's total.
+    -- Reading then continues its cadence exactly where it left off.
+    if self._reader_refresh_count ~= nil then
+        local saved = self._reader_refresh_count
+        self._reader_refresh_count = nil
+        UIManager:nextTick(function() UIManager.refresh_count = saved end)
+    end
 end
 
 -- Forked from ImageViewer:_new_image_wg(): constant image inset (no
@@ -3114,6 +3123,13 @@ function Glimpse:showViewer(whole_book_once)
         open_w = viewer._panel_w
             + 2 * viewer.shadow_width - viewer.shadow_overlap + 1
     end
+    -- Refresh isolation: Glimpse lives in its own refresh world. Snapshot the
+    -- reader's ghost-clear counter and reset it to 0 for the session, so the
+    -- reader's accumulated count can't promote a Glimpse refresh into a
+    -- full-screen flash, and Glimpse's own refreshes don't push the reader
+    -- toward its periodic flash. The count is restored on close (onCloseWidget).
+    viewer._reader_refresh_count = UIManager.refresh_count
+    UIManager.refresh_count = 0
     UIManager:show(viewer, Device:hasKaleidoWfm() and "partial" or "ui",
         Geom:new{
             x = 0, y = 0,
