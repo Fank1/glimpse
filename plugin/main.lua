@@ -2318,7 +2318,7 @@ function GlimpseViewer:switchToImageNum(image_num)
 end
 
 -- In fit-to-screen mode panning is a no-op, so horizontal swipes act as
--- prev/next (feels like page turns) and other directions are swallowed —
+-- loopable prev/next page turns and other directions are swallowed —
 -- upstream would close the viewer on swipe-south at fit, too easy to hit
 -- accidentally now that switching is swipe-only (closing stays on
 -- tap-outside). Zoomed in, delegate to upstream so swipes keep panning.
@@ -2337,11 +2337,15 @@ function GlimpseViewer:onSwipe(arg, ges)
         if self._images_list and (d == "west" or d == "east") then
             local forward = d == "west"
             if BD.mirroredUILayout() then forward = not forward end
+            local cur = self._images_list_cur or 1
+            local nb = self._images_list_nb or #self._images_list
+            local target
             if forward then
-                self:onShowNextImage()
+                target = cur < nb and cur + 1 or 1
             else
-                self:onShowPrevImage()
+                target = cur > 1 and cur - 1 or nb
             end
+            self:switchToImageNum(target)
         end
         return true
     end
