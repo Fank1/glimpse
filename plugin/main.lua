@@ -2895,14 +2895,10 @@ function Glimpse:showViewer(whole_book_once)
     --     inversion restores the original look.
     local read_file, close_reader = self:_makeReader()
     local images_list = { image_disposable = true }
-    -- Cap decoded bitmaps at 2× the drawer's content box (one C-speed,
-    -- aspect-preserving downscale at load): ImageWidget rescales from the
-    -- source bitmap on EVERY zoom/pan render, so multi-megapixel originals
-    -- make each pinch step (and the night-mode image blit) proportionally
-    -- slower. Fit and double zoom stay 1:1 sharp; only zooming beyond 2×
-    -- upscales slightly.
-    local cap_w = 2 * math.floor(Screen:getWidth() * GlimpseViewer.panel_ratio)
-    local cap_h = 2 * Screen:getHeight()
+    -- Keep each decoded bitmap at its original resolution. ImageWidget
+    -- derives fit and zoom renders from this source, so pre-scaling it to
+    -- the drawer size would permanently discard detail and make zoomed
+    -- maps, diagrams and other fine artwork look blurry.
     for i, im in ipairs(imgs) do
         images_list[i] = function()
             local night = G_reader_settings:isTrue("night_mode")
@@ -2910,8 +2906,8 @@ function Glimpse:showViewer(whole_book_once)
             local checked = G_reader_settings:isTrue(INVERT_KEY)
             -- single-slot decoded-bitmap cache: reopening on the image
             -- you left (the common "peek at the map again" flow) skips
-            -- the decode and cap-scale — on device that is most of the
-            -- open time. The key bakes in everything baked into pixels.
+            -- the decode — on device that is most of the open time. The
+            -- key bakes in everything baked into pixels.
             local key = im.path .. "|" .. tostring(night)
                 .. tostring(checked) .. tostring(sw)
             local slot = self._bb_cache
@@ -2920,15 +2916,6 @@ function Glimpse:showViewer(whole_book_once)
                 return slot.bb:copy()
             end
             local bb = self:_render(read_file, im)
-            if bb then
-                local w, h = bb:getWidth(), bb:getHeight()
-                local s = math.min(1, cap_w / w, cap_h / h)
-                if s < 1 then
-                    local scaled = RenderImage:scaleBlitBuffer(bb,
-                        math.floor(w * s + 0.5), math.floor(h * s + 0.5), true)
-                    if scaled then bb = scaled end
-                end
-            end
             if bb and night and (sw and checked or not sw and not checked) then
                 pcall(bb.invertRect, bb, 0, 0, bb:getWidth(), bb:getHeight())
             end
