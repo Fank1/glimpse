@@ -2698,7 +2698,11 @@ function Glimpse:_cachePath()
     return dir .. "/" .. key .. ".lua"
 end
 
-function Glimpse:_getScan(force)
+-- cache_only: return an in-memory or valid on-disk cached scan (or nil) WITHOUT
+-- running a fresh scan. showViewer uses this to open silently on a cache hit,
+-- and only put up the "Scanning…" message (a visible e-ink double refresh) when
+-- a real scan is actually needed.
+function Glimpse:_getScan(force, cache_only)
     if self._scan and not force then
         return self._scan
     end
@@ -2719,6 +2723,7 @@ function Glimpse:_getScan(force)
             return c
         end
     end
+    if cache_only then return nil end
 
     local read_file, close = self:_makeReader()
     local ok, result, err = pcall(scanner.scan, read_file)
@@ -2813,7 +2818,12 @@ function Glimpse:showViewer(whole_book_once)
         return
     end
 
-    local scan = self._scan
+    -- Try an in-memory or valid on-disk cached scan silently first: a cache
+    -- hit opens with a single refresh. Only a genuine (slow) scan puts up the
+    -- "Scanning…" message — whose show+close forceRePaints read as a double
+    -- refresh/flash on e-ink, and used to fire on the FIRST open of every book
+    -- even when the scan was already cached.
+    local scan = self:_getScan(false, true)
     if not scan then
         local info = InfoMessage:new{ text = _("Scanning book for images…") }
         UIManager:show(info)
