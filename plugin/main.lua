@@ -60,17 +60,19 @@ local FILTER_KEY = "glimpse_filter"
 -- Invert images while night mode is on (global setting).
 local INVERT_KEY = "glimpse_invert_night"
 local NAV_BUTTONS_KEY = "glimpse_nav_buttons" -- prev/next buttons, off by default
+local FULLSCREEN_KEY = "glimpse_fullscreen" -- open the viewer edge-to-edge
 local CAPTIONS_KEY = "glimpse_captions"        -- caption overlay, ON by default (nilOrTrue)
 local TOP_MENU_KEY = "glimpse_top_menu_zone"   -- tap top strip → KOReader top menu, ON by default (nilOrTrue)
 local GESTURE_TIP_KEY = "glimpse_gesture_tip_shown" -- one-time menu-open nudge to bind a gesture
 -- Which actions appear in the viewer's ⋯ popup ("Quick Actions", configured
 -- from the plugin menu). Table order = popup order; `default` = shown unless
--- the user has toggled it. The six that were always in the popup default ON;
+-- the user has toggled it. The seven that are always in the popup default ON;
 -- the three promoted from the plugin menu (restore/prevnext/captions) default
 -- OFF, so out of the box the popup is exactly what it was before.
 local QUICK_ACTIONS_KEY = "glimpse_quick_actions"
 local QUICK_ACTIONS = {
     { key = "gallery",    default = true  },
+    { key = "fullscreen", default = true  },
     { key = "hide",       default = true  },
     { key = "mode",       default = true  },
     { key = "rotate",     default = true  },
@@ -91,6 +93,7 @@ end
 local function _quick_label(key)
     return ({
         gallery    = _("Gallery"),
+        fullscreen = _("Fullscreen"),
         hide       = _("Hide Image"),
         mode       = _("Mode switch"),
         rotate     = _("Rotate 90°"),
@@ -820,6 +823,7 @@ local GlimpseViewer = ImageViewer:extend{
     -- tap-outside, multiswipe or Back.
     with_title_bar = false,
     -- Drawer metrics from the design (design px == px at the reference DPI)
+    fullscreen = false,                    -- edge-to-edge viewer mode
     panel_ratio = 505 / 630,               -- of screen width
     panel_vgap = 0,                        -- full height, border included
     panel_border = Screen:scaleBySize(2),
@@ -846,6 +850,26 @@ local GlimpseViewer = ImageViewer:extend{
     -- silently swallow our tap pairs into unhandled double_tap gestures.
     disable_double_tap = true,
 }
+
+function GlimpseViewer:_isFullscreen()
+    return self.fullscreen == true
+end
+
+function GlimpseViewer:_activePanelBorder()
+    return self:_isFullscreen() and 0 or self.panel_border
+end
+
+function GlimpseViewer:_activeShadowWidth()
+    return self:_isFullscreen() and 0 or self.shadow_width
+end
+
+function GlimpseViewer:_activeShadowOverlap()
+    return self:_isFullscreen() and 0 or self.shadow_overlap
+end
+
+function GlimpseViewer:_activeImageRightGap()
+    return self:_isFullscreen() and 0 or self.image_right_gap
+end
 
 function GlimpseViewer:init()
     self._cur_rotation = self:_prefFor(1).rotation or 0
@@ -882,14 +906,17 @@ end
 function GlimpseViewer:update()
     self:_clean_image_wg()
     local orig_dimen = self.main_frame.dimen
+    local panel_border = self:_activePanelBorder()
 
-    self._panel_w = math.floor(Screen:getWidth() * self.panel_ratio)
+    self._panel_w = self:_isFullscreen()
+        and Screen:getWidth()
+        or math.floor(Screen:getWidth() * self.panel_ratio)
     self._panel_h = Screen:getHeight() - 2 * self.panel_vgap
     -- content area inside the drawer's border (top/right/bottom only — the
     -- left edge is borderless and flush with the screen); self.width/height
     -- are what the inherited zoom/pan code sizes the image against
-    self.width = self._panel_w - self.panel_border
-    self.height = self._panel_h - 2 * self.panel_border
+    self.width = self._panel_w - panel_border
+    self.height = self._panel_h - 2 * panel_border
 
     while table.remove(self.frame_elements) do end
     self.frame_elements:resetLayout()
@@ -909,11 +936,15 @@ function GlimpseViewer:update()
     }
     -- chrome is centered/aligned on the image area (content minus the gap
     -- that keeps it clear of the rounded right edge), like the design
-    local image_area_w = self.width - self.image_right_gap
+    local image_area_w = self.width - self:_activeImageRightGap()
     -- 14, not 16: the bottom row sits 2px closer to the drawer's bottom
     -- edge than before (the buttons also grew 2px, see GlimpseMoreButton)
     local btn_inset = Screen:scaleBySize(14)
     local btn_gap = Screen:scaleBySize(10)
+    -- The drawer's rounded edge already supplies its visual inset. In
+    -- fullscreen there is no edge treatment, so align all right-side
+    -- controls to the close button's explicit screen margin.
+    local right_inset = self:_isFullscreen() and Screen:scaleBySize(14) or 0
     -- optional prev/next buttons: always shown while the toggle is on
     -- (zoomed too — switching lands the next image at fit); at the ends
     -- of the list the dead-end button stays visible but grayed out, so
@@ -938,6 +969,23 @@ function GlimpseViewer:update()
         self._close_frame:free()
         self._close_frame = nil
     end
+    if self._fullscreen_close_frame then
+        self._fullscreen_close_frame:free()
+        self._fullscreen_close_frame = nil
+    end
+    if self:_isFullscreen() then
+        -- Fullscreen has no exposed page edge to tap outside, so provide an
+        -- explicit close control in the top-right corner.
+        self._fullscreen_close_frame = GlimpseMoreButton:new{
+            icon = _PLUGIN_DIR .. "/assets/close.svg",
+        }
+        self._fullscreen_close_frame.overlap_offset = {
+            self.width - self._fullscreen_close_frame.size
+                - right_inset,
+            Screen:scaleBySize(14),
+        }
+        table.insert(overlay, self._fullscreen_close_frame)
+    end
     if nav then
         self._nav_prev_frame = GlimpseMoreButton:new{
             icon = _PLUGIN_DIR .. "/assets/prev.svg",
@@ -953,7 +1001,7 @@ function GlimpseViewer:update()
             disabled = cur >= nb or nil,
         }
         self._nav_next_frame.overlap_offset = {
-            image_area_w - self._nav_next_frame.size,
+            image_area_w - self._nav_next_frame.size - right_inset,
             self.height - self._nav_next_frame.size - btn_inset,
         }
         table.insert(overlay, self._nav_next_frame)
@@ -971,7 +1019,7 @@ function GlimpseViewer:update()
         local size = self._close_frame:getSize()
         local x = self._nav_next_frame
             and (self._nav_next_frame.overlap_offset[1] - btn_gap - size.w)
-            or (image_area_w - size.w)
+            or (image_area_w - size.w - right_inset)
         self._close_frame.overlap_offset = {
             x,
             self.height - size.h - btn_inset,
@@ -987,7 +1035,7 @@ function GlimpseViewer:update()
             more_y = self._nav_next_frame.overlap_offset[2] - btn_gap - more_size.h
         else
             -- nav off: ⋯ takes the bottom-right slot Next would have used
-            more_x = image_area_w - more_size.w
+            more_x = image_area_w - more_size.w - right_inset
             more_y = self.height - more_size.h - btn_inset
         end
         self._more_frame.overlap_offset = { more_x, more_y }
@@ -1062,9 +1110,9 @@ function GlimpseViewer:update()
     self.main_frame.bordersize = 0
     self.main_frame.padding = 0
     self.main_frame.padding_left = 0
-    self.main_frame.padding_right = self.panel_border
-    self.main_frame.padding_top = self.panel_vgap + self.panel_border
-    self.main_frame.padding_bottom = self.panel_vgap + self.panel_border
+    self.main_frame.padding_right = panel_border
+    self.main_frame.padding_top = self.panel_vgap + panel_border
+    self.main_frame.padding_bottom = self.panel_vgap + panel_border
     if not self._panel_paint_hooked then
         self._panel_paint_hooked = true
         local orig_paintTo = self.main_frame.paintTo
@@ -1093,6 +1141,19 @@ function GlimpseViewer:update()
         -- restored zoom) before showing, then refreshes once
         return
     end
+    if self._fullscreen_transition then
+        -- Changing between the drawer and fullscreen changes the window's
+        -- footprint. Repaint the complete screen once, with alpha left
+        -- enabled so UIManager first restores the book page beneath the
+        -- area the drawer is giving back. This also ensures entering
+        -- fullscreen paints beyond the drawer's former right edge.
+        self._fullscreen_transition = nil
+        self._skip_shadow_paint = nil
+        UIManager:setDirty(self, function()
+            return wfm_mode, Screen:getSize(), true
+        end)
+        return
+    end
     -- Interior update: neither the shadow nor the page below changes, so
     -- skip both the below-repaint (the numeric alpha makes setDirty flag
     -- every window under us dirty — repainting the whole book page for a
@@ -1106,7 +1167,10 @@ function GlimpseViewer:update()
     -- slot would just fall back to the class default via the metatable
     self.alpha = false
     UIManager:setDirty(self, function()
-        return wfm_mode, self.main_frame.dimen:combine(orig_dimen), not fast
+        local region = self:_isFullscreen()
+            and Screen:getSize()
+            or self.main_frame.dimen:combine(orig_dimen)
+        return wfm_mode, region, not fast
     end)
     self.alpha = alpha
 end
@@ -1137,6 +1201,24 @@ function GlimpseViewer:_paintPanel(bb, x, y)
     local night = G_reader_settings:isTrue("night_mode")
     local inv = bb.getInverse and bb:getInverse() == 1
     local skey = tostring(night) .. tostring(inv)
+
+    if self:_isFullscreen() then
+        -- Fullscreen keeps an opaque image backdrop, but has no border,
+        -- rounded corners, or shadow extending beyond the screen.
+        self._skip_shadow_paint = nil
+        local body = inv and 0x00 or 0xFF
+        if not self._panel_bb or self._panel_bb:getWidth() ~= w
+                or self._panel_bb:getHeight() ~= h
+                or self._panel_night ~= skey then
+            if self._panel_bb then self._panel_bb:free() end
+            self._panel_night = skey
+            self._panel_bb = Blitbuffer.new(w, h, Blitbuffer.TYPE_BBRGB32)
+            self._panel_bb:fill(Blitbuffer.ColorRGB32(body, body, body, 0xFF))
+            self._panel_bb:setInverse(inv and 1 or 0)
+        end
+        bb:alphablitFrom(self._panel_bb, x, py, 0, 0, w, h)
+        return
+    end
 
     -- shadow: cached DOT-PATTERN stencil (ordered/Bayer dithering, not a
     -- true alpha gradient — see SHADOW_BAYER8 above), density peak → 0
@@ -1326,6 +1408,7 @@ end
 -- have painted — the image's corners end up rounded, with the same white
 -- gap against the border as along the straight edges.
 function GlimpseViewer:_saveCorners(bb, x, py)
+    if self:_isFullscreen() then return end
     local w, h = self._panel_w, self._panel_h
     local r, bw = self.panel_radius, self.panel_border
     if not self._corner_bbs then
@@ -1357,6 +1440,7 @@ function GlimpseViewer:_saveCorners(bb, x, py)
 end
 
 function GlimpseViewer:_restoreCorners(bb, x, y)
+    if self:_isFullscreen() then return end
     if not self._corner_bbs then return end
     local w, h = self._panel_w, self._panel_h
     local py = y + self.panel_vgap
@@ -1404,6 +1488,7 @@ function GlimpseViewer:onCloseWidget()
     if self._nav_prev_frame then self._nav_prev_frame:free() end
     if self._nav_next_frame then self._nav_next_frame:free() end
     if self._close_frame then self._close_frame:free() end
+    if self._fullscreen_close_frame then self._fullscreen_close_frame:free() end
     if self._gallery_heading then
         self._gallery_heading:free()
         self._gallery_heading = nil
@@ -1452,10 +1537,17 @@ function GlimpseViewer:onCloseWidget()
     -- black-on-light shadow; the same banding was there in Night mode too,
     -- just far less visible against an already-dark background).
     UIManager:setDirty(nil, function()
+        if self:_isFullscreen() then
+            -- The frame's last painted dimen may still be the old drawer
+            -- width when fullscreen is entered and closed quickly. Always
+            -- restore the complete page so no image strip survives at right.
+            return "ui", Screen:getSize(), true
+        end
         local d = self.main_frame.dimen:copy()
         -- cover the shadow at its widest (night mode = 2× shadow_width)
         d.w = math.min(Screen:getWidth() - d.x,
-            d.w + 2 * self.shadow_width - self.shadow_overlap + 1)
+            d.w + 2 * self:_activeShadowWidth()
+                - self:_activeShadowOverlap() + 1)
         return "ui", d, true
     end)
 end
@@ -1599,17 +1691,18 @@ end
 -- are off) to the ⋯/more button's left edge, less a gap on each side.
 -- Mirrors the button geometry in update() so it can run before layout.
 function GlimpseViewer:_pillAvailWidth()
-    local image_area_w = self.width - self.image_right_gap
+    local image_area_w = self.width - self:_activeImageRightGap()
     local btn_inset = Screen:scaleBySize(16)
     local btn_gap = Screen:scaleBySize(10)
     local btn_size = GlimpseMoreButton.size
+    local right_inset = self:_isFullscreen() and Screen:scaleBySize(14) or 0
     local nav = G_reader_settings:isTrue(NAV_BUTTONS_KEY)
         and self._images_list and (self._images_list_nb or 1) > 1
     local more_left
     if nav then
-        more_left = image_area_w - 2 * btn_size - btn_gap
+        more_left = image_area_w - right_inset - 2 * btn_size - btn_gap
     elseif self:_hasQuickActions() then
-        more_left = image_area_w - btn_size
+        more_left = image_area_w - right_inset - btn_size
     else
         -- ⋯ hidden (no Quick Actions) and no Next: the pill gets the full width
         more_left = image_area_w
@@ -1907,6 +2000,16 @@ function GlimpseViewer:_showMoreMenu()
     -- block is gated on its own flag. Toggle rows (prevnext/captions/invert)
     -- draw a checkbox in the icon column and flip the matching setting live.
     local items = {}
+    if _quick_enabled("fullscreen") then
+        items[#items + 1] = {
+            text = self:_isFullscreen()
+                and _("Exit Fullscreen") or _("Fullscreen"),
+            icon = _PLUGIN_DIR .. (self:_isFullscreen()
+                and "/assets/exit-fullscreen.svg"
+                or "/assets/fullscreen.svg"),
+            callback = function() self:_toggleFullscreen() end,
+        }
+    end
     if _quick_enabled("gallery") then
         items[#items + 1] = {
             text = _("Gallery"),
@@ -2093,6 +2196,22 @@ function GlimpseViewer:_toggleCaptions()
     self:update()
 end
 
+function GlimpseViewer:_toggleFullscreen()
+    self.fullscreen = not self:_isFullscreen()
+    -- Session-only: closing the drawer discards this choice. A newly opened
+    -- viewer inherits FULLSCREEN_KEY independently in showViewer().
+    self.covers_fullscreen = self:_isFullscreen() and true or nil
+    self._fullscreen_transition = true
+    -- The available image area changes substantially, so let the new layout
+    -- choose a fresh fit instead of carrying a scale from the old geometry.
+    self.scale_factor = 0
+    self._fit_scale_factor = nil
+    self._scale_factor_0 = nil
+    self._center_x_ratio, self._center_y_ratio = 0.5, 0.5
+    self._gallery_layout = nil
+    self:update()
+end
+
 -- Manual double-tap detection from instant Tap events: a second tap close
 -- in time and position counts as a double-tap. Only consulted where the
 -- single tap would do nothing (middle area at fit, anywhere while zoomed),
@@ -2174,6 +2293,14 @@ end
 -- Image switching is swipe-only (or the optional buttons), which leaves
 -- the rest of the image as a double-tap zoom surface.
 function GlimpseViewer:onTap(_, ges)
+    if self:_isFullscreen() and self._fullscreen_close_frame
+       and self._fullscreen_close_frame.dimen
+       and ges.pos:intersectWith(self._fullscreen_close_frame.dimen) then
+        self:_flashButton(self._fullscreen_close_frame, function()
+            self:onClose()
+        end)
+        return true
+    end
     -- Respect KOReader's own top-of-screen menu trigger: a tap in that
     -- zone opens ONLY the top menu, over the still-open drawer (the ⋯
     -- button was moved to the bottom row precisely to keep this strip
@@ -2186,7 +2313,13 @@ function GlimpseViewer:onTap(_, ges)
         self.on_show_menu()
         return true
     end
-    if ges.pos:notIntersectWith(self.main_frame.dimen) then
+    if not self:_isFullscreen()
+       and ges.pos:notIntersectWith(Geom:new{
+           x = 0, y = 0, w = self._panel_w, h = Screen:getHeight(),
+       }) then
+        -- Use the current logical drawer footprint, not main_frame.dimen:
+        -- immediately after leaving fullscreen the latter may still describe
+        -- the previously painted full-screen frame.
         self:onClose()
         return true
     end
@@ -2233,7 +2366,7 @@ function GlimpseViewer:onTap(_, ges)
         if self._gallery_cells then
             local mf = self.main_frame.dimen
             local ox = mf.x
-            local oy = mf.y + self.panel_vgap + self.panel_border
+            local oy = mf.y + self.panel_vgap + self:_activePanelBorder()
             for _, c in ipairs(self._gallery_cells) do
                 if ges.pos:intersectWith(Geom:new{
                     x = ox + c.x, y = oy + c.y, w = c.w, h = c.h }) then
@@ -2308,6 +2441,9 @@ function GlimpseViewer:switchToImageNum(image_num)
         return
     end
     self._cur_rotation = self:_prefFor(image_num).rotation or 0
+    -- Keep this drawer's session-local presentation mode while the base
+    -- ImageViewer swaps its source bitmap and rebuilds the image widget.
+    self.covers_fullscreen = self:_isFullscreen() and true or nil
     self._fit_scale_factor = nil -- different image, different fit
     self._scale_factor_0 = nil
     ImageViewer.switchToImageNum(self, image_num)
@@ -2962,6 +3098,7 @@ function Glimpse:showViewer(whole_book_once)
     viewer = GlimpseViewer:new{
         image = images_list,
         image_metas = imgs,
+        fullscreen = G_reader_settings:isTrue(FULLSCREEN_KEY),
         -- for the gallery heading: images the chapter scope holds back
         gallery_hidden_count = scope_hidden,
         images_keep_pan_and_zoom = false,
@@ -3082,7 +3219,8 @@ function Glimpse:showViewer(whole_book_once)
         Geom:new{
             x = 0, y = 0,
             w = math.min(Screen:getWidth(), viewer._panel_w
-                + 2 * viewer.shadow_width - viewer.shadow_overlap + 1),
+                + 2 * viewer:_activeShadowWidth()
+                - viewer:_activeShadowOverlap() + 1),
             h = Screen:getHeight(),
         }, nil, nil, true)
     viewer.alpha = nil -- back to the class default for later paths
@@ -3532,6 +3670,17 @@ function Glimpse:_menuItems()
             callback = function()
                 G_reader_settings:saveSetting(NAV_BUTTONS_KEY,
                     not G_reader_settings:isTrue(NAV_BUTTONS_KEY))
+            end,
+        },
+        {
+            text = _("Always open fullscreen"),
+            help_text = _("Open Glimpse edge-to-edge by default. Fullscreen hides the panel border, rounded corners and shadow; use the viewer's Exit Fullscreen action to return to the drawer."),
+            checked_func = function()
+                return G_reader_settings:isTrue(FULLSCREEN_KEY)
+            end,
+            callback = function()
+                G_reader_settings:saveSetting(FULLSCREEN_KEY,
+                    not G_reader_settings:isTrue(FULLSCREEN_KEY))
             end,
         },
         {
