@@ -63,7 +63,6 @@ local NAV_BUTTONS_KEY = "glimpse_nav_buttons" -- prev/next buttons, off by defau
 local CAPTIONS_KEY = "glimpse_captions"        -- caption overlay, ON by default (nilOrTrue)
 local TOP_MENU_KEY = "glimpse_top_menu_zone"   -- tap top strip → KOReader top menu, ON by default (nilOrTrue)
 local SHADOW_KEY = "glimpse_disable_shadow"    -- drop the drawer's gradient shadow, OFF by default (e-ink ghost source)
-local FLASH_CLOSE_KEY = "glimpse_flash_on_close" -- flash-clear the drawer area on close, OFF by default
 local GESTURE_TIP_KEY = "glimpse_gesture_tip_shown" -- one-time menu-open nudge to bind a gesture
 -- Which actions appear in the viewer's ⋯ popup ("Quick Actions", configured
 -- from the plugin menu). Table order = popup order; `default` = shown unless
@@ -1123,6 +1122,11 @@ function GlimpseViewer:update()
     -- slot would just fall back to the class default via the metatable
     self.alpha = false
     UIManager:setDirty(self, function()
+        -- Guard a teardown race: a swipe's refresh is deferred to the next
+        -- paint tick, so an immediate close can clear main_frame.dimen before
+        -- this runs. Nil mode makes UIManager drop the (now meaningless)
+        -- refresh instead of indexing a nil dimen.
+        if not self.main_frame.dimen then return end
         return wfm_mode, self.main_frame.dimen:combine(orig_dimen), not fast
     end)
     self.alpha = alpha
@@ -1443,6 +1447,7 @@ function GlimpseViewer:onCloseWidget()
         end
         self._thumb_bbs = nil
     end
+    self:_resetHiRes() -- free the zoomed image's full-res decode, if any
     -- ImageViewer.onCloseWidget() does necessary cleanup (frees self.image,
     -- title_bar, button_container, etc.) but ALSO unconditionally queues
     -- its OWN "flashui" refresh of main_frame.dimen at the very end (see
@@ -1473,6 +1478,9 @@ function GlimpseViewer:onCloseWidget()
     -- black-on-light shadow; the same banding was there in Night mode too,
     -- just far less visible against an already-dark background).
     UIManager:setDirty(nil, function()
+        -- Same teardown-race guard as update(): if the frame is already gone
+        -- by the time this deferred callback runs, drop the refresh.
+        if not self.main_frame.dimen then return end
         local d = self.main_frame.dimen:copy()
         -- cover the shadow at its widest (night mode = 2× shadow_width) — but
         -- only when the shadow is on. With it off, keep the region to the
@@ -1481,14 +1489,10 @@ function GlimpseViewer:onCloseWidget()
             d.w = math.min(Screen:getWidth() - d.x,
                 d.w + 2 * self.shadow_width - self.shadow_overlap + 1)
         end
-        -- Advanced → Full Refresh on Close: "flashpartial" runs the ghost-
-        -- clearing waveform over the drawer area. On REAGL panels (most
-        -- Kindles) it does NOT flash; elsewhere it briefly flashes that
-        -- region. Default stays "ui" (no flash, relies on KOReader's normal
-        -- partial-refresh promotion to mop up ghosting).
-        local rtype = G_reader_settings:isTrue(FLASH_CLOSE_KEY)
-            and "flashpartial" or "ui"
-        return rtype, d, true
+        -- "ui": no flash on close (the drawer just lifts away). The page
+        -- below is repainted first via the numeric alpha, so nothing of the
+        -- drawer is left behind that would need a clearing flash.
+        return "ui", d, true
     end)
     -- Refresh isolation (see showViewer): hand the reader back its own
     -- ghost-clear counter, on nextTick so the close's below-repaint runs while
@@ -1516,14 +1520,31 @@ function GlimpseViewer:_new_image_wg()
     -- what fits) instead of the widget's own best-fit, which would blow
     -- it up all the way to fill the box with no cap at all.
     local wg_scale = self.scale_factor
+    local src = self.image
     if wg_scale == 0 then
         local fit = self:_computeFitScaleFactor()
         if fit and fit >= 1 then
             wg_scale = fit
         end
+    else
+        -- Zoomed past fit: swap in the sharp full-resolution decode (lazily
+        -- created, see _getHiRes) so magnifying shows real detail instead of
+        -- upscaling the resting-view's capped bitmap. self.scale_factor stays
+        -- expressed against the capped bitmap everywhere (fit floor, extrema,
+        -- save/restore all in those units); we only divide the WIDGET's scale
+        -- by the resolution ratio here so the on-screen size is byte-identical
+        -- — just crisper. The capped bitmap is still shown at/near fit.
+        local hi = self:_getHiRes()
+        if hi then
+            local r = hi:getWidth() / self.image:getWidth()
+            if r > 1 then
+                src = hi
+                wg_scale = wg_scale / r
+            end
+        end
     end
     self._image_wg = ImageWidget:new{
-        image = self.image,
+        image = src,
         image_disposable = false, -- we may reuse self.image
         alpha = true,
         width = max_image_w,
@@ -1561,6 +1582,37 @@ function GlimpseViewer:_new_image_wg()
         dimen = Geom:new{ w = avail_w, h = self.img_container_h },
         self._image_wg,
     }
+end
+
+-- Full-resolution decode of the current image, for the zoomed view. Decoded
+-- lazily on first zoom-in and cached for as long as this image is on screen
+-- (dropped by _resetHiRes on image change / invert / rotate). Returns nil —
+-- and remembers that with a `false` sentinel so it isn't retried — when there
+-- is no sharper version to be had (small images the resting cap never shrank).
+function GlimpseViewer:_getHiRes()
+    if not self.hires_decode then return nil end
+    if self._hi_bb == false then return nil end
+    if self._hi_bb then return self._hi_bb end
+    local hi = self.hires_decode(self._images_list_cur or 1)
+    if not hi then self._hi_bb = false; return nil end
+    -- only worth the extra bitmap if it's meaningfully larger than the cap
+    if self.image and hi:getWidth() <= self.image:getWidth() * 1.05 then
+        if hi.free then hi:free() end
+        self._hi_bb = false
+        return nil
+    end
+    self._hi_bb = hi
+    return hi
+end
+
+-- Drop any cached full-res decode. Call whenever self.image is replaced or
+-- re-rendered (image switch, hide, invert toggle, rotation) so the next
+-- zoom-in re-decodes against the current pixels.
+function GlimpseViewer:_resetHiRes()
+    if self._hi_bb and self._hi_bb ~= false and self._hi_bb.free then
+        self._hi_bb:free()
+    end
+    self._hi_bb = nil
 end
 
 -- Pill: as many dots as fit between the chrome buttons, "n / N" beyond. Rebuilt on
@@ -2108,6 +2160,9 @@ function GlimpseViewer:_toggleInvert()
         end
         self._thumb_bbs = nil
     end
+    -- the cached full-res decode has the OLD polarity baked in — drop it so a
+    -- later zoom re-decodes with the new setting
+    self:_resetHiRes()
     -- re-render so the change is visible immediately (the render closure
     -- reads prefs and night mode live)
     if self.image and self.image_disposable and self.image.free then
@@ -2151,25 +2206,31 @@ function GlimpseViewer:_checkDoubleTap(ges)
     end
 end
 
--- Double-tap: photo-app convention — back to fit when zoomed, zoom in
--- when at fit, always to 2× whatever fit resolves to. Small images
--- already open boosted (up to 150% of native size, see
--- _computeFitScaleFactor), so this naturally lands them around 300% —
--- a further, deliberate step for inspecting detail, on top of the
--- bigger-by-default resting view.
+-- Double-tap: photo-app convention, cycling fit → 2× → 4× → fit, each
+-- zoom-in step re-centered on the tapped point. The 4× stop lets you get
+-- right into fine map detail; zooming past fit lazily swaps in the full-res
+-- decode (see _new_image_wg), so 4× is genuinely sharper, not upscaled.
+-- Small images open boosted (up to 150% of native, see
+-- _computeFitScaleFactor), so their steps land proportionally higher.
 function GlimpseViewer:onGlimpseDoubleTap(_, ges)
-    if self.scale_factor == 0 then
-        local wg = self._image_wg
-        if wg then
-            wg:getSize() -- pan math needs a rendered bb
-            local d = wg.dimen
-            local cx = d and (d.x + d.w / 2) or Screen:getWidth() / 2
-            local cy = d and (d.y + d.h / 2) or Screen:getHeight() / 2
-            self._center_x_ratio, self._center_y_ratio =
-                wg:getPanByCenterRatio(ges.pos.x - cx, ges.pos.y - cy)
-        end
-        self:_refreshScaleFactor() -- resolve fit into a number
-        self:_applyNewScaleFactor(self.scale_factor * 2)
+    local was_fit = self.scale_factor == 0
+    -- re-center the zoom on the tapped point (harmless when we end up
+    -- snapping back to fit — that path resets the center to the middle)
+    local wg = self._image_wg
+    if wg and ges and ges.pos then
+        wg:getSize() -- pan math needs a rendered bb
+        local d = wg.dimen
+        local cx = d and (d.x + d.w / 2) or Screen:getWidth() / 2
+        local cy = d and (d.y + d.h / 2) or Screen:getHeight() / 2
+        self._center_x_ratio, self._center_y_ratio =
+            wg:getPanByCenterRatio(ges.pos.x - cx, ges.pos.y - cy)
+    end
+    self:_refreshScaleFactor() -- resolve fit (scale 0) into a number
+    local fit = self._fit_scale_factor or self:_computeFitScaleFactor()
+    if was_fit then
+        self:_applyNewScaleFactor((fit or self.scale_factor) * 2)
+    elseif fit and self.scale_factor < fit * 3 then
+        self:_applyNewScaleFactor(fit * 4) -- 2× → 4×, deeper detail
     else
         self.scale_factor = 0
         self._center_x_ratio, self._center_y_ratio = 0.5, 0.5
@@ -2351,6 +2412,8 @@ function GlimpseViewer:switchToImageNum(image_num)
     self._cur_rotation = self:_prefFor(image_num).rotation or 0
     self._fit_scale_factor = nil -- different image, different fit
     self._scale_factor_0 = nil
+    -- new image: the outgoing image's full-res decode is no longer needed
+    self:_resetHiRes()
     -- New image content: flash the panel region on the resulting refresh so
     -- the previous image doesn't ghost through (see the refresh policy in
     -- update()). switchToImageNum → ImageViewer.switchToImageNum → update().
@@ -2557,6 +2620,7 @@ function GlimpseViewer:_hideCurrentImage()
         self.image:free()
         self.image = nil
     end
+    self:_resetHiRes() -- the removed image's full-res decode is done with
     local new_cur = math.min(cur, nb)
     self._cur_rotation = self:_prefFor(new_cur).rotation or 0
     self.image = self._images_list[new_cur]
@@ -2950,14 +3014,38 @@ function Glimpse:showViewer(whole_book_once)
     --     inversion restores the original look.
     local read_file, close_reader = self:_makeReader()
     local images_list = { image_disposable = true }
-    -- Cap decoded bitmaps at 2× the drawer's content box (one C-speed,
-    -- aspect-preserving downscale at load): ImageWidget rescales from the
-    -- source bitmap on EVERY zoom/pan render, so multi-megapixel originals
-    -- make each pinch step (and the night-mode image blit) proportionally
-    -- slower. Fit and double zoom stay 1:1 sharp; only zooming beyond 2×
-    -- upscales slightly.
+    -- The RESTING (fit) view decodes each image capped at 2× the drawer's
+    -- content box (one C-speed, aspect-preserving downscale): ImageWidget
+    -- rescales from the source on EVERY zoom/pan render, so browsing and
+    -- swiping off a capped bitmap stays fast even for multi-megapixel maps.
+    -- Zooming in past fit trades that for sharpness: GlimpseViewer lazily
+    -- re-decodes THAT ONE image at full resolution (see _getHiRes /
+    -- _new_image_wg), so magnifying shows real detail instead of upscaling
+    -- the cap. The capped bitmap is only ever shown at/near fit.
     local cap_w = 2 * math.floor(Screen:getWidth() * GlimpseViewer.panel_ratio)
     local cap_h = 2 * Screen:getHeight()
+    -- Decode + night/invert-bake one image. hires=false applies the resting
+    -- cap; hires=true keeps native resolution. The night baking is identical
+    -- both ways, so the sharp copy matches the resting copy where they overlap.
+    local function decode(im, hires)
+        local night = G_reader_settings:isTrue("night_mode")
+        local sw = Screen.bb.getInverse and Screen.bb:getInverse() == 1
+        local checked = G_reader_settings:isTrue(INVERT_KEY)
+        local bb = self:_render(read_file, im)
+        if bb and not hires then
+            local w, h = bb:getWidth(), bb:getHeight()
+            local s = math.min(1, cap_w / w, cap_h / h)
+            if s < 1 then
+                local scaled = RenderImage:scaleBlitBuffer(bb,
+                    math.floor(w * s + 0.5), math.floor(h * s + 0.5), true)
+                if scaled then bb = scaled end
+            end
+        end
+        if bb and night and (sw and checked or not sw and not checked) then
+            pcall(bb.invertRect, bb, 0, 0, bb:getWidth(), bb:getHeight())
+        end
+        return bb
+    end
     for i, im in ipairs(imgs) do
         images_list[i] = function()
             local night = G_reader_settings:isTrue("night_mode")
@@ -2974,25 +3062,21 @@ function Glimpse:showViewer(whole_book_once)
                 -- hand out a copy: the viewer owns and frees what we return
                 return slot.bb:copy()
             end
-            local bb = self:_render(read_file, im)
-            if bb then
-                local w, h = bb:getWidth(), bb:getHeight()
-                local s = math.min(1, cap_w / w, cap_h / h)
-                if s < 1 then
-                    local scaled = RenderImage:scaleBlitBuffer(bb,
-                        math.floor(w * s + 0.5), math.floor(h * s + 0.5), true)
-                    if scaled then bb = scaled end
-                end
-            end
-            if bb and night and (sw and checked or not sw and not checked) then
-                pcall(bb.invertRect, bb, 0, 0, bb:getWidth(), bb:getHeight())
-            end
+            local bb = decode(im, false)
             if bb then
                 if slot and slot.bb then slot.bb:free() end
                 self._bb_cache = { key = key, bb = bb:copy() }
             end
             return bb
         end
+    end
+    -- Full-resolution decode for the zoomed view, called on demand by the
+    -- viewer (one image at a time). read_file stays valid after close_reader()
+    -- — it just reopens the libarchive fallback if the primary path misses.
+    local hires_decode = function(index)
+        local im = imgs[index]
+        if not im then return nil end
+        return decode(im, true)
     end
 
     -- reopen on the image viewed last time (per book), if still in the list
@@ -3017,6 +3101,8 @@ function Glimpse:showViewer(whole_book_once)
     viewer = GlimpseViewer:new{
         image = images_list,
         image_metas = imgs,
+        -- lazily supplies the full-res decode of the zoomed image (sharp zoom)
+        hires_decode = hires_decode,
         -- for the gallery heading: images the chapter scope holds back
         gallery_hidden_count = scope_hidden,
         images_keep_pan_and_zoom = false,
@@ -3691,17 +3777,6 @@ function Glimpse:_menuItems()
                     callback = function()
                         G_reader_settings:saveSetting(SHADOW_KEY,
                             not G_reader_settings:isTrue(SHADOW_KEY))
-                    end,
-                },
-                {
-                    text = _("Full Refresh on Close"),
-                    help_text = _("When closing Glimpse, run a stronger screen refresh over the drawer area to clear e-ink ghosting. On REAGL panels (most Kindles) this does not flash; on other e-ink it briefly flashes that area. Leave off on LCD or the emulator."),
-                    checked_func = function()
-                        return G_reader_settings:isTrue(FLASH_CLOSE_KEY)
-                    end,
-                    callback = function()
-                        G_reader_settings:saveSetting(FLASH_CLOSE_KEY,
-                            not G_reader_settings:isTrue(FLASH_CLOSE_KEY))
                     end,
                     separator = true,
                 },
