@@ -908,9 +908,20 @@ function GlimpseViewer:update()
     end
     self:_buildPill()
 
+    -- Explicit day-white backing behind the image area. KOReader's night mode
+    -- inverts the framebuffer when compositing, so this shows black in dark
+    -- mode (issue #9) rather than leaving a light gap around the image; in day
+    -- mode it just matches the white card. Logical/day polarity, flag 0.
+    local image_layer = FrameContainer:new{
+        background = Blitbuffer.COLOR_WHITE,
+        bordersize = 0,
+        padding = 0,
+        margin = 0,
+        self.image_container,
+    }
     local overlay = OverlapGroup:new{
         dimen = Geom:new{ w = self.width, h = self.height },
-        self.image_container,
+        image_layer,
     }
     -- chrome is centered/aligned on the image area (content minus the gap
     -- that keeps it clear of the rounded right edge), like the design
@@ -1159,9 +1170,19 @@ function GlimpseViewer:_paintPanel(bb, x, y)
     --     as-is — same pixels on screen, at C speed.
     -- Night design in both: black card, white hairline edge, dark shadow
     -- (stronger/wider than day so it reads on black).
-    local night = G_reader_settings:isTrue("night_mode")
+    local night = Screen.night_mode
     local inv = bb.getInverse and bb:getInverse() == 1
-    local skey = tostring(night) .. tostring(inv)
+    -- SW-invert night mode (Android/Boox): KOReader inverts the framebuffer
+    -- when compositing our buffers onto it. Flag-matching our stencils to that
+    -- inverse flag makes the C blitter copy them RAW, BYPASSING that inversion
+    -- — which left the whole drawer white in dark mode (issue #9). So in that
+    -- case DON'T flag-match: keep the stencils in logical/day polarity and let
+    -- KOReader invert them exactly like it does every stock widget. On HW-
+    -- invert panels the fb flag is already 0, so render_inv == inv == false and
+    -- nothing changes there.
+    local render_inv = inv
+        and not (night and Device.isAndroid and Device:isAndroid())
+    local skey = tostring(night) .. tostring(render_inv)
     -- Advanced → Disable shadow: skip the gradient entirely. The dithered
     -- shadow is the main e-ink ghost source, so some users prefer it off.
     local shadow_disabled = G_reader_settings:isTrue(SHADOW_KEY)
@@ -1174,7 +1195,7 @@ function GlimpseViewer:_paintPanel(bb, x, y)
     local shadow_h = h + 2 * self.panel_vgap
     -- logical shadow color is white in night (inverts to dark); with the
     -- SW-invert flag set we store the final dark value directly instead
-    local sv = inv and 0x00 or (night and 0xFF or 0x00)
+    local sv = render_inv and 0x00 or (night and 0xFF or 0x00)
     local speak = night and 1.0 or 0.5
     -- night mode gets a wider gradient so it reaches further onto the page
     -- (user tuning 2026-07-22: 2x read as reaching too far, 1.25x as too
@@ -1254,7 +1275,7 @@ function GlimpseViewer:_paintPanel(bb, x, y)
                 self._shadow_bb:setPixel(i, j, Blitbuffer.ColorRGB32(sv, sv, sv, a))
             end
         end
-        self._shadow_bb:setInverse(inv and 1 or 0)
+        self._shadow_bb:setInverse(render_inv and 1 or 0)
     end
     -- consumed by interior updates (see update()): the page under the
     -- shadow wasn't repainted, so blending again would accumulate
@@ -1286,8 +1307,8 @@ function GlimpseViewer:_paintPanel(bb, x, y)
         bb:blitFrom(ucb[2], x + w - cr, cpy + h - cr, 0, 0, cr, cr)
     else
         -- match the fb's inverse flag so these copies run on the C blitter
-        ucb[1]:setInverse(inv and 1 or 0)
-        ucb[2]:setInverse(inv and 1 or 0)
+        ucb[1]:setInverse(render_inv and 1 or 0)
+        ucb[2]:setInverse(render_inv and 1 or 0)
         ucb[1]:blitFrom(bb, 0, 0, x + w - cr, cpy, cr, cr)
         ucb[2]:blitFrom(bb, 0, 0, x + w - cr, cpy + h - cr, cr, cr)
     end
@@ -1305,8 +1326,8 @@ function GlimpseViewer:_paintPanel(bb, x, y)
         -- values raw instead (flag-matched below for the C blitter).
         -- NB: screen:shot()/getPixel un-invert reads, so night shots show
         -- LOGICAL values, not the displayed ones.
-        local body = inv and 0x00 or 0xFF     -- card background
-        local edge = inv and 0xFF or 0x00     -- border
+        local body = render_inv and 0x00 or 0xFF     -- card background
+        local edge = render_inv and 0xFF or 0x00     -- border
         local c_body = Blitbuffer.ColorRGB32(body, body, body, 0xFF)
         local c_edge = Blitbuffer.ColorRGB32(edge, edge, edge, 0xFF)
         -- night edge is a hairline: thinner than the day border but at
@@ -1340,7 +1361,7 @@ function GlimpseViewer:_paintPanel(bb, x, y)
                 end
             end
         end
-        self._panel_bb:setInverse(inv and 1 or 0)
+        self._panel_bb:setInverse(render_inv and 1 or 0)
     end
     bb:alphablitFrom(self._panel_bb, x, py, 0, 0, w, h)
     self:_saveCorners(bb, x, py)
@@ -1561,31 +1582,21 @@ function GlimpseViewer:_new_image_wg()
         scale_factor = wg_scale,
         center_x_ratio = self._center_x_ratio,
         center_y_ratio = self._center_y_ratio,
-        -- ImageWidget's default night handling invertRects its FULL rect
-        -- (widget size, not the scaled image), which flips the drawer's
-        -- letterbox areas around the image back to white in night mode.
-        -- Opt out; the render closure implements our own global
-        -- "Invert in Night Mode" setting instead.
+        -- We bake the night-mode inversion into the decoded bitmap ourselves
+        -- (see the decode closure in showViewer), device-agnostically — the
+        -- same pixel operation ImageWidget itself would do — so opt out of
+        -- its own night handling to avoid inverting twice. (Its invertRect
+        -- also spans the full widget rect, which would flip the letterbox
+        -- around the image.) We deliberately do NOT flag-match the bitmap to
+        -- the framebuffer's night flag: matching it once tied our night
+        -- correctness to a getInverse() read that could disagree between
+        -- decode and paint, which flipped the image on some devices — the
+        -- "Invert in Night Mode reversed" bug. A plain flag-0 blit is the
+        -- same path KOReader uses for every image, correct on HW- and
+        -- SW-invert alike (only marginally slower on the rare SW-invert
+        -- device, which re-inverts during the blit).
         original_in_nightmode = false,
     }
-    -- Night (SW invert): the fb's inverse flag would push the image blit
-    -- onto the per-pixel Lua blitter on EVERY paint (mismatched flags —
-    -- same story as the panel stencils in _paintPanel). The render
-    -- closure already bakes the final raw night values into the DECODED
-    -- bitmap once (see showViewer), so every re-scaled copy only needs
-    -- its inverse flag set to match the fb — a free flag toggle instead
-    -- of the full-bitmap invertRect this hook used to do per zoom step
-    -- (which doubled night zoom cost vs day). Flag-only is also safe on
-    -- the shared source bitmap at 1:1 scale: no content is mutated.
-    local wg = self._image_wg
-    local orig_render = wg._render
-    wg._render = function(w_)
-        orig_render(w_)
-        if w_._bb and Screen.bb.getInverse and Screen.bb:getInverse() == 1
-           and w_._bb:getInverse() == 0 then
-            w_._bb:invert()
-        end
-    end
     self.image_container = CenterContainer:new{
         dimen = Geom:new{ w = avail_w, h = self.img_container_h },
         self._image_wg,
@@ -1878,10 +1889,9 @@ function GlimpseViewer:_thumb(i, w, h)
     else
         bb = own and src or src:copy()
     end
-    if bb and Screen.bb.getInverse and Screen.bb:getInverse() == 1
-       and bb:getInverse() == 0 then
-        bb:invert() -- flag-match the fb (content already night-baked)
-    end
+    -- No fb-flag matching here (see _new_image_wg): the source is already
+    -- night-baked device-agnostically, and a plain flag-0 blit is correct on
+    -- every device.
     self._thumb_bbs[i] = { bb = bb, w = w, h = h }
     return bb
 end
@@ -3048,16 +3058,18 @@ function Glimpse:showViewer(whole_book_once)
     -- lazy render functions: one image decoded at a time, freed on switch;
     -- "invert in night mode" (a global setting) is applied here so
     -- re-renders pick up setting and night-mode changes live.
-    -- Night comes in two flavors (see _paintPanel for the long story):
-    --   * SW-invert fb (inverse flag set): the scaled copies are blitted
-    --     flag-matched and RAW (see _new_image_wg), so the decoded bitmap
-    --     must hold the FINAL raw values — the negative when the checkbox
-    --     is CHECKED, untouched when unchecked. Baking this here, once
-    --     per decode, replaces the invertRect the render hook used to run
-    --     on every re-scaled copy (it doubled night zoom cost vs day).
-    --   * HW-invert panel (flag 0): the display inverts everything, so
-    --     bake the OPPOSITE — inverted when UNCHECKED, so the double
-    --     inversion restores the original look.
+    -- Night handling (device-agnostic): whenever night mode is on and the
+    -- user has NOT ticked "Invert in Night Mode", pre-invert the image pixels
+    -- so the screen's own global night inversion brings them back to their
+    -- ORIGINAL colours — exactly what KOReader's ImageWidget does for every
+    -- image (original_in_nightmode), just baked once here instead of per
+    -- paint. Ticking the box skips the pre-invert, so the image ends up
+    -- inverted (negative) on screen. Crucially this depends only on the
+    -- SAME Screen.night_mode flag ImageWidget keys off (not getInverse() nor
+    -- the persisted setting) so our pre-invert is always paired with the
+    -- screen's actual inversion state — the old code keyed off getInverse()
+    -- and the setting, which could disagree with it and reversed the image on
+    -- some devices ("Invert in Night Mode reversed").
     local read_file, close_reader = self:_makeReader()
     local images_list = { image_disposable = true }
     -- The RESTING (fit) view decodes each image capped at 2× the drawer's
@@ -3074,8 +3086,7 @@ function Glimpse:showViewer(whole_book_once)
     -- cap; hires=true keeps native resolution. The night baking is identical
     -- both ways, so the sharp copy matches the resting copy where they overlap.
     local function decode(im, hires)
-        local night = G_reader_settings:isTrue("night_mode")
-        local sw = Screen.bb.getInverse and Screen.bb:getInverse() == 1
+        local night = Screen.night_mode
         local checked = G_reader_settings:isTrue(INVERT_KEY)
         local bb = self:_render(read_file, im)
         if bb and not hires then
@@ -3087,22 +3098,22 @@ function Glimpse:showViewer(whole_book_once)
                 if scaled then bb = scaled end
             end
         end
-        if bb and night and (sw and checked or not sw and not checked) then
+        -- pre-invert so the screen's night inversion restores the original,
+        -- unless the user asked for an inverted (negative) image
+        if bb and night and not checked then
             pcall(bb.invertRect, bb, 0, 0, bb:getWidth(), bb:getHeight())
         end
         return bb
     end
     for i, im in ipairs(imgs) do
         images_list[i] = function()
-            local night = G_reader_settings:isTrue("night_mode")
-            local sw = Screen.bb.getInverse and Screen.bb:getInverse() == 1
+            local night = Screen.night_mode
             local checked = G_reader_settings:isTrue(INVERT_KEY)
             -- single-slot decoded-bitmap cache: reopening on the image
             -- you left (the common "peek at the map again" flow) skips
             -- the decode and cap-scale — on device that is most of the
             -- open time. The key bakes in everything baked into pixels.
-            local key = im.path .. "|" .. tostring(night)
-                .. tostring(checked) .. tostring(sw)
+            local key = im.path .. "|" .. tostring(night) .. tostring(checked)
             local slot = self._bb_cache
             if slot and slot.key == key and slot.bb then
                 -- hand out a copy: the viewer owns and frees what we return
