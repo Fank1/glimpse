@@ -79,7 +79,7 @@ Updates → *Check for updates*.
 | Advanced → Hide irrelevant images *(checkbox, on)* | Hides covers, publisher logos, ornaments and other non-reference imagery. Off = every image in the book. |
 | Advanced → Show image captions (beta) *(checkbox, on)* | Show the image's caption from the book as a solid tab tucked into the viewer's top-left corner (white with black text in day mode, black with white text at night), wrapping onto multiple lines for longer captions. |
 | Advanced → Enable top menu tap zone *(checkbox, on)* | While the viewer is open, a tap along the top edge opens KOReader's top menu (only that one, never the bottom menu) over the drawer. Off leaves the top edge inert. |
-| Advanced → Rescan this book | Drop the cached scan (scans are cached per book file); use if the file was replaced or images seem out of date. |
+| Advanced → Rescan this book | Drop the cached scan (cached in the book's own `.sdr` sidecar folder, so it travels with the book between devices); use if the file was replaced or images seem out of date. |
 | Updates → Check for updates | Fetch the latest GitHub release and install it in place (with backup and rollback), then offer a restart. |
 | Updates → Include pre-release versions *(checkbox, off)* | Also offer releases marked pre-release on GitHub: test builds, at your own risk. Normal update checks never see those. |
 
@@ -94,6 +94,17 @@ you're currently on) and a small number badge showing its reading order,
 keeping its own aspect ratio instead of being cropped to a uniform tile.
 Paged when there are enough to browse; a *Back* button returns to the
 normal viewer. Tap a thumbnail to jump straight to that image instead.
+
+**Shown / Ignored tabs.** When the relevance filter has set some images
+aside (or you've hidden some), the Gallery grows a **Shown / Ignored** tab
+bar. The *Ignored* tab is every image not in your collection — ones the
+filter dropped as irrelevant *and* ones you removed by hand. **Long-press**
+a thumbnail to move it between the tabs: from *Shown* it goes to *Ignored*,
+from *Ignored* (marked with a **+**) it comes back to *Shown*. That's the
+fix when the filter hides an image you actually want — the map it deemed
+irrelevant — without switching to *Mode: All images*. The moves persist per
+book. If the filter hides *everything*, the empty state offers **Review
+filtered-out** to open straight into the Ignored tab.
 
 ### Releasing
 

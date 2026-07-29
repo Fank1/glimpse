@@ -12,6 +12,7 @@ local Blitbuffer = require("ffi/blitbuffer")
 local CenterContainer = require("ui/widget/container/centercontainer")
 local ConfirmBox = require("ui/widget/confirmbox")
 local DataStorage = require("datastorage")
+local DocSettings = require("docsettings")
 local Device = require("device")
 local Dispatcher = require("dispatcher")
 local Event = require("ui/event")
@@ -286,6 +287,7 @@ end
 -- number), same as the rest of the chrome. Widens for 2+ digit numbers.
 local GlimpseBadge = Widget:extend{
     num = 1,
+    glyph = nil, -- when set, drawn instead of the number (e.g. "+" on Ignored)
     height = Screen:scaleBySize(17),
     radius = Screen:scaleBySize(4),
     stroke = Screen:scaleBySize(1),
@@ -294,7 +296,7 @@ local GlimpseBadge = Widget:extend{
 
 function GlimpseBadge:init()
     self._txt = TextWidget:new{
-        text = tostring(self.num),
+        text = self.glyph or tostring(self.num),
         face = Font:getFace("cfont", 11),
         bold = true,
         fgcolor = Blitbuffer.COLOR_BLACK,
@@ -814,6 +816,15 @@ local GlimpseViewer = ImageViewer:extend{
     on_restore_hidden = nil, -- function(): restore hidden images and reopen
     get_pref = nil,        -- function(meta) -> per-image prefs {rotation=}
     set_pref = nil,        -- function(meta, key, value)
+    -- Gallery tabs. The single-image view uses image/image_metas (= the
+    -- primary pool); the Gallery shows shown_* or ignored_* per active tab.
+    shown_metas = nil,     -- scanner records for the shown collection
+    shown_list = nil,      -- parallel render closures for shown_metas
+    ignored_metas = nil,   -- scanner records the filter dropped / user hid
+    ignored_list = nil,    -- parallel render closures for ignored_metas
+    primary_tab = "shown", -- which pool the single-image view is showing
+    on_ignore = nil,       -- function(meta, tab, page): move to Ignored
+    on_unignore = nil,     -- function(meta, tab, page): add back to Shown
     -- gallery masonry (⋯ → Gallery): fixed-width columns, variable heights
     gallery_cols = 3,
     -- No title bar and no button row: everything is image. Position comes
@@ -1462,6 +1473,10 @@ function GlimpseViewer:onCloseWidget()
         for _, b in ipairs(self._gallery_badges) do b:free() end
         self._gallery_badges = nil
     end
+    if self._gallery_tab_wgs then
+        for _, w in ipairs(self._gallery_tab_wgs) do w:free() end
+        self._gallery_tab_wgs = nil
+    end
     if self._caption_wg then
         self._caption_wg:free()
         self._caption_wg = nil
@@ -1744,10 +1759,44 @@ end
 -- ratio, placed into the currently shortest column — a page is full
 -- when the next image doesn't fit any column.
 
-function GlimpseViewer:_enterGallery()
+-- The list/metas/count for the active Gallery tab (shown vs ignored). The
+-- single-image view always uses _images_list/image_metas (= the primary pool).
+function GlimpseViewer:_tabList()
+    if self._gallery_tab == "ignored" then
+        return self.ignored_list, self.ignored_metas,
+            self.ignored_metas and #self.ignored_metas or 0
+    end
+    return self.shown_list, self.shown_metas,
+        self.shown_metas and #self.shown_metas or 0
+end
+
+function GlimpseViewer:_ignoredCount()
+    return self.ignored_metas and #self.ignored_metas or 0
+end
+
+-- The Ignored tab (and hence the whole tab bar) only appears when there is
+-- something ignored — otherwise the Gallery looks exactly as it did before.
+function GlimpseViewer:_hasIgnoredTab()
+    return self:_ignoredCount() > 0
+end
+
+function GlimpseViewer:_switchGalleryTab(tab)
+    if tab == self._gallery_tab then return end
+    self._gallery_tab = tab
+    self._gallery_page = 1
+    self._ignored_hint_shown = nil
+    self:update()
+end
+
+function GlimpseViewer:_enterGallery(page, tab)
     self._gallery_mode = true
+    self._gallery_tab = tab or self.primary_tab or "shown"
     local layout = self:_galleryLayout()
-    self._gallery_page = layout.page_of[self._images_list_cur or 1] or 1
+    if page then
+        self._gallery_page = math.min(math.max(page, 1), #layout.pages)
+    else
+        self._gallery_page = layout.page_of[self._images_list_cur or 1] or 1
+    end
     -- the gallery browses from the fit state; a zoomed view has been
     -- left behind anyway once the user goes looking for another image
     self.scale_factor = 0
@@ -1768,13 +1817,48 @@ function GlimpseViewer:_galleryPages()
     return #self:_galleryLayout().pages
 end
 
+-- Drawer-content origin: gallery cell/tab rects are recorded relative to it.
+function GlimpseViewer:_contentOrigin()
+    local mf = self.main_frame.dimen
+    return mf.x, mf.y + self.panel_vgap + self.panel_border
+end
+
+-- Thumbnail index at pos (gallery mode), or nil.
+function GlimpseViewer:_galleryHit(pos)
+    if not self._gallery_cells then return nil end
+    local ox, oy = self:_contentOrigin()
+    for _, c in ipairs(self._gallery_cells) do
+        if pos:intersectWith(Geom:new{
+            x = ox + c.x, y = oy + c.y, w = c.w, h = c.h }) then
+            return c.idx
+        end
+    end
+    return nil
+end
+
+-- Tab ("shown"/"ignored") at pos in the tab bar, or nil.
+function GlimpseViewer:_tabBarHit(pos)
+    if not self._tab_frames then return nil end
+    local ox, oy = self:_contentOrigin()
+    for _, t in ipairs(self._tab_frames) do
+        if pos:intersectWith(Geom:new{
+            x = ox + t.x, y = oy + t.y, w = t.w, h = t.h }) then
+            return t.tab
+        end
+    end
+    return nil
+end
+
 -- Masonry layout for ALL images, computed once per viewer (the image
 -- list and drawer size are fixed while it is open) from the scanner's
 -- header-sniffed dimensions — no decoding. Returns { pages = {
 -- {cell,...}, ... }, page_of = {idx -> page} }; cell = {idx,x,y,w,h}
 -- relative to the drawer content origin (the onTap hit-test space).
 function GlimpseViewer:_galleryLayout()
-    if self._gallery_layout then return self._gallery_layout end
+    local tab = self._gallery_tab or "shown"
+    self._gallery_layouts = self._gallery_layouts or {}
+    if self._gallery_layouts[tab] then return self._gallery_layouts[tab] end
+    local _, metas, nb = self:_tabList()
     local m = self:_galleryMetrics()
     local cols = self.gallery_cols
     local col_w = math.floor(
@@ -1790,8 +1874,8 @@ function GlimpseViewer:_galleryLayout()
             for c = 1, cols do heights[c] = 0 end
         end
     end
-    for i = 1, self._images_list_nb or 1 do
-        local meta = self.image_metas and self.image_metas[i]
+    for i = 1, nb or 1 do
+        local meta = metas and metas[i]
         local iw = meta and (meta.width or meta.attr_width)
         local ih = meta and (meta.height or meta.attr_height)
         if not (iw and ih and iw > 0 and ih > 0) then iw, ih = 1, 1 end
@@ -1822,7 +1906,7 @@ function GlimpseViewer:_galleryLayout()
     end
     flush()
     if #layout.pages == 0 then layout.pages[1] = {} end
-    self._gallery_layout = layout
+    self._gallery_layouts[tab] = layout
     return layout
 end
 
@@ -1864,15 +1948,19 @@ end
 -- is open; the cache is freed with the viewer.
 function GlimpseViewer:_thumb(i, w, h)
     self._thumb_bbs = self._thumb_bbs or {}
-    local t = self._thumb_bbs[i]
+    -- key by tab too: index i means different images across tabs, and we
+    -- want a cached thumbnail to survive flipping tabs back and forth
+    local ckey = (self._gallery_tab or "shown") .. ":" .. i
+    local t = self._thumb_bbs[ckey]
     if t and t.w == w and t.h == h then
         return t.bb
     end
     if t and t.bb then
         t.bb:free()
-        self._thumb_bbs[i] = nil
+        self._thumb_bbs[ckey] = nil
     end
-    local src = self._images_list and self._images_list[i]
+    local list = (self:_tabList())
+    local src = list and list[i]
     local own = false
     if type(src) == "function" then
         src = src()
@@ -1892,7 +1980,7 @@ function GlimpseViewer:_thumb(i, w, h)
     -- No fb-flag matching here (see _new_image_wg): the source is already
     -- night-baked device-agnostically, and a plain flag-0 blit is correct on
     -- every device.
-    self._thumb_bbs[i] = { bb = bb, w = w, h = h }
+    self._thumb_bbs[ckey] = { bb = bb, w = w, h = h }
     return bb
 end
 
@@ -1907,40 +1995,83 @@ function GlimpseViewer:_buildGallery()
     local grid = OverlapGroup:new{
         dimen = Geom:new{ w = self.width, h = self.img_container_h },
     }
-    -- heading, top-left: how much there is to browse, and how much the
-    -- chapter scope is holding back. The Back button now lives at the
-    -- bottom, so the whole top band is free of chrome to dodge.
+    -- Top band. With an Ignored pool it holds a Shown/Ignored tab bar; with
+    -- nothing ignored it is the plain "N images in book" heading, exactly as
+    -- before (the Back button lives at the bottom, so the band is free).
     if self._gallery_heading then
         self._gallery_heading:free()
         self._gallery_heading = nil
     end
+    if self._gallery_tab_wgs then
+        for _, w in ipairs(self._gallery_tab_wgs) do w:free() end
+    end
+    self._gallery_tab_wgs = {}
+    self._tab_frames = nil
     if self._gallery_badges then
         for _, b in ipairs(self._gallery_badges) do b:free() end
     end
     self._gallery_badges = {}
-    local nb = self._images_list_nb or 1
-    local hidden = self.gallery_hidden_count or 0
-    local heading_text
-    if hidden > 0 then
-        heading_text = T(_("%1 images in book this far, %2 hidden"),
-            nb, hidden)
+    local band_h = Screen:scaleBySize(40)
+    local band_top = Screen:scaleBySize(3)
+    local on_ignored_tab = self._gallery_tab == "ignored"
+    local active_is_primary = (self._gallery_tab or "shown")
+        == (self.primary_tab or "shown")
+    if self:_hasIgnoredTab() then
+        local shown_n = self.shown_metas and #self.shown_metas or 0
+        local tabs = {
+            { tab = "shown", text = T(_("Shown (%1)"), shown_n) },
+            { tab = "ignored", text = T(_("Ignored (%1)"), self:_ignoredCount()) },
+        }
+        self._tab_frames = {}
+        local x = m.pad
+        local gap = Screen:scaleBySize(18)
+        for _, tb in ipairs(tabs) do
+            local active = self._gallery_tab == tb.tab
+            local tw = TextWidget:new{
+                text = tb.text,
+                face = Font:getFace("cfont", 14),
+                bold = active,
+                fgcolor = active and Blitbuffer.COLOR_BLACK
+                    or Blitbuffer.COLOR_GRAY,
+            }
+            local tsz = tw:getSize()
+            tw.overlap_offset = { x, band_top + math.floor((band_h - tsz.h) / 2) }
+            table.insert(grid, tw)
+            table.insert(self._gallery_tab_wgs, tw)
+            -- tap target: the label, padded to the full band height so it is
+            -- comfortably tappable (recorded in drawer-content space like cells)
+            table.insert(self._tab_frames, {
+                tab = tb.tab,
+                x = x - Screen:scaleBySize(6),
+                y = band_top,
+                w = tsz.w + Screen:scaleBySize(12),
+                h = band_h,
+            })
+            x = x + tsz.w + gap
+        end
     else
-        heading_text = T(_("%1 images in book"), nb)
+        local nb = self._images_list_nb or 1
+        local hidden = self.gallery_hidden_count or 0
+        local heading_text
+        if hidden > 0 then
+            heading_text = T(_("%1 images in book this far, %2 hidden"),
+                nb, hidden)
+        else
+            heading_text = T(_("%1 images in book"), nb)
+        end
+        self._gallery_heading = TextWidget:new{
+            text = heading_text,
+            face = Font:getFace("cfont", 14),
+            bold = true,
+            fgcolor = Blitbuffer.COLOR_BLACK,
+            max_width = m.area_w - 2 * m.pad,
+        }
+        local hh = self._gallery_heading:getSize().h
+        self._gallery_heading.overlap_offset = {
+            m.pad, band_top + math.floor((band_h - hh) / 2),
+        }
+        table.insert(grid, self._gallery_heading)
     end
-    self._gallery_heading = TextWidget:new{
-        text = heading_text,
-        face = Font:getFace("cfont", 14),
-        bold = true,
-        fgcolor = Blitbuffer.COLOR_BLACK,
-        max_width = m.area_w - 2 * m.pad,
-    }
-    local hh = self._gallery_heading:getSize().h
-    self._gallery_heading.overlap_offset = {
-        m.pad,
-        Screen:scaleBySize(3)
-            + math.floor((Screen:scaleBySize(40) - hh) / 2),
-    }
-    table.insert(grid, self._gallery_heading)
     self._gallery_cells = {}
     for _, c in ipairs(layout.pages[self._gallery_page] or {}) do
         local bb = self:_thumb(c.idx,
@@ -1949,8 +2080,9 @@ function GlimpseViewer:_buildGallery()
             -- every thumbnail gets a subtle rounded outline so adjacent
             -- images (which otherwise butt edge to edge) stay visually
             -- distinct; the current image gets a heavier black one on
-            -- top of that, same as before
-            local is_cur = c.idx == (self._images_list_cur or 1)
+            -- top of that (only on the pool the single-view is showing)
+            local is_cur = active_is_primary
+                and c.idx == (self._images_list_cur or 1)
             local cell = CenterContainer:new{
                 dimen = Geom:new{ w = c.w, h = c.h },
                 FrameContainer:new{
@@ -1973,10 +2105,13 @@ function GlimpseViewer:_buildGallery()
             table.insert(grid, cell)
             table.insert(self._gallery_cells,
                 { x = c.x, y = c.y, w = c.w, h = c.h, idx = c.idx })
-            -- reading-order badge in the thumbnail's top-left corner, so
-            -- the (masonry) layout's order is legible and a given image is
-            -- findable; added AFTER the cell so it paints on top
-            local badge = GlimpseBadge:new{ num = c.idx }
+            -- top-left corner badge, added AFTER the cell so it paints on
+            -- top: a reading-order number in the Shown grid (so the masonry
+            -- order is legible and an image is findable), a "+" in the
+            -- Ignored grid to signal that long-press adds it back to Shown
+            local badge = on_ignored_tab
+                and GlimpseBadge:new{ glyph = "+" }
+                or GlimpseBadge:new{ num = c.idx }
             badge.overlap_offset = {
                 c.x + m.inset + Screen:scaleBySize(3),
                 c.y + m.inset + Screen:scaleBySize(3),
@@ -2347,19 +2482,30 @@ function GlimpseViewer:onTap(_, ges)
         return true
     end
     if self._gallery_mode then
-        -- thumbnail hit-test: cell rects are relative to the drawer
-        -- content origin (same space as the overlap offsets)
-        if self._gallery_cells then
-            local mf = self.main_frame.dimen
-            local ox = mf.x
-            local oy = mf.y + self.panel_vgap + self.panel_border
-            for _, c in ipairs(self._gallery_cells) do
-                if ges.pos:intersectWith(Geom:new{
-                    x = ox + c.x, y = oy + c.y, w = c.w, h = c.h }) then
-                    self:_exitGallery(c.idx)
-                    return true
+        -- tab bar first (Shown/Ignored), same content-origin hit space
+        local tab = self:_tabBarHit(ges.pos)
+        if tab then
+            self:_switchGalleryTab(tab)
+            return true
+        end
+        -- thumbnail hit-test
+        local idx = self:_galleryHit(ges.pos)
+        if idx then
+            if self._gallery_tab == (self.primary_tab or "shown") then
+                -- this pool is what the single-image view shows: open it
+                self:_exitGallery(idx)
+            else
+                -- the Ignored tab (not the primary pool): tap only previews
+                -- the idea; adding back is a long-press. Nudge once so the
+                -- gesture is discoverable, then stay quiet.
+                if not self._ignored_hint_shown then
+                    self._ignored_hint_shown = true
+                    UIManager:show(Notification:new{
+                        text = _("Long-press to add to Shown"),
+                    })
                 end
             end
+            return true
         end
         return true -- no zoom surface in the gallery
     end
@@ -2480,6 +2626,34 @@ end
 -- closes by tapping outside the panel instead, so swallow multiswipes here.
 function GlimpseViewer:onMultiSwipe(_, ges)
     return true
+end
+
+-- Long-press in the Gallery moves an image between the tabs: from Shown it
+-- goes to Ignored (hidden), from Ignored it comes back to Shown (force-added).
+-- The plugin persists the change and reopens the drawer back into the same
+-- Gallery tab/page (see on_ignore/on_unignore). Outside the gallery, defer to
+-- upstream (long-press starts a pan on a zoomed image).
+function GlimpseViewer:onHold(_, ges)
+    if self._gallery_mode then
+        local idx = self:_galleryHit(ges.pos)
+        if idx then
+            local _, metas = self:_tabList()
+            local meta = metas and metas[idx]
+            if meta then
+                if self._gallery_tab == "ignored" then
+                    if self.on_unignore then
+                        self.on_unignore(meta, "ignored", self._gallery_page)
+                    end
+                else
+                    if self.on_ignore then
+                        self.on_ignore(meta, "shown", self._gallery_page)
+                    end
+                end
+            end
+        end
+        return true
+    end
+    return ImageViewer.onHold(self, _, ges)
 end
 
 -- On the SDL emulator, mouse wheel / two-finger trackpad scroll arrives as
@@ -2750,6 +2924,15 @@ function Glimpse:_hiddenPaths()
             self.ui.doc_settings:readSetting("glimpse_hidden")) or {}
 end
 
+-- Images the user has explicitly pulled back INTO the collection from the
+-- Gallery's "Ignored" tab (the filter dropped them, or they were hidden).
+-- The inverse of glimpse_hidden; a path in both means "shown" wins via the
+-- partition in showViewer (add-back clears hidden and sets forced together).
+function Glimpse:_forcedPaths()
+    return (self.ui.doc_settings and
+            self.ui.doc_settings:readSetting("glimpse_forced")) or {}
+end
+
 -- Per-image, per-book viewer preferences: { [path] = {rotation=90} }
 function Glimpse:_imgPrefs()
     return (self.ui.doc_settings and
@@ -2764,6 +2947,11 @@ function Glimpse:_setImgPref(path, key, value)
     for _ in pairs(p) do has = true break end
     all[path] = has and p or nil
     self.ui.doc_settings:saveSetting("glimpse_img_prefs", all)
+    -- Flush now so a per-image rotation survives even an unclean shutdown
+    -- (sleep/battery-pull on an e-reader) rather than waiting for KOReader's
+    -- next autosave or a clean book close. Cheap: rotation is a rare,
+    -- user-initiated action, never a hot path.
+    self.ui.doc_settings:flush()
 end
 
 function Glimpse:_hiddenCount()
@@ -2843,11 +3031,15 @@ end
 -- ── scan + sidecar cache ────────────────────────────────────────────────────
 
 function Glimpse:_cachePath()
-    local dir = DataStorage:getDataDir() .. "/glimpse"
+    -- Live in the book's own sidecar (.sdr) folder, next to KOReader's
+    -- metadata, so the scan travels with the book when it's copied between
+    -- devices (getSidecarDir honours the user's metadata-location setting:
+    -- doc/dir/hash — the cache follows wherever the metadata lives). Older
+    -- builds kept a central koreader/glimpse/<key>.lua; those files are now
+    -- orphaned and simply re-scanned into the sidecar on next open.
+    local dir = DocSettings:getSidecarDir(self.ui.document.file)
     lfs.mkdir(dir)
-    local key = self.ui.document.file:gsub("[/\\]", "_"):gsub("[^%w%-%._]", "_")
-    if #key > 180 then key = key:sub(-180) end
-    return dir .. "/" .. key .. ".lua"
+    return dir .. "/glimpse.scan.lua"
 end
 
 -- cache_only: return an in-memory or valid on-disk cached scan (or nil) WITHOUT
@@ -2999,36 +3191,65 @@ function Glimpse:showViewer(whole_book_once)
     end
 
     local level = self:getFilterLevel()
-    local imgs = scanner.filter(scan.images, level)
-
-    -- per-book hidden images (before scope, so the gallery heading can
-    -- count what the chapter scope holds back without counting these)
+    local kept_list = scanner.filter(scan.images, level)
+    local kept_paths = {}
+    for _, im in ipairs(kept_list) do kept_paths[im.path] = true end
+    local forced = self:_forcedPaths()
     local hidden = self:_hiddenPaths()
-    do
-        local kept = {}
-        for _, im in ipairs(imgs) do
-            if not hidden[im.path] then
-                kept[#kept + 1] = im
-            end
+
+    -- Partition every scanned image (kept in reading order) into the
+    -- collection the user sees ("shown") and the pool the Gallery's Ignored
+    -- tab offers ("ignored"). Shown = kept by the relevance filter OR
+    -- force-added by the user, and not hidden. Ignored = everything else:
+    -- images the filter dropped (and the user hasn't re-added) plus images
+    -- the user hid. Long-pressing a thumbnail in the Gallery moves an image
+    -- between the two (see on_ignore/on_unignore); the paths persist per book.
+    local shown_metas, ignored_metas = {}, {}
+    for _, im in ipairs(scan.images) do
+        local is_shown = (kept_paths[im.path] or forced[im.path])
+            and not hidden[im.path]
+        if is_shown then
+            shown_metas[#shown_metas + 1] = im
+        else
+            ignored_metas[#ignored_metas + 1] = im
         end
-        imgs = kept
     end
 
-    -- scope: drop images beyond the reading position
+    -- scope: drop images beyond the reading position from BOTH pools (the
+    -- Ignored tab respects spoiler scope too). scope_hidden counts what the
+    -- chapter scope holds back from the shown collection (gallery heading).
     local scope_hidden = 0
     if self:getScope() == "read_so_far" and not whole_book_once then
         local cur = self:_currentSpineIndex()
         if cur then
-            local kept = {}
-            for _, im in ipairs(imgs) do
-                if im.spine_index <= cur then
-                    kept[#kept + 1] = im
+            local function clip(list)
+                local kept = {}
+                for _, im in ipairs(list) do
+                    if im.spine_index <= cur then kept[#kept + 1] = im end
                 end
+                return kept
             end
-            scope_hidden = #imgs - #kept
-            imgs = kept
+            local before = #shown_metas
+            shown_metas = clip(shown_metas)
+            scope_hidden = before - #shown_metas
+            ignored_metas = clip(ignored_metas)
         end
     end
+
+    -- The single-image viewer works on the shown collection. When the filter
+    -- has left nothing shown but there ARE ignored images, opening is opt-in:
+    -- the empty state offers "Review filtered-out", which reopens with the
+    -- ignored pool as primary (a long-press reopen — _pending_gallery — does
+    -- the same). Otherwise the common decorative-only book (every image
+    -- correctly filtered) lands on the plain "No images" state instead of
+    -- suddenly displaying its ornaments.
+    local want_ignored_primary = self._review_ignored
+        or (self._pending_gallery ~= nil)
+    local primary_tab = "shown"
+    if #shown_metas == 0 and want_ignored_primary and #ignored_metas > 0 then
+        primary_tab = "ignored"
+    end
+    local imgs = (primary_tab == "shown") and shown_metas or ignored_metas
 
     if #imgs == 0 then
         -- Only offer "Search whole book" when the read-so-far scope is
@@ -3049,11 +3270,27 @@ function Glimpse:showViewer(whole_book_once)
                     self:showViewer(true)
                 end,
             })
+        elseif #ignored_metas > 0 then
+            -- everything in scope was filtered out (the #4 case): let the
+            -- user review and re-add from the Gallery's Ignored tab
+            local msg = #ignored_metas == 1
+                and _("No images to show — 1 was filtered out as irrelevant.")
+                or T(_("No images to show — %1 were filtered out as irrelevant."),
+                    #ignored_metas)
+            UIManager:show(ConfirmBox:new{
+                text = msg,
+                ok_text = _("Review filtered-out"),
+                ok_callback = function()
+                    self._review_ignored = true
+                    self:showViewer(whole_book_once)
+                end,
+            })
         else
             UIManager:show(InfoMessage:new{ text = _("No images to show.") })
         end
         return
     end
+    self._review_ignored = nil -- consumed once we're actually opening
 
     -- lazy render functions: one image decoded at a time, freed on switch;
     -- "invert in night mode" (a global setting) is applied here so
@@ -3071,7 +3308,6 @@ function Glimpse:showViewer(whole_book_once)
     -- and the setting, which could disagree with it and reversed the image on
     -- some devices ("Invert in Night Mode reversed").
     local read_file, close_reader = self:_makeReader()
-    local images_list = { image_disposable = true }
     -- The RESTING (fit) view decodes each image capped at 2× the drawer's
     -- content box (one C-speed, aspect-preserving downscale): ImageWidget
     -- rescales from the source on EVERY zoom/pan render, so browsing and
@@ -3105,28 +3341,39 @@ function Glimpse:showViewer(whole_book_once)
         end
         return bb
     end
-    for i, im in ipairs(imgs) do
-        images_list[i] = function()
-            local night = Screen.night_mode
-            local checked = G_reader_settings:isTrue(INVERT_KEY)
-            -- single-slot decoded-bitmap cache: reopening on the image
-            -- you left (the common "peek at the map again" flow) skips
-            -- the decode and cap-scale — on device that is most of the
-            -- open time. The key bakes in everything baked into pixels.
-            local key = im.path .. "|" .. tostring(night) .. tostring(checked)
-            local slot = self._bb_cache
-            if slot and slot.key == key and slot.bb then
-                -- hand out a copy: the viewer owns and frees what we return
-                return slot.bb:copy()
+    -- Build a lazy render-closure list (parallel to a metas list) — one for
+    -- the shown collection, one for the ignored pool (the Gallery tabs). Both
+    -- share the single-slot decoded-bitmap cache below, keyed by path, so a
+    -- thumbnail and the full view of the same image hit the same slot.
+    local function make_list(metas)
+        local list = { image_disposable = true }
+        for i, im in ipairs(metas) do
+            list[i] = function()
+                local night = Screen.night_mode
+                local checked = G_reader_settings:isTrue(INVERT_KEY)
+                -- single-slot decoded-bitmap cache: reopening on the image
+                -- you left (the common "peek at the map again" flow) skips
+                -- the decode and cap-scale — on device that is most of the
+                -- open time. The key bakes in everything baked into pixels.
+                local key = im.path .. "|" .. tostring(night) .. tostring(checked)
+                local slot = self._bb_cache
+                if slot and slot.key == key and slot.bb then
+                    -- hand out a copy: the viewer owns and frees what we return
+                    return slot.bb:copy()
+                end
+                local bb = decode(im, false)
+                if bb then
+                    if slot and slot.bb then slot.bb:free() end
+                    self._bb_cache = { key = key, bb = bb:copy() }
+                end
+                return bb
             end
-            local bb = decode(im, false)
-            if bb then
-                if slot and slot.bb then slot.bb:free() end
-                self._bb_cache = { key = key, bb = bb:copy() }
-            end
-            return bb
         end
+        return list
     end
+    local shown_render = make_list(shown_metas)
+    local ignored_render = make_list(ignored_metas)
+    local images_list = (primary_tab == "shown") and shown_render or ignored_render
     -- Full-resolution decode for the zoomed view, called on demand by the
     -- viewer (one image at a time). read_file stays valid after close_reader()
     -- — it just reopens the libarchive fallback if the primary path misses.
@@ -3160,6 +3407,13 @@ function Glimpse:showViewer(whole_book_once)
         image_metas = imgs,
         -- lazily supplies the full-res decode of the zoomed image (sharp zoom)
         hires_decode = hires_decode,
+        -- Gallery tabs: the two pools, independent of which one is primary
+        -- (the single-image view uses `image`/`image_metas` = the primary).
+        shown_metas = shown_metas,
+        shown_list = shown_render,
+        ignored_metas = ignored_metas,
+        ignored_list = ignored_render,
+        primary_tab = primary_tab,
         -- for the gallery heading: images the chapter scope holds back
         gallery_hidden_count = scope_hidden,
         images_keep_pan_and_zoom = false,
@@ -3249,6 +3503,33 @@ function Glimpse:showViewer(whole_book_once)
             if self._viewer then self._viewer:onClose() end
             self:showViewer()
         end,
+        -- Gallery long-press, Shown tab: move this image to Ignored (hide it
+        -- and drop any force-add). Persist, then reopen back into the Gallery
+        -- on the same tab/page (the scan is cached, so the reopen is cheap).
+        on_ignore = function(meta, tab, page)
+            local h = self:_hiddenPaths(); h[meta.path] = true
+            local f = self:_forcedPaths(); f[meta.path] = nil
+            self.ui.doc_settings:saveSetting("glimpse_hidden", h)
+            self.ui.doc_settings:saveSetting("glimpse_forced", next(f) and f or nil)
+            self.ui.doc_settings:flush()
+            self._pending_gallery = { tab = tab, page = page }
+            if self._viewer then self._viewer:onClose() end
+            self:showViewer(whole_book_once)
+            UIManager:show(Notification:new{ text = _("Moved to Ignored") })
+        end,
+        -- Gallery long-press, Ignored tab: add this image back to Shown
+        -- (force-include it and clear any hide). Same reopen-into-gallery.
+        on_unignore = function(meta, tab, page)
+            local f = self:_forcedPaths(); f[meta.path] = true
+            local h = self:_hiddenPaths(); h[meta.path] = nil
+            self.ui.doc_settings:saveSetting("glimpse_forced", f)
+            self.ui.doc_settings:saveSetting("glimpse_hidden", next(h) and h or nil)
+            self.ui.doc_settings:flush()
+            self._pending_gallery = { tab = tab, page = page }
+            if self._viewer then self._viewer:onClose() end
+            self:showViewer(whole_book_once)
+            UIManager:show(Notification:new{ text = _("Added to Shown") })
+        end,
     }
     self._viewer = viewer
     -- release the fallback archive handle together with the viewer; also
@@ -3288,6 +3569,23 @@ function Glimpse:showViewer(whole_book_once)
         viewer._center_x_ratio = view.cx or 0.5
         viewer._center_y_ratio = view.cy or 0.5
         viewer:update()
+    end
+    -- Land directly in the Gallery when this open is a long-press move
+    -- reopen (return to the tab/page the user was on) or the "Review
+    -- filtered-out" path (open on the Ignored tab). Done before the first
+    -- show so it paints as the gallery, not a flash from single view.
+    if self._pending_gallery then
+        local pg = self._pending_gallery
+        self._pending_gallery = nil
+        local tab = pg.tab
+        -- if the tab we were on emptied out (moved its last image), show
+        -- the other one instead of a blank grid
+        local n = (tab == "ignored") and #ignored_metas or #shown_metas
+        if n == 0 then tab = (tab == "ignored") and "shown" or "ignored" end
+        viewer:_enterGallery(pg.page, tab)
+    elseif primary_tab == "ignored" then
+        -- opened via "Review filtered-out": land in the Ignored grid
+        viewer:_enterGallery(1, "ignored")
     end
     viewer._suppress_refresh = nil
     -- The framebuffer already shows the page exactly as-is, so skip the
