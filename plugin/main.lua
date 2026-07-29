@@ -2082,6 +2082,7 @@ function GlimpseViewer:_buildGallery()
         local page_wg = TextWidget:new{
             text = T(_("Page %1 of %2"), self._gallery_page or 1, pages),
             face = Font:getFace("cfont", 13),
+            bold = true,
             fgcolor = Blitbuffer.COLOR_DARK_GRAY,
         }
         local psz = page_wg:getSize()
@@ -2091,17 +2092,10 @@ function GlimpseViewer:_buildGallery()
         }
         addHead(page_wg)
     end
-    local sub_text
-    if on_ignored_tab then
-        sub_text = count == 1 and _("1 image ignored")
-            or T(_("%1 images ignored"), count)
-    else
-        sub_text = count == 1 and _("1 image in Gallery")
-            or T(_("%1 images in Gallery"), count)
-    end
     local sub_wg = TextWidget:new{
-        text = sub_text,
+        text = count == 1 and _("1 image") or T(_("%1 images"), count),
         face = Font:getFace("cfont", 12),
+        bold = true,
         fgcolor = Blitbuffer.COLOR_DARK_GRAY,
         max_width = m.area_w - 2 * m.pad,
     }
@@ -2231,7 +2225,7 @@ function GlimpseViewer:_showMoreMenu()
     if _quick_enabled("showinbook") then
         items[#items + 1] = {
             text = _("Show in Book"),
-            icon = _PLUGIN_DIR .. "/assets/goto.svg",
+            icon = _PLUGIN_DIR .. "/assets/navigate.svg",
             callback = function() self:_showInBook() end,
         }
     end
@@ -2239,6 +2233,7 @@ function GlimpseViewer:_showMoreMenu()
             and self.hidden_count() > 0 then
         items[#items + 1] = {
             text = _("Restore ignored images"),
+            icon = _PLUGIN_DIR .. "/assets/restore.svg",
             callback = function()
                 if self.on_restore_hidden then self.on_restore_hidden() end
             end,
@@ -2852,7 +2847,7 @@ function GlimpseViewer:_hideCurrentImage()
     if nb < 1 then
         self:onClose()
         UIManager:show(Notification:new{
-            text = _("Image ignored. Restore it via the Glimpse menu."),
+            text = _("Image ignored."),
         })
         return
     end
@@ -2870,7 +2865,7 @@ function GlimpseViewer:_hideCurrentImage()
     self._images_list_cur = new_cur
     self:update()
     UIManager:show(Notification:new{
-        text = _("Image ignored. Restore it via the Glimpse menu."),
+        text = _("Image ignored."),
     })
     local meta2 = self.image_metas and self.image_metas[new_cur]
     if meta2 and self.on_image_shown then
