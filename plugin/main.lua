@@ -661,13 +661,14 @@ end
 
 -- White rounded card with an anti-aliased border, sized to its single
 -- child. Drawn from the shared stencil rather than a FrameContainer radius,
--- whose hard-edged rounding leaves grit in the corners at these sizes. The
--- rows paint no background of their own, so the stencil's white interior is
--- the card fill; text/icons sit well inside the corner arcs.
+-- whose hard-edged rounding leaves grit in the corners at these sizes.
+-- Painted in three passes: a solid white rounded fill, then the child, then
+-- the border ring ON TOP — so full-width content (the gray row dividers)
+-- tucks under the outline instead of drawing over it (FrameContainer paints
+-- its border last for the same reason).
 local GlimpseCard = WidgetContainer:extend{
     radius = Screen:scaleBySize(9),
     stroke = Screen:scaleBySize(2),
-    fill = 0xFF,        -- white interior
     outline = 0x00,     -- black border, matching the old FrameContainer
 }
 
@@ -678,18 +679,25 @@ end
 function GlimpseCard:paintTo(bb, x, y)
     local sz = self[1]:getSize()
     self.dimen = Geom:new{ x = x, y = y, w = sz.w, h = sz.h }
-    if not self._bg_bb or self._bg_w ~= sz.w or self._bg_h ~= sz.h then
-        if self._bg_bb then self._bg_bb:free() end
+    if not self._fill_bb or self._bg_w ~= sz.w or self._bg_h ~= sz.h then
+        if self._fill_bb then self._fill_bb:free() end
+        if self._ring_bb then self._ring_bb:free() end
         self._bg_w, self._bg_h = sz.w, sz.h
-        self._bg_bb = make_rounded_stencil(sz.w, sz.h,
-            self.radius, self.stroke, self.fill, self.outline)
+        -- solid white rounded rect (outline == fill, so no visible edge yet)
+        self._fill_bb = make_rounded_stencil(sz.w, sz.h,
+            self.radius, self.stroke, 0xFF, 0xFF)
+        -- border-only ring, laid over the content afterwards
+        self._ring_bb = make_rounded_stencil(sz.w, sz.h,
+            self.radius, self.stroke, nil, self.outline)
     end
-    bb:alphablitFrom(self._bg_bb, x, y, 0, 0, sz.w, sz.h)
+    bb:alphablitFrom(self._fill_bb, x, y, 0, 0, sz.w, sz.h)
     self[1]:paintTo(bb, x, y)
+    bb:alphablitFrom(self._ring_bb, x, y, 0, 0, sz.w, sz.h)
 end
 
 function GlimpseCard:free(full)
-    if self._bg_bb then self._bg_bb:free(); self._bg_bb = nil end
+    if self._fill_bb then self._fill_bb:free(); self._fill_bb = nil end
+    if self._ring_bb then self._ring_bb:free(); self._ring_bb = nil end
     WidgetContainer.free(self, full)
 end
 
@@ -2006,10 +2014,11 @@ function GlimpseViewer:_galleryLayout()
 end
 
 -- Heading band geometry, derived from the actual rendered line heights so
--- the top breathing room scales with the font (≈ half a title line) on any
--- device. Cached for the viewer's lifetime (the faces never change). Single
--- source of truth: _buildGallery positions the two lines from band_top/gap,
--- _galleryMetrics starts the grid at content_top, so they stay in lockstep.
+-- the top breathing room scales with the font (≈ a quarter of a title line)
+-- on any device. Cached for the viewer's lifetime (the faces never change).
+-- Single source of truth: _buildGallery positions the two lines from
+-- band_top/gap, _galleryMetrics starts the grid at content_top, so they stay
+-- in lockstep.
 function GlimpseViewer:_headMetrics()
     if self._head_metrics then return self._head_metrics end
     local t = TextWidget:new{
@@ -2018,8 +2027,8 @@ function GlimpseViewer:_headMetrics()
         text = "Gy", face = Font:getFace("cfont", 12), bold = true }
     local th1, th2 = t:getSize().h, s:getSize().h
     t:free(); s:free()
-    local band_top = Screen:scaleBySize(3) + math.floor(th1 / 2)
-    local gap = Screen:scaleBySize(2)          -- title → subtitle
+    local band_top = Screen:scaleBySize(3) + math.floor(th1 / 4)
+    local gap = 0                              -- subtitle tucked under title
     local below = Screen:scaleBySize(6)        -- band → grid
     self._head_metrics = {
         band_top = band_top, th1 = th1, gap = gap,
@@ -2162,7 +2171,7 @@ function GlimpseViewer:_buildGallery()
         fgcolor = Blitbuffer.COLOR_DARK_GRAY,
         max_width = m.area_w - 2 * m.pad,
     }
-    sub_wg.overlap_offset = { m.pad, band_top + th1 + Screen:scaleBySize(2) }
+    sub_wg.overlap_offset = { m.pad, band_top + th1 + self:_headMetrics().gap }
     addHead(sub_wg)
     self._gallery_cells = {}
     for _, c in ipairs(layout.pages[self._gallery_page] or {}) do
