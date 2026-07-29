@@ -659,6 +659,40 @@ function GlimpseMenuRow:free()
     if self.lead_wg then self.lead_wg:free() end
 end
 
+-- White rounded card with an anti-aliased border, sized to its single
+-- child. Drawn from the shared stencil rather than a FrameContainer radius,
+-- whose hard-edged rounding leaves grit in the corners at these sizes. The
+-- rows paint no background of their own, so the stencil's white interior is
+-- the card fill; text/icons sit well inside the corner arcs.
+local GlimpseCard = WidgetContainer:extend{
+    radius = Screen:scaleBySize(9),
+    stroke = Screen:scaleBySize(2),
+    fill = 0xFF,        -- white interior
+    outline = 0x00,     -- black border, matching the old FrameContainer
+}
+
+function GlimpseCard:getSize()
+    return self[1]:getSize()
+end
+
+function GlimpseCard:paintTo(bb, x, y)
+    local sz = self[1]:getSize()
+    self.dimen = Geom:new{ x = x, y = y, w = sz.w, h = sz.h }
+    if not self._bg_bb or self._bg_w ~= sz.w or self._bg_h ~= sz.h then
+        if self._bg_bb then self._bg_bb:free() end
+        self._bg_w, self._bg_h = sz.w, sz.h
+        self._bg_bb = make_rounded_stencil(sz.w, sz.h,
+            self.radius, self.stroke, self.fill, self.outline)
+    end
+    bb:alphablitFrom(self._bg_bb, x, y, 0, 0, sz.w, sz.h)
+    self[1]:paintTo(bb, x, y)
+end
+
+function GlimpseCard:free(full)
+    if self._bg_bb then self._bg_bb:free(); self._bg_bb = nil end
+    WidgetContainer.free(self, full)
+end
+
 -- A small popup menu of icon+text rows, anchored to a widget (the ⋯
 -- button). White rounded card with a thin border, gray separators between
 -- rows; tap a row to fire its callback, tap outside to dismiss. Built in
@@ -733,14 +767,7 @@ function GlimpsePopupMenu:init()
 
     self.movable = MovableContainer:new{
         anchor = self.anchor,
-        FrameContainer:new{
-            background = Blitbuffer.COLOR_WHITE,
-            bordersize = Screen:scaleBySize(2),
-            radius = Screen:scaleBySize(9),
-            padding = 0,
-            margin = 0,
-            vg,
-        },
+        GlimpseCard:new{ vg },
     }
     self[1] = CenterContainer:new{
         dimen = Screen:getSize(),
@@ -1057,16 +1084,27 @@ function GlimpseViewer:update()
                 right_bound = math.min(right_bound, f.overlap_offset[1])
             end
         end
-        -- the gallery Shown/Ignored toggle STRETCHES to fill that whole span
-        -- (a full-width bottom bar); the dot pill just centres within it
+        -- the gallery Shown/Ignored toggle STRETCHES to fill the bottom bar;
+        -- the dot pill just centres within the span
         if self._gallery_mode and self._pill_frame.setWidth then
-            self._pill_frame:setWidth(right_bound - left_bound - 2 * btn_gap)
+            -- keep a gap from the Prev arrow when it's there, but go flush to
+            -- the left content margin when it isn't (single-page galleries have
+            -- no arrows, so the toggle should reach the same margin the arrow
+            -- would occupy — not leave a phantom gap where it used to be)
+            local pill_left = self._nav_prev_frame
+                and (left_bound + btn_gap) or left_bound
+            local pill_right = right_bound - btn_gap
+            self._pill_frame:setWidth(pill_right - pill_left)
+            self._pill_frame.overlap_offset = {
+                pill_left, self.height - self._pill_frame:getSize().h - bottom_inset,
+            }
+        else
+            local pill_size = self._pill_frame:getSize()
+            self._pill_frame.overlap_offset = {
+                math.floor(left_bound + (right_bound - left_bound - pill_size.w) / 2),
+                self.height - pill_size.h - bottom_inset,
+            }
         end
-        local pill_size = self._pill_frame:getSize()
-        self._pill_frame.overlap_offset = {
-            math.floor(left_bound + (right_bound - left_bound - pill_size.w) / 2),
-            self.height - pill_size.h - bottom_inset,
-        }
         table.insert(overlay, self._pill_frame)
     end
     -- caption overlay, top-left on the image (toggleable, on by default)
@@ -1879,18 +1917,22 @@ function GlimpseViewer:_openMoveMenu(cell, pos)
         row_h = Screen:scaleBySize(38),
         pad_left = Screen:scaleBySize(12),
         pad_right = Screen:scaleBySize(12),
-        -- appear right where the finger is: centred on the touch point and
-        -- popping up from it (flips below when near the top of the screen)
+        -- centred on the touch point, floating a little ABOVE it: the menu
+        -- pops up so its bottom sits `lift` px clear of the finger (rises its
+        -- full height upward from there), instead of resting right on the
+        -- press. Still flips below when near the top of the screen.
         anchor = function()
             local w = menu.movable and menu.movable.dimen
                 and menu.movable.dimen.w or 0
             local ox = self.main_frame.dimen.x
             local pad = Screen:scaleBySize(4)
+            local lift = Screen:scaleBySize(14)
             local x = math.floor((pos and pos.x or 0) - w / 2)
             local maxx = ox + self.width - w - pad
             if maxx < ox + pad then maxx = ox + pad end
             x = math.max(ox + pad, math.min(x, maxx))
-            return Geom:new{ x = x, y = pos and pos.y or 0, w = 0, h = 0 }, false
+            local y = (pos and pos.y or 0) - lift
+            return Geom:new{ x = x, y = y, w = 0, h = 0 }, false
         end,
     }
     UIManager:show(menu, function() return "ui", menu.movable.dimen end)
@@ -1963,6 +2005,29 @@ function GlimpseViewer:_galleryLayout()
     return layout
 end
 
+-- Heading band geometry, derived from the actual rendered line heights so
+-- the top breathing room scales with the font (≈ half a title line) on any
+-- device. Cached for the viewer's lifetime (the faces never change). Single
+-- source of truth: _buildGallery positions the two lines from band_top/gap,
+-- _galleryMetrics starts the grid at content_top, so they stay in lockstep.
+function GlimpseViewer:_headMetrics()
+    if self._head_metrics then return self._head_metrics end
+    local t = TextWidget:new{
+        text = "Gy", face = Font:getFace("cfont", 16), bold = true }
+    local s = TextWidget:new{
+        text = "Gy", face = Font:getFace("cfont", 12), bold = true }
+    local th1, th2 = t:getSize().h, s:getSize().h
+    t:free(); s:free()
+    local band_top = Screen:scaleBySize(3) + math.floor(th1 / 2)
+    local gap = Screen:scaleBySize(2)          -- title → subtitle
+    local below = Screen:scaleBySize(6)        -- band → grid
+    self._head_metrics = {
+        band_top = band_top, th1 = th1, gap = gap,
+        content_top = band_top + th1 + gap + th2 + below,
+    }
+    return self._head_metrics
+end
+
 -- Shared gallery geometry: the band above the grid holds the heading and
 -- the Close button, the band below holds the page pill and ‹ › buttons.
 -- area_w is the FULL content width (unlike the single-image view, the
@@ -1970,17 +2035,15 @@ end
 -- top/bottom bands already keep clear of it vertically) so the grid's
 -- right margin (pad) matches its left margin exactly.
 function GlimpseViewer:_galleryMetrics()
+    local content_top = self:_headMetrics().content_top
     return {
         area_w = self.width,
         pad = Screen:scaleBySize(16),
-        -- 3 top margin + 56 heading band (two lines: title/page, then the
-        -- "N images…" subtitle) + 4 margin below
-        top = Screen:scaleBySize(3 + 56 + 4),
+        top = content_top,
         bottom = Screen:scaleBySize(60),
         gap = Screen:scaleBySize(10),
         inset = Screen:scaleBySize(4),
-        grid_h = self.img_container_h - Screen:scaleBySize(3 + 56 + 4)
-            - Screen:scaleBySize(60),
+        grid_h = self.img_container_h - content_top - Screen:scaleBySize(60),
     }
 end
 
@@ -2064,7 +2127,7 @@ function GlimpseViewer:_buildGallery()
         for _, b in ipairs(self._gallery_badges) do b:free() end
     end
     self._gallery_badges = {}
-    local band_top = Screen:scaleBySize(3)
+    local band_top = self:_headMetrics().band_top
     local on_ignored_tab = self._gallery_tab == "ignored"
     local active_is_primary = (self._gallery_tab or "shown")
         == (self.primary_tab or "shown")
