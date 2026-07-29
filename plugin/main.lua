@@ -93,11 +93,11 @@ end
 local function _quick_label(key)
     return ({
         gallery    = _("Gallery"),
-        hide       = _("Hide Image"),
+        hide       = _("Ignore Image"),
         mode       = _("Mode switch"),
         rotate     = _("Rotate 90°"),
         showinbook = _("Show in Book"),
-        restore    = _("Restore hidden images"),
+        restore    = _("Restore ignored images"),
         prevnext   = _("Show Nav Buttons Toggle"),
         captions   = _("Show Image Captions Toggle"),
         invert     = _("Invert in Night Mode Toggle"),
@@ -1029,10 +1029,11 @@ function GlimpseViewer:update()
     end
     if self._pill_frame then
         local pill_size = self._pill_frame:getSize()
-        -- the revert button is the same height as the ⋯ button, so share
-        -- its bottom inset to sit on the same baseline; the shorter dots
-        -- pill uses a larger inset so its centre still lines up
-        local bottom_inset = self:_isOverFit()
+        -- the revert button and the gallery Shown/Ignored toggle are the
+        -- same height as the ⋯ button, so share its bottom inset to sit on
+        -- the same baseline; the shorter dots pill uses a larger inset so
+        -- its centre still lines up
+        local bottom_inset = (self:_isOverFit() or self._gallery_mode)
             and btn_inset or Screen:scaleBySize(25)
         -- centre the pill in the span between whatever sits on its left
         -- (the Prev button, or the left inset) and the nearest right-side
@@ -1473,10 +1474,6 @@ function GlimpseViewer:onCloseWidget()
         for _, b in ipairs(self._gallery_badges) do b:free() end
         self._gallery_badges = nil
     end
-    if self._gallery_tab_wgs then
-        for _, w in ipairs(self._gallery_tab_wgs) do w:free() end
-        self._gallery_tab_wgs = nil
-    end
     if self._caption_wg then
         self._caption_wg:free()
         self._caption_wg = nil
@@ -1658,17 +1655,20 @@ function GlimpseViewer:_buildPill()
     end
     self._pill_dots = nil -- only set back below when dots are actually built
     if self._gallery_mode then
-        -- gallery: explicit "Page X of Y" — dots here would read as the
-        -- single-view image indicator and confuse the two states. Inverted
-        -- (light pill, dark text), same as the "n / N" fallback below.
-        local pages = self:_galleryPages()
-        if pages <= 1 then return end
-        self._pill_frame = GlimpsePill:new{ inverted = true, inner = TextWidget:new{
-            text = T(_("Page %1 of %2"), self._gallery_page or 1, pages),
-            face = Font:getFace("cfont", 12),
-            bold = true,
-            fgcolor = Blitbuffer.COLOR_BLACK,
-        } }
+        -- Gallery bottom-center is the Shown/Ignored switch (only when there
+        -- IS an ignored pool). "Page X of Y" now lives top-left in the grid.
+        -- The button names the destination: from the collection it offers
+        -- "Show Ignored (n)", from the Ignored pool "Show Collection (n)".
+        if self:_hasIgnoredTab() then
+            local label
+            if self._gallery_tab == "ignored" then
+                local shown_n = self.shown_metas and #self.shown_metas or 0
+                label = T(_("Show Collection (%1)"), shown_n)
+            else
+                label = T(_("Show Ignored (%1)"), self:_ignoredCount())
+            end
+            self._pill_frame = GlimpseTextButton:new{ text = label, bold = true }
+        end
         return
     end
     if self:_isOverFit() then
@@ -1836,19 +1836,6 @@ function GlimpseViewer:_galleryHit(pos)
     return nil
 end
 
--- Tab ("shown"/"ignored") at pos in the tab bar, or nil.
-function GlimpseViewer:_tabBarHit(pos)
-    if not self._tab_frames then return nil end
-    local ox, oy = self:_contentOrigin()
-    for _, t in ipairs(self._tab_frames) do
-        if pos:intersectWith(Geom:new{
-            x = ox + t.x, y = oy + t.y, w = t.w, h = t.h }) then
-            return t.tab
-        end
-    end
-    return nil
-end
-
 -- Masonry layout for ALL images, computed once per viewer (the image
 -- list and drawer size are fixed while it is open) from the scanner's
 -- header-sniffed dimensions — no decoding. Returns { pages = {
@@ -1995,18 +1982,14 @@ function GlimpseViewer:_buildGallery()
     local grid = OverlapGroup:new{
         dimen = Geom:new{ w = self.width, h = self.img_container_h },
     }
-    -- Top band. With an Ignored pool it holds a Shown/Ignored tab bar; with
-    -- nothing ignored it is the plain "N images in book" heading, exactly as
-    -- before (the Back button lives at the bottom, so the band is free).
+    -- Top band, top-left: a static "Page X of Y" when the grid is paged,
+    -- otherwise the "N images in book" heading. It is display-only — the
+    -- Shown/Ignored switch lives on the BOTTOM bar (the top strip is reserved
+    -- for KOReader's own top-menu tap zone, so nothing tappable can go here).
     if self._gallery_heading then
         self._gallery_heading:free()
         self._gallery_heading = nil
     end
-    if self._gallery_tab_wgs then
-        for _, w in ipairs(self._gallery_tab_wgs) do w:free() end
-    end
-    self._gallery_tab_wgs = {}
-    self._tab_frames = nil
     if self._gallery_badges then
         for _, b in ipairs(self._gallery_badges) do b:free() end
     end
@@ -2016,62 +1999,28 @@ function GlimpseViewer:_buildGallery()
     local on_ignored_tab = self._gallery_tab == "ignored"
     local active_is_primary = (self._gallery_tab or "shown")
         == (self.primary_tab or "shown")
-    if self:_hasIgnoredTab() then
-        local shown_n = self.shown_metas and #self.shown_metas or 0
-        local tabs = {
-            { tab = "shown", text = T(_("Shown (%1)"), shown_n) },
-            { tab = "ignored", text = T(_("Ignored (%1)"), self:_ignoredCount()) },
-        }
-        self._tab_frames = {}
-        local x = m.pad
-        local gap = Screen:scaleBySize(18)
-        for _, tb in ipairs(tabs) do
-            local active = self._gallery_tab == tb.tab
-            local tw = TextWidget:new{
-                text = tb.text,
-                face = Font:getFace("cfont", 14),
-                bold = active,
-                fgcolor = active and Blitbuffer.COLOR_BLACK
-                    or Blitbuffer.COLOR_GRAY,
-            }
-            local tsz = tw:getSize()
-            tw.overlap_offset = { x, band_top + math.floor((band_h - tsz.h) / 2) }
-            table.insert(grid, tw)
-            table.insert(self._gallery_tab_wgs, tw)
-            -- tap target: the label, padded to the full band height so it is
-            -- comfortably tappable (recorded in drawer-content space like cells)
-            table.insert(self._tab_frames, {
-                tab = tb.tab,
-                x = x - Screen:scaleBySize(6),
-                y = band_top,
-                w = tsz.w + Screen:scaleBySize(12),
-                h = band_h,
-            })
-            x = x + tsz.w + gap
-        end
+    local heading_text
+    if pages > 1 then
+        heading_text = T(_("Page %1 of %2"), self._gallery_page or 1, pages)
     else
         local nb = self._images_list_nb or 1
         local hidden = self.gallery_hidden_count or 0
-        local heading_text
-        if hidden > 0 then
-            heading_text = T(_("%1 images in book this far, %2 hidden"),
-                nb, hidden)
-        else
-            heading_text = T(_("%1 images in book"), nb)
-        end
-        self._gallery_heading = TextWidget:new{
-            text = heading_text,
-            face = Font:getFace("cfont", 14),
-            bold = true,
-            fgcolor = Blitbuffer.COLOR_BLACK,
-            max_width = m.area_w - 2 * m.pad,
-        }
-        local hh = self._gallery_heading:getSize().h
-        self._gallery_heading.overlap_offset = {
-            m.pad, band_top + math.floor((band_h - hh) / 2),
-        }
-        table.insert(grid, self._gallery_heading)
+        heading_text = hidden > 0
+            and T(_("%1 images in book this far, %2 hidden"), nb, hidden)
+            or T(_("%1 images in book"), nb)
     end
+    self._gallery_heading = TextWidget:new{
+        text = heading_text,
+        face = Font:getFace("cfont", 14),
+        bold = true,
+        fgcolor = Blitbuffer.COLOR_BLACK,
+        max_width = m.area_w - 2 * m.pad,
+    }
+    local hh = self._gallery_heading:getSize().h
+    self._gallery_heading.overlap_offset = {
+        m.pad, band_top + math.floor((band_h - hh) / 2),
+    }
+    table.insert(grid, self._gallery_heading)
     self._gallery_cells = {}
     for _, c in ipairs(layout.pages[self._gallery_page] or {}) do
         local bb = self:_thumb(c.idx,
@@ -2162,7 +2111,7 @@ function GlimpseViewer:_showMoreMenu()
     end
     if _quick_enabled("hide") then
         items[#items + 1] = {
-            text = _("Hide Image"),
+            text = _("Ignore Image"),
             icon = _PLUGIN_DIR .. "/assets/hide.svg",
             callback = function() self:_hideCurrentImage() end,
         }
@@ -2204,7 +2153,7 @@ function GlimpseViewer:_showMoreMenu()
     if _quick_enabled("restore") and self.hidden_count
             and self.hidden_count() > 0 then
         items[#items + 1] = {
-            text = _("Restore hidden images"),
+            text = _("Restore ignored images"),
             callback = function()
                 if self.on_restore_hidden then self.on_restore_hidden() end
             end,
@@ -2482,10 +2431,13 @@ function GlimpseViewer:onTap(_, ges)
         return true
     end
     if self._gallery_mode then
-        -- tab bar first (Shown/Ignored), same content-origin hit space
-        local tab = self:_tabBarHit(ges.pos)
-        if tab then
-            self:_switchGalleryTab(tab)
+        -- the Shown/Ignored toggle (bottom-center pill)
+        if self._pill_frame and self._pill_frame.dimen
+           and ges.pos:intersectWith(self._pill_frame.dimen) then
+            self:_flashButton(self._pill_frame, function()
+                self:_switchGalleryTab(
+                    self._gallery_tab == "ignored" and "shown" or "ignored")
+            end)
             return true
         end
         -- thumbnail hit-test
@@ -2501,7 +2453,7 @@ function GlimpseViewer:onTap(_, ges)
                 if not self._ignored_hint_shown then
                     self._ignored_hint_shown = true
                     UIManager:show(Notification:new{
-                        text = _("Long-press to add to Shown"),
+                        text = _("Long-press to add to Collection"),
                     })
                 end
             end
@@ -2842,7 +2794,7 @@ function GlimpseViewer:_hideCurrentImage()
     if nb < 1 then
         self:onClose()
         UIManager:show(Notification:new{
-            text = _("Image hidden. Restore it via the Glimpse menu."),
+            text = _("Image ignored. Restore it via the Glimpse menu."),
         })
         return
     end
@@ -2860,7 +2812,7 @@ function GlimpseViewer:_hideCurrentImage()
     self._images_list_cur = new_cur
     self:update()
     UIManager:show(Notification:new{
-        text = _("Image hidden. Restore it via the Glimpse menu."),
+        text = _("Image ignored. Restore it via the Glimpse menu."),
     })
     local meta2 = self.image_metas and self.image_metas[new_cur]
     if meta2 and self.on_image_shown then
@@ -3528,7 +3480,7 @@ function Glimpse:showViewer(whole_book_once)
             self._pending_gallery = { tab = tab, page = page }
             if self._viewer then self._viewer:onClose() end
             self:showViewer(whole_book_once)
-            UIManager:show(Notification:new{ text = _("Added to Shown") })
+            UIManager:show(Notification:new{ text = _("Added to Collection") })
         end,
     }
     self._viewer = viewer
@@ -4070,7 +4022,7 @@ function Glimpse:_menuItems()
         },
         {
             text = _("Quick Actions"),
-            help_text = _("Choose which actions appear in the viewer's ⋯ menu. Reset Rotation is automatic (shown while an image is rotated) and Restore hidden images only appears when some are hidden."),
+            help_text = _("Choose which actions appear in the viewer's ⋯ menu. Reset Rotation is automatic (shown while an image is rotated) and Restore ignored images only appears when some are ignored."),
             sub_item_table = (function()
                 local t = {}
                 for _, d in ipairs(QUICK_ACTIONS) do
@@ -4094,17 +4046,17 @@ function Glimpse:_menuItems()
             text_func = function()
                 local n = self:_hiddenCount()
                 if n > 0 then
-                    return T(_("Restore hidden images (%1)"), n)
+                    return T(_("Restore ignored images (%1)"), n)
                 end
-                return _("Restore hidden images")
+                return _("Restore ignored images")
             end,
-            help_text = _("Bring back images removed with 'Remove image from collection' in the viewer's ⋯ menu. Removal is remembered per book."),
+            help_text = _("Bring back images you ignored with 'Ignore Image' in the viewer's ⋯ menu (or by long-pressing in the Gallery). Remembered per book. Images the relevance filter set aside are added back individually from the Gallery's Ignored tab."),
             enabled_func = function() return self:_hiddenCount() > 0 end,
             keep_menu_open = true,
             separator = true,
             callback = function(touchmenu_instance)
                 self.ui.doc_settings:delSetting("glimpse_hidden")
-                UIManager:show(Notification:new{ text = _("Hidden images restored.") })
+                UIManager:show(Notification:new{ text = _("Ignored images restored.") })
                 if touchmenu_instance then
                     touchmenu_instance:updateItems()
                 end
@@ -4114,8 +4066,8 @@ function Glimpse:_menuItems()
             text = _("Advanced"),
             sub_item_table = {
                 {
-                    text = _("Hide irrelevant images"),
-                    help_text = _("Hide covers, publisher logos, ornaments and other non-reference imagery, keeping maps, family trees, diagrams and illustrations. Turn off to see every image in the book. A wrongly kept image can be removed via the viewer's ⋯ menu."),
+                    text = _("Ignore irrelevant images"),
+                    help_text = _("Set aside covers, publisher logos, ornaments and other non-reference imagery, keeping maps, family trees, diagrams and illustrations. Turn off to see every image in the book. Wrongly kept images can be ignored from the viewer's ⋯ menu; wrongly set-aside ones added back from the Gallery's Ignored tab."),
                     checked_func = function()
                         return self:getFilterLevel() ~= "all"
                     end,

@@ -66,7 +66,7 @@ Updates → *Check for updates*.
   scope is holding back.
 - **Quick Actions:** the contents of the ⋯ menu are configurable under
   Tools → Glimpse → *Quick Actions* — hide the rows you don't use, or add
-  nav buttons, captions and Restore hidden images to it.
+  nav buttons, captions and Restore ignored images to it.
 
 ### Settings (Tools → Glimpse)
 
@@ -74,9 +74,9 @@ Updates → *Check for updates*.
 | --- | --- |
 | Mode: Show images up to current chapter *(default)* | Images past your current chapter stay hidden (no spoilers). |
 | Mode: Show all images | Everything, incl. parts you haven't reached. |
-| Quick Actions | Choose which actions appear in the viewer's ⋯ menu: Gallery, Hide Image, the Mode switch, Rotate 90°, Show in Book, Restore hidden images, Show Nav Buttons, Show Image Captions and Invert in Night Mode. Defaults to the original six; the last three are off until you add them. (Reset Rotation is automatic; Restore only appears when something is hidden.) |
-| Restore hidden images | Undo the viewer's per-book **Remove image from collection**. |
-| Advanced → Hide irrelevant images *(checkbox, on)* | Hides covers, publisher logos, ornaments and other non-reference imagery. Off = every image in the book. |
+| Quick Actions | Choose which actions appear in the viewer's ⋯ menu: Gallery, Ignore Image, the Mode switch, Rotate 90°, Show in Book, Restore ignored images, Show Nav Buttons, Show Image Captions and Invert in Night Mode. Defaults to the original six; the last three are off until you add them. (Reset Rotation is automatic; Restore only appears when something is ignored.) |
+| Restore ignored images | Undo the viewer's per-book **Ignore Image**. (Images the relevance filter set aside are added back individually from the Gallery's Ignored pile.) |
+| Advanced → Ignore irrelevant images *(checkbox, on)* | Sets aside covers, publisher logos, ornaments and other non-reference imagery. Off = every image in the book. |
 | Advanced → Show image captions (beta) *(checkbox, on)* | Show the image's caption from the book as a solid tab tucked into the viewer's top-left corner (white with black text in day mode, black with white text at night), wrapping onto multiple lines for longer captions. |
 | Advanced → Enable top menu tap zone *(checkbox, on)* | While the viewer is open, a tap along the top edge opens KOReader's top menu (only that one, never the bottom menu) over the drawer. Off leaves the top edge inert. |
 | Advanced → Rescan this book | Drop the cached scan (cached in the book's own `.sdr` sidecar folder, so it travels with the book between devices); use if the file was replaced or images seem out of date. |
@@ -95,16 +95,18 @@ keeping its own aspect ratio instead of being cropped to a uniform tile.
 Paged when there are enough to browse; a *Back* button returns to the
 normal viewer. Tap a thumbnail to jump straight to that image instead.
 
-**Shown / Ignored tabs.** When the relevance filter has set some images
-aside (or you've hidden some), the Gallery grows a **Shown / Ignored** tab
-bar. The *Ignored* tab is every image not in your collection — ones the
-filter dropped as irrelevant *and* ones you removed by hand. **Long-press**
-a thumbnail to move it between the tabs: from *Shown* it goes to *Ignored*,
-from *Ignored* (marked with a **+**) it comes back to *Shown*. That's the
-fix when the filter hides an image you actually want — the map it deemed
-irrelevant — without switching to *Mode: All images*. The moves persist per
-book. If the filter hides *everything*, the empty state offers **Review
-filtered-out** to open straight into the Ignored tab.
+**Collection / Ignored.** When the relevance filter has set some images
+aside (or you've ignored some), a button on the Gallery's bottom bar toggles
+between your **Collection** and the **Ignored** pile — every image not in
+your collection, whether the filter dropped it as irrelevant *or* you ignored
+it by hand. **Long-press** a thumbnail to move it: from the Collection it
+goes to *Ignored*, from *Ignored* (each thumbnail marked with a **+**) it
+comes back to the Collection. That's the fix when the filter set aside an
+image you actually want — the map it deemed irrelevant — without switching to
+*Mode: All images*. The moves persist per book. If the filter set aside
+*everything*, the empty state offers **Review filtered-out** to open straight
+into the Ignored pile. (The page indicator sits top-left; the switch is on
+the bottom bar because the top strip is reserved for KOReader's top menu.)
 
 ### Releasing
 
