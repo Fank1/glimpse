@@ -1784,7 +1784,6 @@ function GlimpseViewer:_switchGalleryTab(tab)
     if tab == self._gallery_tab then return end
     self._gallery_tab = tab
     self._gallery_page = 1
-    self._ignored_hint_shown = nil
     self:update()
 end
 
@@ -1823,17 +1822,65 @@ function GlimpseViewer:_contentOrigin()
     return mf.x, mf.y + self.panel_vgap + self.panel_border
 end
 
--- Thumbnail index at pos (gallery mode), or nil.
+-- The gallery cell {x,y,w,h,idx} at pos (drawer-content space), or nil.
 function GlimpseViewer:_galleryHit(pos)
     if not self._gallery_cells then return nil end
     local ox, oy = self:_contentOrigin()
     for _, c in ipairs(self._gallery_cells) do
         if pos:intersectWith(Geom:new{
             x = ox + c.x, y = oy + c.y, w = c.w, h = c.h }) then
-            return c.idx
+            return c
         end
     end
     return nil
+end
+
+-- Long-press popup: a single action anchored just above the thumbnail —
+-- "Ignore this image" in the Collection, "Add back to Collection" in the
+-- Ignored pile. Kept in its own method so the gettext `_` isn't shadowed by
+-- the `_` first parameter of onHold/onTap (calling `_()` in those crashes).
+function GlimpseViewer:_openMoveMenu(cell)
+    local metas = select(2, self:_tabList())
+    local meta = metas and metas[cell.idx]
+    if not meta then return end
+    local ignored = self._gallery_tab == "ignored"
+    local label, cb
+    if ignored then
+        label = _("Add back to Collection")
+        cb = function()
+            if self.on_unignore then
+                self.on_unignore(meta, "ignored", self._gallery_page)
+            end
+        end
+    else
+        label = _("Ignore this image")
+        cb = function()
+            if self.on_ignore then
+                self.on_ignore(meta, "shown", self._gallery_page)
+            end
+        end
+    end
+    local menu
+    menu = GlimpsePopupMenu:new{
+        items = { { text = label, callback = cb } },
+        -- centre horizontally on the thumbnail and pop up from its top edge
+        -- (MovableContainer flips it below when the cell is near the top)
+        anchor = function()
+            local w = menu.movable and menu.movable.dimen
+                and menu.movable.dimen.w or 0
+            local ox, oy = self:_contentOrigin()
+            local pad = Screen:scaleBySize(4)
+            local x = math.floor(ox + cell.x + cell.w / 2 - w / 2)
+            local maxx = ox + self.width - w - pad
+            if maxx < ox + pad then maxx = ox + pad end
+            x = math.max(ox + pad, math.min(x, maxx))
+            return Geom:new{ x = x, y = oy + cell.y, w = 0, h = cell.h }, false
+        end,
+    }
+    local ox, oy = self:_contentOrigin()
+    menu._restore_region = Geom:new{
+        x = ox + cell.x, y = oy + cell.y, w = cell.w, h = cell.h }
+    UIManager:show(menu, function() return "ui", menu.movable.dimen end)
 end
 
 -- Masonry layout for ALL images, computed once per viewer (the image
@@ -2440,24 +2487,12 @@ function GlimpseViewer:onTap(_, ges)
             end)
             return true
         end
-        -- thumbnail hit-test
-        local idx = self:_galleryHit(ges.pos)
-        if idx then
-            if self._gallery_tab == (self.primary_tab or "shown") then
-                -- this pool is what the single-image view shows: open it
-                self:_exitGallery(idx)
-            else
-                -- the Ignored tab (not the primary pool): tap only previews
-                -- the idea; adding back is a long-press. Nudge once so the
-                -- gesture is discoverable, then stay quiet.
-                if not self._ignored_hint_shown then
-                    self._ignored_hint_shown = true
-                    UIManager:show(Notification:new{
-                        text = _("Long-press to add to Collection"),
-                    })
-                end
-            end
-            return true
+        -- thumbnail: tap opens it ONLY when this pool is what the single-image
+        -- view shows (the primary/Collection tab). A tap on an Ignored
+        -- thumbnail does nothing — adding it back is a long-press (see onHold).
+        local cell = self:_galleryHit(ges.pos)
+        if cell and self._gallery_tab == (self.primary_tab or "shown") then
+            self:_exitGallery(cell.idx)
         end
         return true -- no zoom surface in the gallery
     end
@@ -2580,29 +2615,14 @@ function GlimpseViewer:onMultiSwipe(_, ges)
     return true
 end
 
--- Long-press in the Gallery moves an image between the tabs: from Shown it
--- goes to Ignored (hidden), from Ignored it comes back to Shown (force-added).
--- The plugin persists the change and reopens the drawer back into the same
--- Gallery tab/page (see on_ignore/on_unignore). Outside the gallery, defer to
--- upstream (long-press starts a pan on a zoomed image).
+-- Long-press a Gallery thumbnail opens a small anchored menu with the one
+-- move action for that pool (Ignore this image / Add back to Collection);
+-- see _openMoveMenu. Outside the gallery, defer to upstream (long-press
+-- starts a pan on a zoomed image).
 function GlimpseViewer:onHold(_, ges)
     if self._gallery_mode then
-        local idx = self:_galleryHit(ges.pos)
-        if idx then
-            local _, metas = self:_tabList()
-            local meta = metas and metas[idx]
-            if meta then
-                if self._gallery_tab == "ignored" then
-                    if self.on_unignore then
-                        self.on_unignore(meta, "ignored", self._gallery_page)
-                    end
-                else
-                    if self.on_ignore then
-                        self.on_ignore(meta, "shown", self._gallery_page)
-                    end
-                end
-            end
-        end
+        local cell = self:_galleryHit(ges.pos)
+        if cell then self:_openMoveMenu(cell) end
         return true
     end
     return ImageViewer.onHold(self, _, ges)

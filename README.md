@@ -99,9 +99,11 @@ normal viewer. Tap a thumbnail to jump straight to that image instead.
 aside (or you've ignored some), a button on the Gallery's bottom bar toggles
 between your **Collection** and the **Ignored** pile — every image not in
 your collection, whether the filter dropped it as irrelevant *or* you ignored
-it by hand. **Long-press** a thumbnail to move it: from the Collection it
-goes to *Ignored*, from *Ignored* (each thumbnail marked with a **+**) it
-comes back to the Collection. That's the fix when the filter set aside an
+it by hand. **Long-press** a thumbnail and a small menu pops up next to it —
+*Ignore this image* in the Collection, *Add back to Collection* in the
+Ignored pile (whose thumbnails are marked with a **+**). (Tapping an Ignored
+thumbnail does nothing; the long-press is the way in.) That's the fix when the
+filter set aside an
 image you actually want — the map it deemed irrelevant — without switching to
 *Mode: All images*. The moves persist per book. If the filter set aside
 *everything*, the empty state offers **Review filtered-out** to open straight
