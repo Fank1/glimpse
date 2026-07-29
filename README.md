@@ -95,20 +95,19 @@ keeping its own aspect ratio instead of being cropped to a uniform tile.
 Paged when there are enough to browse; a *Back* button returns to the
 normal viewer. Tap a thumbnail to jump straight to that image instead.
 
-**Collection / Ignored.** When the relevance filter has set some images
-aside (or you've ignored some), a button on the Gallery's bottom bar toggles
-between your **Collection** and the **Ignored** pile — every image not in
-your collection, whether the filter dropped it as irrelevant *or* you ignored
-it by hand. **Long-press** a thumbnail and a small menu pops up next to it —
-*Ignore this image* in the Collection, *Add back to Collection* in the
-Ignored pile (whose thumbnails are marked with a **+**). (Tapping an Ignored
-thumbnail does nothing; the long-press is the way in.) That's the fix when the
-filter set aside an
-image you actually want — the map it deemed irrelevant — without switching to
-*Mode: All images*. The moves persist per book. If the filter set aside
-*everything*, the empty state offers **Review filtered-out** to open straight
-into the Ignored pile. (The page indicator sits top-left; the switch is on
-the bottom bar because the top strip is reserved for KOReader's top menu.)
+**Gallery / Ignored.** When the relevance filter has set some images aside
+(or you've ignored some), a button on the Gallery's bottom bar toggles
+between your **Gallery** (the images you keep) and the **Ignored** pile —
+every image not in the Gallery, whether the filter dropped it as irrelevant
+*or* you ignored it by hand. The header names the current view and its count.
+**Long-press** a thumbnail and a small menu pops up next to it — *Ignore this
+image* in the Gallery, *Add back to Gallery* in the Ignored pile. (Tapping an
+Ignored thumbnail does nothing; the long-press is the way in.) That's the fix
+when the filter set aside an image you actually want — the map it deemed
+irrelevant — without switching to *Mode: All images*. The moves persist per
+book. If the filter set aside *everything*, the empty state offers **Review
+filtered-out** to open straight into the Ignored pile. (The switch is on the
+bottom bar because the top strip is reserved for KOReader's top menu.)
 
 ### Releasing
 

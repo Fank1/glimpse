@@ -549,6 +549,15 @@ function GlimpseTextButton:getSize()
     return Geom:new{ w = self._w, h = self.height }
 end
 
+-- Stretch (or shrink) to an explicit width; the label stays centred (see
+-- paintTo). Used to make the gallery Shown/Ignored toggle fill the bottom bar.
+function GlimpseTextButton:setWidth(w)
+    if w and w > 0 and w ~= self._w then
+        self._w = w
+        if self._bg_bb then self._bg_bb:free(); self._bg_bb = nil end
+    end
+end
+
 function GlimpseTextButton:paintTo(bb, x, y)
     self.dimen = Geom:new{ x = x, y = y, w = self._w, h = self.height }
     if not self._bg_bb then
@@ -1028,17 +1037,14 @@ function GlimpseViewer:update()
         self._more_frame.dimen = nil
     end
     if self._pill_frame then
-        local pill_size = self._pill_frame:getSize()
         -- the revert button and the gallery Shown/Ignored toggle are the
         -- same height as the ⋯ button, so share its bottom inset to sit on
         -- the same baseline; the shorter dots pill uses a larger inset so
         -- its centre still lines up
         local bottom_inset = (self:_isOverFit() or self._gallery_mode)
             and btn_inset or Screen:scaleBySize(25)
-        -- centre the pill in the span between whatever sits on its left
-        -- (the Prev button, or the left inset) and the nearest right-side
-        -- chrome (⋯ / Back / Next), so a wide dot row expands to fill that
-        -- gap without ever overlapping a button
+        -- span between whatever sits on its left (the Prev button, or the
+        -- left inset) and the nearest right-side chrome (⋯ / Back / Next)
         local left_bound = Screen:scaleBySize(16)
         if self._nav_prev_frame and self._nav_prev_frame.overlap_offset then
             left_bound = self._nav_prev_frame.overlap_offset[1]
@@ -1051,6 +1057,12 @@ function GlimpseViewer:update()
                 right_bound = math.min(right_bound, f.overlap_offset[1])
             end
         end
+        -- the gallery Shown/Ignored toggle STRETCHES to fill that whole span
+        -- (a full-width bottom bar); the dot pill just centres within it
+        if self._gallery_mode and self._pill_frame.setWidth then
+            self._pill_frame:setWidth(right_bound - left_bound - 2 * btn_gap)
+        end
+        local pill_size = self._pill_frame:getSize()
         self._pill_frame.overlap_offset = {
             math.floor(left_bound + (right_bound - left_bound - pill_size.w) / 2),
             self.height - pill_size.h - bottom_inset,
@@ -1466,9 +1478,9 @@ function GlimpseViewer:onCloseWidget()
     if self._nav_prev_frame then self._nav_prev_frame:free() end
     if self._nav_next_frame then self._nav_next_frame:free() end
     if self._close_frame then self._close_frame:free() end
-    if self._gallery_heading then
-        self._gallery_heading:free()
-        self._gallery_heading = nil
+    if self._gallery_head_wgs then
+        for _, w in ipairs(self._gallery_head_wgs) do w:free() end
+        self._gallery_head_wgs = nil
     end
     if self._gallery_badges then
         for _, b in ipairs(self._gallery_badges) do b:free() end
@@ -1658,12 +1670,12 @@ function GlimpseViewer:_buildPill()
         -- Gallery bottom-center is the Shown/Ignored switch (only when there
         -- IS an ignored pool). "Page X of Y" now lives top-left in the grid.
         -- The button names the destination: from the collection it offers
-        -- "Show Ignored (n)", from the Ignored pool "Show Collection (n)".
+        -- "Show Ignored (n)", from the Ignored pool "Show Gallery (n)".
         if self:_hasIgnoredTab() then
             local label
             if self._gallery_tab == "ignored" then
                 local shown_n = self.shown_metas and #self.shown_metas or 0
-                label = T(_("Show Collection (%1)"), shown_n)
+                label = T(_("Show Gallery (%1)"), shown_n)
             else
                 label = T(_("Show Ignored (%1)"), self:_ignoredCount())
             end
@@ -1836,17 +1848,17 @@ function GlimpseViewer:_galleryHit(pos)
 end
 
 -- Long-press popup: a single action anchored just above the thumbnail —
--- "Ignore this image" in the Collection, "Add back to Collection" in the
+-- "Ignore this image" in the Gallery, "Add back to Gallery" in the
 -- Ignored pile. Kept in its own method so the gettext `_` isn't shadowed by
 -- the `_` first parameter of onHold/onTap (calling `_()` in those crashes).
-function GlimpseViewer:_openMoveMenu(cell)
+function GlimpseViewer:_openMoveMenu(cell, pos)
     local metas = select(2, self:_tabList())
     local meta = metas and metas[cell.idx]
     if not meta then return end
     local ignored = self._gallery_tab == "ignored"
     local label, cb
     if ignored then
-        label = _("Add back to Collection")
+        label = _("Add back to Gallery")
         cb = function()
             if self.on_unignore then
                 self.on_unignore(meta, "ignored", self._gallery_page)
@@ -1863,23 +1875,24 @@ function GlimpseViewer:_openMoveMenu(cell)
     local menu
     menu = GlimpsePopupMenu:new{
         items = { { text = label, callback = cb } },
-        -- centre horizontally on the thumbnail and pop up from its top edge
-        -- (MovableContainer flips it below when the cell is near the top)
+        -- compact: a single short action, so shrink the row from the ⋯ menu's
+        row_h = Screen:scaleBySize(38),
+        pad_left = Screen:scaleBySize(12),
+        pad_right = Screen:scaleBySize(12),
+        -- appear right where the finger is: centred on the touch point and
+        -- popping up from it (flips below when near the top of the screen)
         anchor = function()
             local w = menu.movable and menu.movable.dimen
                 and menu.movable.dimen.w or 0
-            local ox, oy = self:_contentOrigin()
+            local ox = self.main_frame.dimen.x
             local pad = Screen:scaleBySize(4)
-            local x = math.floor(ox + cell.x + cell.w / 2 - w / 2)
+            local x = math.floor((pos and pos.x or 0) - w / 2)
             local maxx = ox + self.width - w - pad
             if maxx < ox + pad then maxx = ox + pad end
             x = math.max(ox + pad, math.min(x, maxx))
-            return Geom:new{ x = x, y = oy + cell.y, w = 0, h = cell.h }, false
+            return Geom:new{ x = x, y = pos and pos.y or 0, w = 0, h = 0 }, false
         end,
     }
-    local ox, oy = self:_contentOrigin()
-    menu._restore_region = Geom:new{
-        x = ox + cell.x, y = oy + cell.y, w = cell.w, h = cell.h }
     UIManager:show(menu, function() return "ui", menu.movable.dimen end)
 end
 
@@ -1913,7 +1926,13 @@ function GlimpseViewer:_galleryLayout()
         local iw = meta and (meta.width or meta.attr_width)
         local ih = meta and (meta.height or meta.attr_height)
         if not (iw and ih and iw > 0 and ih > 0) then iw, ih = 1, 1 end
-        local th = math.floor(thumb_w * ih / iw + 0.5)
+        -- displayed height = native scaled to the column width, but NEVER
+        -- upscaled (matches _thumb, which caps at 1×). Sizing the cell to
+        -- thumb_w * aspect instead gives a small image (icon, tiny ad) a
+        -- full-width cell it can't fill, floating it in white space and
+        -- ballooning the column so pages flush half-empty.
+        local scale = math.min(thumb_w / iw, 1)
+        local th = math.floor(ih * scale + 0.5)
         -- clamp: never taller than a full column, never too small to tap
         th = math.min(th, m.grid_h - 2 * m.inset)
         th = math.max(th, Screen:scaleBySize(24))
@@ -1954,13 +1973,13 @@ function GlimpseViewer:_galleryMetrics()
     return {
         area_w = self.width,
         pad = Screen:scaleBySize(16),
-        -- 3 top margin (matches the heading offset) + 40 heading band + 4
-        -- margin below (tightened further from 6/40/8)
-        top = Screen:scaleBySize(3 + 40 + 4),
+        -- 3 top margin + 56 heading band (two lines: title/page, then the
+        -- "N images…" subtitle) + 4 margin below
+        top = Screen:scaleBySize(3 + 56 + 4),
         bottom = Screen:scaleBySize(60),
         gap = Screen:scaleBySize(10),
         inset = Screen:scaleBySize(4),
-        grid_h = self.img_container_h - Screen:scaleBySize(3 + 40 + 4)
+        grid_h = self.img_container_h - Screen:scaleBySize(3 + 56 + 4)
             - Screen:scaleBySize(60),
     }
 end
@@ -2029,45 +2048,65 @@ function GlimpseViewer:_buildGallery()
     local grid = OverlapGroup:new{
         dimen = Geom:new{ w = self.width, h = self.img_container_h },
     }
-    -- Top band, top-left: a static "Page X of Y" when the grid is paged,
-    -- otherwise the "N images in book" heading. It is display-only — the
-    -- Shown/Ignored switch lives on the BOTTOM bar (the top strip is reserved
-    -- for KOReader's own top-menu tap zone, so nothing tappable can go here).
-    if self._gallery_heading then
-        self._gallery_heading:free()
-        self._gallery_heading = nil
+    -- Two-line header (top band, display-only — the Gallery/Ignored switch
+    -- lives on the BOTTOM bar, since the top strip is KOReader's top-menu tap
+    -- zone). Line 1: "Gallery"/"Ignored" left, "Page X of Y" right-aligned
+    -- when paged. Line 2 (smaller, grey): "N images in Gallery"/"N ignored".
+    if self._gallery_head_wgs then
+        for _, w in ipairs(self._gallery_head_wgs) do w:free() end
+    end
+    self._gallery_head_wgs = {}
+    local function addHead(wg)
+        table.insert(grid, wg)
+        table.insert(self._gallery_head_wgs, wg)
     end
     if self._gallery_badges then
         for _, b in ipairs(self._gallery_badges) do b:free() end
     end
     self._gallery_badges = {}
-    local band_h = Screen:scaleBySize(40)
     local band_top = Screen:scaleBySize(3)
     local on_ignored_tab = self._gallery_tab == "ignored"
     local active_is_primary = (self._gallery_tab or "shown")
         == (self.primary_tab or "shown")
-    local heading_text
-    if pages > 1 then
-        heading_text = T(_("Page %1 of %2"), self._gallery_page or 1, pages)
-    else
-        local nb = self._images_list_nb or 1
-        local hidden = self.gallery_hidden_count or 0
-        heading_text = hidden > 0
-            and T(_("%1 images in book this far, %2 hidden"), nb, hidden)
-            or T(_("%1 images in book"), nb)
-    end
-    self._gallery_heading = TextWidget:new{
-        text = heading_text,
-        face = Font:getFace("cfont", 14),
+    local count = select(3, self:_tabList())
+    local title_wg = TextWidget:new{
+        text = on_ignored_tab and _("Ignored") or _("Gallery"),
+        face = Font:getFace("cfont", 16),
         bold = true,
         fgcolor = Blitbuffer.COLOR_BLACK,
+    }
+    local th1 = title_wg:getSize().h
+    title_wg.overlap_offset = { m.pad, band_top }
+    addHead(title_wg)
+    if pages > 1 then
+        local page_wg = TextWidget:new{
+            text = T(_("Page %1 of %2"), self._gallery_page or 1, pages),
+            face = Font:getFace("cfont", 13),
+            fgcolor = Blitbuffer.COLOR_DARK_GRAY,
+        }
+        local psz = page_wg:getSize()
+        page_wg.overlap_offset = {
+            m.area_w - m.pad - psz.w,
+            band_top + math.floor((th1 - psz.h) / 2),
+        }
+        addHead(page_wg)
+    end
+    local sub_text
+    if on_ignored_tab then
+        sub_text = count == 1 and _("1 image ignored")
+            or T(_("%1 images ignored"), count)
+    else
+        sub_text = count == 1 and _("1 image in Gallery")
+            or T(_("%1 images in Gallery"), count)
+    end
+    local sub_wg = TextWidget:new{
+        text = sub_text,
+        face = Font:getFace("cfont", 12),
+        fgcolor = Blitbuffer.COLOR_DARK_GRAY,
         max_width = m.area_w - 2 * m.pad,
     }
-    local hh = self._gallery_heading:getSize().h
-    self._gallery_heading.overlap_offset = {
-        m.pad, band_top + math.floor((band_h - hh) / 2),
-    }
-    table.insert(grid, self._gallery_heading)
+    sub_wg.overlap_offset = { m.pad, band_top + th1 + Screen:scaleBySize(2) }
+    addHead(sub_wg)
     self._gallery_cells = {}
     for _, c in ipairs(layout.pages[self._gallery_page] or {}) do
         local bb = self:_thumb(c.idx,
@@ -2101,19 +2140,18 @@ function GlimpseViewer:_buildGallery()
             table.insert(grid, cell)
             table.insert(self._gallery_cells,
                 { x = c.x, y = c.y, w = c.w, h = c.h, idx = c.idx })
-            -- top-left corner badge, added AFTER the cell so it paints on
-            -- top: a reading-order number in the Shown grid (so the masonry
-            -- order is legible and an image is findable), a "+" in the
-            -- Ignored grid to signal that long-press adds it back to Shown
-            local badge = on_ignored_tab
-                and GlimpseBadge:new{ glyph = "+" }
-                or GlimpseBadge:new{ num = c.idx }
-            badge.overlap_offset = {
-                c.x + m.inset + Screen:scaleBySize(3),
-                c.y + m.inset + Screen:scaleBySize(3),
-            }
-            table.insert(grid, badge)
-            table.insert(self._gallery_badges, badge)
+            -- reading-order number badge (top-left), added AFTER the cell so
+            -- it paints on top. Only in the Gallery grid — the Ignored
+            -- grid has no badge (order there isn't meaningful).
+            if not on_ignored_tab then
+                local badge = GlimpseBadge:new{ num = c.idx }
+                badge.overlap_offset = {
+                    c.x + m.inset + Screen:scaleBySize(3),
+                    c.y + m.inset + Screen:scaleBySize(3),
+                }
+                table.insert(grid, badge)
+                table.insert(self._gallery_badges, badge)
+            end
         end
     end
     self.image_container = grid
@@ -2488,7 +2526,7 @@ function GlimpseViewer:onTap(_, ges)
             return true
         end
         -- thumbnail: tap opens it ONLY when this pool is what the single-image
-        -- view shows (the primary/Collection tab). A tap on an Ignored
+        -- view shows (the primary/Gallery tab). A tap on an Ignored
         -- thumbnail does nothing — adding it back is a long-press (see onHold).
         local cell = self:_galleryHit(ges.pos)
         if cell and self._gallery_tab == (self.primary_tab or "shown") then
@@ -2616,13 +2654,13 @@ function GlimpseViewer:onMultiSwipe(_, ges)
 end
 
 -- Long-press a Gallery thumbnail opens a small anchored menu with the one
--- move action for that pool (Ignore this image / Add back to Collection);
+-- move action for that pool (Ignore this image / Add back to Gallery);
 -- see _openMoveMenu. Outside the gallery, defer to upstream (long-press
 -- starts a pan on a zoomed image).
 function GlimpseViewer:onHold(_, ges)
     if self._gallery_mode then
         local cell = self:_galleryHit(ges.pos)
-        if cell then self:_openMoveMenu(cell) end
+        if cell then self:_openMoveMenu(cell, ges.pos) end
         return true
     end
     return ImageViewer.onHold(self, _, ges)
@@ -3500,7 +3538,7 @@ function Glimpse:showViewer(whole_book_once)
             self._pending_gallery = { tab = tab, page = page }
             if self._viewer then self._viewer:onClose() end
             self:showViewer(whole_book_once)
-            UIManager:show(Notification:new{ text = _("Added to Collection") })
+            UIManager:show(Notification:new{ text = _("Added to Gallery") })
         end,
     }
     self._viewer = viewer
