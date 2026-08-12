@@ -59,17 +59,33 @@ local SCOPE_KEY = "glimpse_scope"    -- "read_so_far" | "whole_book"
 -- and the level choice mostly created confusion.)
 local FILTER_KEY = "glimpse_filter"
 -- Invert images while night mode is on (global setting).
+local ENABLED_KEY = "glimpse_enabled"          -- master on/off for the gesture + Open Glimpse, ON by default (nilOrTrue)
 local INVERT_KEY = "glimpse_invert_night"
 local NAV_BUTTONS_KEY = "glimpse_nav_buttons" -- prev/next buttons, off by default
+local ZOOMCTL_KEY = "glimpse_zoom_control"     -- overlay −/fit/+ zoom pill, off by default
 local CAPTIONS_KEY = "glimpse_captions"        -- caption overlay, ON by default (nilOrTrue)
 local TOP_MENU_KEY = "glimpse_top_menu_zone"   -- tap top strip → KOReader top menu, ON by default (nilOrTrue)
 local SHADOW_KEY = "glimpse_disable_shadow"    -- drop the drawer's gradient shadow, OFF by default (e-ink ghost source)
+local SUPPRESS_UNSUPPORTED_KEY = "glimpse_suppress_unsupported" -- silence the "EPUB only" notice on unsupported files, OFF by default
+local MAX_ZOOM_KEY = "glimpse_max_zoom"        -- zoom ceiling as a multiple of native resolution (double-tap target + pinch clamp)
 local GESTURE_TIP_KEY = "glimpse_gesture_tip_shown" -- one-time menu-open nudge to bind a gesture
+
+-- Zoom ceiling (multiple of the image's native resolution), user-configurable
+-- under Advanced → Maximum zoom. Double-tap jumps here and pinch stops here.
+-- 2.0 (200%) by default; the menu offers 150%–400%.
+local DEFAULT_MAX_ZOOM = 2.0
+local MAX_ZOOM_CHOICES = { 1.5, 2.0, 2.5, 3.0, 4.0 }
+local function _maxZoomMult()
+    local v = tonumber(G_reader_settings:readSetting(MAX_ZOOM_KEY))
+    return v or DEFAULT_MAX_ZOOM
+end
 -- Which actions appear in the viewer's ⋯ popup ("Quick Actions", configured
 -- from the plugin menu). Table order = popup order; `default` = shown unless
 -- the user has toggled it. The six that were always in the popup default ON;
--- the three promoted from the plugin menu (restore/prevnext/captions) default
--- OFF, so out of the box the popup is exactly what it was before.
+-- the two promoted from the plugin menu (prevnext/captions) default OFF, so
+-- out of the box the popup is exactly what it was before. (Restoring ignored
+-- images lives in the Gallery's Ignored tab and the plugin menu, so it is no
+-- longer a ⋯ Quick Action.)
 local QUICK_ACTIONS_KEY = "glimpse_quick_actions"
 local QUICK_ACTIONS = {
     { key = "gallery",    default = true  },
@@ -77,8 +93,8 @@ local QUICK_ACTIONS = {
     { key = "mode",       default = true  },
     { key = "rotate",     default = true  },
     { key = "showinbook", default = true  },
-    { key = "restore",    default = false },
     { key = "prevnext",   default = false },
+    { key = "zoomctl",    default = false },
     { key = "captions",   default = false },
     { key = "invert",     default = true  },
 }
@@ -97,8 +113,8 @@ local function _quick_label(key)
         mode       = _("Mode switch"),
         rotate     = _("Rotate 90°"),
         showinbook = _("Show in Book"),
-        restore    = _("Restore ignored images"),
         prevnext   = _("Show Nav Buttons Toggle"),
+        zoomctl    = _("Show Zoom Control Toggle"),
         captions   = _("Show Image Captions Toggle"),
         invert     = _("Invert in Night Mode Toggle"),
     })[key] or key
@@ -346,15 +362,11 @@ end
 function GlimpseMoreButton:paintTo(bb, x, y)
     self.dimen = Geom:new{ x = x, y = y, w = self.size, h = self.size }
     if not self._bg_bb then
-        -- disabled (dead-end prev/next): no white fill — just the dimmed
-        -- outline ring (fill=nil) so the image shows through; the icon is
-        -- lifted to the same gray below. NB: an explicit if, not
-        -- `disabled and nil or 0xFF` — that idiom returns 0xFF when the
-        -- middle value is nil, which is exactly the disabled case.
-        local fill = 0xFF
-        if self.disabled then fill = nil end
+        -- disabled (dead-end prev/next): keep the white fill for consistency
+        -- with the enabled buttons — just dim the outline ring and the icon
+        -- (lifted to the same gray below) so it still reads as inactive.
         self._bg_bb = make_rounded_stencil(self.size, self.size,
-            self.radius, self.stroke, fill,
+            self.radius, self.stroke, 0xFF,
             self.disabled and self.disabled_gray or 0x00)
     end
     bb:alphablitFrom(self._bg_bb, x, y, 0, 0, self.size, self.size)
@@ -418,6 +430,126 @@ function GlimpseMoreButton:free()
         self._icon_bb:free()
         self._icon_bb = nil
     end
+end
+
+-- Vertical zoom control (Figma "Zoom Control", node 125:357): a white rounded
+-- pill the width of the chrome buttons, three equal zones split by two light
+-- hairlines — minus (top), fit-to-screen (middle), plus (bottom). Same
+-- white-fill/black-2px-border/day-polarity styling as the buttons, so it
+-- night-inverts identically. `fit_disabled` dims the middle icon to ~20%
+-- (the "image is already fitted" variant), leaving − and + active. Painting
+-- only; the parent hit-tests the three zones (see onTap) and positions it.
+local GlimpseZoomControl = Widget:extend{
+    width = GlimpseMoreButton.size,       -- align with the Next/⋯ column
+    -- three SQUARE zones stacked: each zone is as tall as the pill is wide,
+    -- matching the button proportions beside it
+    height = GlimpseMoreButton.size * 3,
+    radius = Screen:scaleBySize(7),
+    stroke = Screen:scaleBySize(2),
+    inset = Screen:scaleBySize(2),        -- divider clearance from the border
+    divider_gray = 0xDB,                  -- #DBDBDB, the Figma hairline
+    -- painted in day polarity, so night mode inverts 0xDB → a near-black line
+    -- on the black pill, which reads as too faint; a lower value inverts to a
+    -- lighter (higher-contrast) line at night
+    divider_gray_night = 0xC4,            -- inverts to ~0x3B on black
+    disabled_gray = 0xCC,                 -- dimmed icon at a zoom limit (~0.2)
+    fit_disabled = false,                 -- middle icon: image already fitted
+    minus_disabled = false,               -- at fit / minimum zoom
+    plus_disabled = false,                -- at maximum zoom
+    inverted_zone = nil,                  -- 0/1/2: zone flashed while pressed
+}
+
+function GlimpseZoomControl:getSize()
+    return Geom:new{ w = self.width, h = self.height }
+end
+
+function GlimpseZoomControl:_ensureIcons()
+    if self._icons_done then return end
+    self._icons_done = true
+    local function render(name, sz)
+        local ok, ibb = pcall(RenderImage.renderSVGImageFile, RenderImage,
+            _PLUGIN_DIR .. "/assets/" .. name, sz, sz)
+        if ok and ibb then return ibb end
+    end
+    -- dimmed copy for a disabled state: lift the black strokes to a light
+    -- gray (keeps the anti-aliased alpha), matching the 20%-opacity look
+    local function dim(ibb)
+        if not ibb then return end
+        local g = self.disabled_gray
+        for yy = 0, ibb:getHeight() - 1 do
+            for xx = 0, ibb:getWidth() - 1 do
+                local c = ibb:getPixel(xx, yy):getColorRGB32()
+                if c.alpha > 0 then
+                    ibb:setPixel(xx, yy, Blitbuffer.ColorRGB32(g, g, g, c.alpha))
+                end
+            end
+        end
+        return ibb
+    end
+    local s16, s18 = Screen:scaleBySize(16), Screen:scaleBySize(18)
+    self._minus_bb = render("zoom-minus.svg", s16)
+    self._plus_bb  = render("zoom-plus.svg", s16)
+    self._fit_bb   = render("zoom-fit.svg", s18)
+    self._minus_dim_bb = dim(render("zoom-minus.svg", s16))
+    self._plus_dim_bb  = dim(render("zoom-plus.svg", s16))
+    self._fit_dim_bb   = dim(render("zoom-fit.svg", s18))
+end
+
+function GlimpseZoomControl:paintTo(bb, x, y)
+    local w, h = self.width, self.height
+    self.dimen = Geom:new{ x = x, y = y, w = w, h = h }
+    if not self._bg_bb then
+        self._bg_bb = make_rounded_stencil(w, h, self.radius, self.stroke,
+            0xFF, 0x00)
+    end
+    bb:alphablitFrom(self._bg_bb, x, y, 0, 0, w, h)
+    -- two hairline dividers at the zone boundaries (h/3, 2h/3)
+    local third = h / 3
+    local dth = math.max(1, Screen:scaleBySize(1))
+    local dx = x + self.inset
+    local dw = w - 2 * self.inset
+    local dg = Screen.night_mode and self.divider_gray_night
+        or self.divider_gray
+    local dcol = Blitbuffer.ColorRGB32(dg, dg, dg, 0xFF)
+    bb:paintRect(dx, y + math.floor(third - dth / 2), dw, dth, dcol)
+    bb:paintRect(dx, y + math.floor(2 * third - dth / 2), dw, dth, dcol)
+    -- icons, centered in each zone (zone centers = h/6, h/2, 5h/6)
+    self:_ensureIcons()
+    local function icon(ibb, cy)
+        if not ibb then return end
+        bb:alphablitFrom(ibb,
+            x + math.floor((w - ibb:getWidth()) / 2),
+            y + math.floor(cy - ibb:getHeight() / 2),
+            0, 0, ibb:getWidth(), ibb:getHeight())
+    end
+    icon(self.minus_disabled and self._minus_dim_bb or self._minus_bb,
+        third / 2)
+    icon(self.fit_disabled and self._fit_dim_bb or self._fit_bb, h / 2)
+    icon(self.plus_disabled and self._plus_dim_bb or self._plus_bb,
+        h - third / 2)
+    -- pressed feedback: invert just the tapped zone, clipped to the pill's
+    -- rounded silhouette via the bg stencil's alpha (like GlimpseMoreButton)
+    if self.inverted_zone then
+        local z0 = math.floor(self.inverted_zone * third)
+        local z1 = math.floor((self.inverted_zone + 1) * third)
+        for yy = z0, z1 - 1 do
+            for xx = 0, w - 1 do
+                local a = self._bg_bb:getPixel(xx, yy):getColorRGB32().alpha
+                if a > 127 then
+                    bb:setPixel(x + xx, y + yy,
+                        bb:getPixel(x + xx, y + yy):getColorRGB32():invert())
+                end
+            end
+        end
+    end
+end
+
+function GlimpseZoomControl:free()
+    for _, k in ipairs({ "_bg_bb", "_minus_bb", "_plus_bb", "_fit_bb",
+            "_minus_dim_bb", "_plus_dim_bb", "_fit_dim_bb" }) do
+        if self[k] then self[k]:free(); self[k] = nil end
+    end
+    self._icons_done = nil
 end
 
 -- Caption overlay: the image's caption tucked into the top-left corner of
@@ -856,8 +988,6 @@ local GlimpseViewer = ImageViewer:extend{
     on_show_menu = nil,    -- function(): open KOReader's top menu (only)
     scope = nil,           -- effective scope: "read_so_far" | "whole_book"
     on_toggle_scope = nil, -- function(): flip the scope setting and reopen
-    hidden_count = nil,    -- function() -> number of per-book hidden images
-    on_restore_hidden = nil, -- function(): restore hidden images and reopen
     get_pref = nil,        -- function(meta) -> per-image prefs {rotation=}
     set_pref = nil,        -- function(meta, key, value)
     -- Gallery tabs. The single-image view uses image/image_metas (= the
@@ -876,9 +1006,10 @@ local GlimpseViewer = ImageViewer:extend{
     -- tap-outside, multiswipe or Back.
     with_title_bar = false,
     -- Zoom ceiling as a multiple of the image's native resolution: pinch may
-    -- push a little past 100% (actual pixel size) for readability, but not so
-    -- far that upscaling turns to mush. Double-tap still stops at 100%.
-    max_zoom_of_native = 1.5,
+    -- push past 100% (actual pixel size) for readability. User-configurable
+    -- under Advanced → Maximum zoom; the viewer is created with the chosen
+    -- value (see showViewer). This literal is only the fallback if unset.
+    max_zoom_of_native = DEFAULT_MAX_ZOOM,
     -- Drawer metrics from the design (design px == px at the reference DPI)
     panel_ratio = 505 / 630,               -- of screen width
     panel_vgap = 0,                        -- full height, border included
@@ -985,6 +1116,12 @@ function GlimpseViewer:update()
     -- edge than before (the buttons also grew 2px, see GlimpseMoreButton)
     local btn_inset = Screen:scaleBySize(14)
     local btn_gap = Screen:scaleBySize(10)
+    -- the −/fit/+ zoom control (Quick Action, off by default): only in the
+    -- single-image view. When on it occupies the slot above the bottom-right
+    -- button, so ⋯ shifts to Next's LEFT (below) and the Reset pill is
+    -- suppressed (its middle button resets to fit instead — see _buildPill).
+    local show_zc = (not self._gallery_mode)
+        and G_reader_settings:isTrue(ZOOMCTL_KEY)
     -- optional prev/next buttons: always shown while the toggle is on
     -- (zoomed too — switching lands the next image at fit); at the ends
     -- of the list the dead-end button stays visible but grayed out, so
@@ -1052,10 +1189,18 @@ function GlimpseViewer:update()
         local more_size = self._more_frame:getSize()
         local more_x, more_y
         if self._nav_next_frame then
-            -- nav on: ⋯ stacks directly ABOVE Next (same right edge), with
-            -- the same gap it used to keep to Next's left now below it
-            more_x = self._nav_next_frame.overlap_offset[1]
-            more_y = self._nav_next_frame.overlap_offset[2] - btn_gap - more_size.h
+            if show_zc then
+                -- zoom control owns the slot above Next, so ⋯ sits to Next's
+                -- LEFT on the same bottom row (matches the Figma layout)
+                more_x = self._nav_next_frame.overlap_offset[1]
+                    - btn_gap - more_size.w
+                more_y = self._nav_next_frame.overlap_offset[2]
+            else
+                -- nav on: ⋯ stacks directly ABOVE Next (same right edge), with
+                -- the same gap it used to keep to Next's left now below it
+                more_x = self._nav_next_frame.overlap_offset[1]
+                more_y = self._nav_next_frame.overlap_offset[2] - btn_gap - more_size.h
+            end
         else
             -- nav off: ⋯ takes the bottom-right slot Next would have used
             more_x = image_area_w - more_size.w
@@ -1072,12 +1217,26 @@ function GlimpseViewer:update()
         self._more_frame.dimen = nil
     end
     if self._pill_frame then
-        -- the revert button and the gallery Shown/Ignored toggle are the
+        -- the Reset button and the gallery Shown/Ignored toggle are the
         -- same height as the ⋯ button, so share its bottom inset to sit on
         -- the same baseline; the shorter dots pill uses a larger inset so
-        -- its centre still lines up
-        local bottom_inset = (self:_isOverFit() or self._gallery_mode)
-            and btn_inset or Screen:scaleBySize(25)
+        -- its CENTRE lines up with the buttons flanking it — derived from the
+        -- actual heights (not a fixed guess) so it stays centred at any DPI.
+        -- NB: over-fit only swaps in the tall Reset button when the −/fit/+
+        -- zoom control is OFF (see _buildPill); with it on the dots stay, so
+        -- key off "is the pill a button", not _isOverFit — otherwise zooming
+        -- past fit would drop the still-shown dots to the bottom baseline.
+        local pill_is_button = self._gallery_mode
+            or (self:_isOverFit()
+                and not G_reader_settings:isTrue(ZOOMCTL_KEY))
+        local bottom_inset
+        if pill_is_button then
+            bottom_inset = btn_inset
+        else
+            local pill_h = self._pill_frame:getSize().h
+            bottom_inset = btn_inset
+                + math.floor((GlimpseMoreButton.size - pill_h) / 2)
+        end
         -- span between whatever sits on its left (the Prev button, or the
         -- left inset) and the nearest right-side chrome (⋯ / Back / Next)
         local left_bound = Screen:scaleBySize(16)
@@ -1114,6 +1273,39 @@ function GlimpseViewer:update()
             }
         end
         table.insert(overlay, self._pill_frame)
+    end
+    -- zoom control (−/fit/+): built once, repositioned each update; freed when
+    -- turned off or in the gallery. Sits above the bottom-right button (Next
+    -- when nav is on, else ⋯); its middle "fit" icon greys out at fit.
+    if self._zoomctl_frame and not show_zc then
+        self._zoomctl_frame:free()
+        self._zoomctl_frame = nil
+    end
+    if show_zc then
+        if not self._zoomctl_frame then
+            self._zoomctl_frame = GlimpseZoomControl:new{}
+        end
+        local zc = self._zoomctl_frame
+        local over_fit = self:_isOverFit()
+        zc.fit_disabled = not over_fit
+        zc.minus_disabled = not over_fit      -- at fit / minimum zoom
+        zc.plus_disabled = self:_isAtMax()    -- can't zoom in further
+        zc.inverted_zone = nil                -- clear any press flash
+        local zsz = zc:getSize()
+        local anchor = self._nav_next_frame
+            or (self._more_frame and self._more_frame.overlap_offset
+                and self._more_frame)
+        local zx, zy
+        if anchor and anchor.overlap_offset then
+            local asz = anchor:getSize()
+            zx = anchor.overlap_offset[1] + (asz.w - zsz.w) -- right-align
+            zy = anchor.overlap_offset[2] - btn_gap - zsz.h
+        else
+            zx = image_area_w - zsz.w
+            zy = self.height - zsz.h - btn_inset
+        end
+        zc.overlap_offset = { zx, zy }
+        table.insert(overlay, zc)
     end
     -- caption overlay, top-left on the image (toggleable, on by default)
     if self._caption_wg then
@@ -1524,6 +1716,7 @@ function GlimpseViewer:onCloseWidget()
     if self._nav_prev_frame then self._nav_prev_frame:free() end
     if self._nav_next_frame then self._nav_next_frame:free() end
     if self._close_frame then self._close_frame:free() end
+    if self._zoomctl_frame then self._zoomctl_frame:free() end
     if self._gallery_head_wgs then
         for _, w in ipairs(self._gallery_head_wgs) do w:free() end
         self._gallery_head_wgs = nil
@@ -1729,10 +1922,11 @@ function GlimpseViewer:_buildPill()
         end
         return
     end
-    if self:_isOverFit() then
+    if self:_isOverFit() and not G_reader_settings:isTrue(ZOOMCTL_KEY) then
         -- genuinely spilling past fit: image switching is disabled, and
         -- the indicator becomes a tappable "reset to fit" button, styled
-        -- to match the ⋯ button (see onTap)
+        -- to match the ⋯ button (see onTap). When the −/fit/+ zoom control
+        -- is on, its middle button handles reset instead, so keep the dots.
         self._pill_frame = GlimpseTextButton:new{
             text = _("Reset"),
             bold = true,
@@ -2225,19 +2419,10 @@ end
 
 -- Would the ⋯ popup have at least one row? Mirrors the gating in
 -- _showMoreMenu so update() can hide the ⋯ button entirely when the user
--- has turned every Quick Action off (restore only counts when something is
--- actually hidden; the rest are unconditional).
+-- has turned every Quick Action off.
 function GlimpseViewer:_hasQuickActions()
     for _, d in ipairs(QUICK_ACTIONS) do
-        if _quick_enabled(d.key) then
-            if d.key == "restore" then
-                if self.hidden_count and self.hidden_count() > 0 then
-                    return true
-                end
-            else
-                return true
-            end
-        end
+        if _quick_enabled(d.key) then return true end
     end
     return false
 end
@@ -2301,21 +2486,18 @@ function GlimpseViewer:_showMoreMenu()
             callback = function() self:_showInBook() end,
         }
     end
-    if _quick_enabled("restore") and self.hidden_count
-            and self.hidden_count() > 0 then
-        items[#items + 1] = {
-            text = _("Restore ignored images"),
-            icon = _PLUGIN_DIR .. "/assets/restore.svg",
-            callback = function()
-                if self.on_restore_hidden then self.on_restore_hidden() end
-            end,
-        }
-    end
     if _quick_enabled("prevnext") then
         items[#items + 1] = {
             text = _("Show Nav Buttons"),
             check = G_reader_settings:isTrue(NAV_BUTTONS_KEY),
             callback = function() self:_togglePrevNext() end,
+        }
+    end
+    if _quick_enabled("zoomctl") then
+        items[#items + 1] = {
+            text = _("Show Zoom Control"),
+            check = G_reader_settings:isTrue(ZOOMCTL_KEY),
+            callback = function() self:_toggleZoomControl() end,
         }
     end
     if _quick_enabled("captions") then
@@ -2437,6 +2619,28 @@ function GlimpseViewer:_togglePrevNext()
     self:update()
 end
 
+function GlimpseViewer:_toggleZoomControl()
+    G_reader_settings:saveSetting(ZOOMCTL_KEY,
+        not G_reader_settings:isTrue(ZOOMCTL_KEY))
+    self:update()
+end
+
+-- One discrete zoom step for the +/− buttons: geometric, so ~4 taps span
+-- best-fit → the maximum (Advanced → Maximum zoom). Clamped by
+-- _applyNewScaleFactor, which snaps back to fit at/below the floor and caps
+-- at the ceiling; a small image with no room to zoom is a no-op.
+function GlimpseViewer:_zoomStep(dir)
+    if self._gallery_mode then return end
+    self:_refreshScaleFactor()
+    local fit = self._fit_scale_factor or self:_computeFitScaleFactor()
+    if not fit or fit <= 0 then return end
+    local maxs = self:_maxScale() or fit
+    if maxs <= fit + 1e-4 then return end
+    local cur = (self.scale_factor == 0) and fit or self.scale_factor
+    local mult = (maxs / fit) ^ (1 / 4)
+    self:_applyNewScaleFactor(dir > 0 and cur * mult or cur / mult)
+end
+
 function GlimpseViewer:_toggleCaptions()
     G_reader_settings:saveSetting(CAPTIONS_KEY,
         not G_reader_settings:nilOrTrue(CAPTIONS_KEY))
@@ -2505,6 +2709,19 @@ function GlimpseViewer:_flashButton(frame, action)
     frame.inverted = true
     UIManager:widgetRepaint(frame, d.x, d.y)
     UIManager:setDirty(nil, "fast", d)
+    UIManager:forceRePaint()
+    UIManager:yieldToEPDC()
+    action()
+end
+
+-- Same press flash for one zone of the zoom control, then run the action
+-- (which repaints the control un-inverted via update()).
+function GlimpseViewer:_flashZoomZone(zone, action)
+    local zc = self._zoomctl_frame
+    if not zc or not zc.dimen then action(); return end
+    zc.inverted_zone = zone
+    UIManager:widgetRepaint(zc, zc.dimen.x, zc.dimen.y)
+    UIManager:setDirty(nil, "fast", zc.dimen)
     UIManager:forceRePaint()
     UIManager:yieldToEPDC()
     action()
@@ -2580,6 +2797,32 @@ function GlimpseViewer:onTap(_, ges)
             if self._gallery_mode then self:_galleryGo(1)
             else self:onShowNextImage() end
         end)
+        return true
+    end
+    -- zoom control: three stacked zones — minus (top), fit-reset (middle,
+    -- inert when already at fit), plus (bottom)
+    if self._zoomctl_frame and self._zoomctl_frame.dimen
+       and ges.pos:intersectWith(self._zoomctl_frame.dimen) then
+        local d = self._zoomctl_frame.dimen
+        local zone = math.min(2, math.max(0,
+            math.floor((ges.pos.y - d.y) / (d.h / 3))))
+        if zone == 0 then
+            if self:_isOverFit() then
+                self:_flashZoomZone(0, function() self:_zoomStep(-1) end)
+            end
+        elseif zone == 1 then
+            if self:_isOverFit() then
+                self:_flashZoomZone(1, function()
+                    self.scale_factor = 0
+                    self._center_x_ratio, self._center_y_ratio = 0.5, 0.5
+                    self:update()
+                end)
+            end
+        else
+            if not self:_isAtMax() then
+                self:_flashZoomZone(2, function() self:_zoomStep(1) end)
+            end
+        end
         return true
     end
     if self._gallery_mode then
@@ -2763,6 +3006,15 @@ function GlimpseViewer:_isOverFit()
     if self.scale_factor == 0 then return false end
     local fit = self._fit_scale_factor or self:_computeFitScaleFactor() or 1
     return self.scale_factor > fit + 0.001
+end
+
+-- True when the image is zoomed all the way in (at the max-zoom ceiling), so
+-- the + step can't do anything more. scale_factor 0 is fit, never the max.
+function GlimpseViewer:_isAtMax()
+    if self.scale_factor == 0 then return false end
+    local maxs = self:_maxScale()
+    if not maxs then return false end
+    return self.scale_factor >= maxs - 0.001
 end
 
 -- Best-fit factor for the current image, computed from its dimensions the
@@ -2973,6 +3225,10 @@ function Glimpse:init()
 end
 
 function Glimpse:onGlimpseShow()
+    -- master switch (menu → Enable Glimpse): a disabled plugin swallows its
+    -- own gesture so the bound gesture is effectively unmapped without the
+    -- user having to unbind it in the gesture manager
+    if not G_reader_settings:nilOrTrue(ENABLED_KEY) then return true end
     self:showViewer()
     return true
 end
@@ -3050,7 +3306,7 @@ function Glimpse:_supportedReason()
     -- crengine documents expose getDocumentFileContent; paged formats
     -- (PDF/DjVu) do not, and their APIs must not be touched at all
     if type(doc.getDocumentFileContent) ~= "function" then
-        return false, _("Glimpse works with EPUB books only (this document format is not supported).")
+        return false, _("Glimpse works with EPUB books only (this document format is not supported)."), "unsupported"
     end
     return true
 end
@@ -3233,9 +3489,15 @@ function Glimpse:showViewer(whole_book_once)
         self._viewer:onClose()
         return
     end
-    local ok, msg = self:_supportedReason()
+    local ok, msg, why = self:_supportedReason()
     if not ok then
-        UIManager:show(InfoMessage:new{ text = msg })
+        -- Advanced → suppress the "not supported" notice: silences only the
+        -- unsupported-format case (e.g. a stray gesture on a PDF/manga), never
+        -- "No book is open" or a loader failure.
+        if not (why == "unsupported"
+                and G_reader_settings:isTrue(SUPPRESS_UNSUPPORTED_KEY)) then
+            UIManager:show(InfoMessage:new{ text = msg })
+        end
         return
     end
 
@@ -3482,6 +3744,8 @@ function Glimpse:showViewer(whole_book_once)
     viewer = GlimpseViewer:new{
         image = images_list,
         image_metas = imgs,
+        -- zoom ceiling (multiple of native), from Advanced → Maximum zoom
+        max_zoom_of_native = _maxZoomMult(),
         -- lazily supplies the full-res decode of the zoomed image (sharp zoom)
         hires_decode = hires_decode,
         -- Gallery tabs: the two pools, independent of which one is primary
@@ -3571,14 +3835,6 @@ function Glimpse:showViewer(whole_book_once)
                     and _("Mode: All images")
                     or _("Mode: Images up to here"),
             })
-        end,
-        -- ⋯ → Restore hidden images (only offered when some are hidden):
-        -- clear the per-book hide list, then close+reopen so they return.
-        hidden_count = function() return self:_hiddenCount() end,
-        on_restore_hidden = function()
-            self.ui.doc_settings:delSetting("glimpse_hidden")
-            if self._viewer then self._viewer:onClose() end
-            self:showViewer()
         end,
         -- Gallery long-press, Shown tab: move this image to Ignored (hide it
         -- and drop any force-add). Persist, then reopen back into the Gallery
@@ -4045,12 +4301,12 @@ function Glimpse:_gestureLabel()
             end
         end
     end
-    if #found == 0 then return _("Gesture: none set") end
+    if #found == 0 then return _("Gesture to open: none set") end
     table.sort(found)
     for i, ges in ipairs(found) do
         found[i] = ges:gsub("_", " "):gsub("^%l", string.upper)
     end
-    return T(_("Gesture: %1"), table.concat(found, ", "))
+    return T(_("Gesture to open: %1"), table.concat(found, ", "))
 end
 
 function Glimpse:_menuItems()
@@ -4067,25 +4323,35 @@ function Glimpse:_menuItems()
     end
     return {
         {
-            -- which gesture opens Glimpse here; tap for the how-to (KOReader
-            -- has no API to deep-link the gesture manager, so we spell out
-            -- the path). This is the plugin's main onboarding affordance —
-            -- one-touch access is the whole point — so it's an action, not a
-            -- dimmed label.
-            text_func = function() return self:_gestureLabel() end,
-            keep_menu_open = true,
-            help_text = _("Assign or change it under Taps and gestures → Gesture manager → (pick a gesture) → Reader → 'Open Glimpse'."),
-            callback = function()
-                UIManager:show(InfoMessage:new{
-                    text = _("To open Glimpse with a single gesture:\n\nSettings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'."),
-                })
+            -- master on/off: leaves the bound gesture in place but makes it
+            -- (and Open Glimpse) inert, so the user can silence Glimpse
+            -- without hunting through the gesture manager to unbind it
+            text = _("Enable Glimpse"),
+            help_text = _("Master switch. When off, the bound gesture and the Open Glimpse entry do nothing — a quick way to silence Glimpse without unbinding its gesture."),
+            checked_func = function()
+                return G_reader_settings:nilOrTrue(ENABLED_KEY)
             end,
+            callback = function()
+                G_reader_settings:flipNilOrTrue(ENABLED_KEY)
+            end,
+        },
+        {
+            -- which gesture opens Glimpse here — informational only (KOReader
+            -- has no API to deep-link the gesture manager), so it's shown as a
+            -- dimmed label; the how-to lives in its help text.
+            text_func = function() return self:_gestureLabel() end,
+            enabled_func = function() return false end,
+            help_text = _("Assign or change it under Taps and gestures → Gesture manager → (pick a gesture) → Reader → 'Open Glimpse'."),
         },
         {
             text = _("Open Glimpse"),
             help_text = _("Browse the maps, family trees and other reference images found in this book, without losing your reading position. Tip: bind the gesture action 'Open Glimpse' for one-touch access."),
-            -- greyed out with no book open (e.g. from the file manager)
-            enabled_func = function() return self.ui and self.ui.document ~= nil end,
+            -- greyed out with no book open (e.g. from the file manager), or
+            -- when the master switch (Enable Glimpse) is off
+            enabled_func = function()
+                return self.ui and self.ui.document ~= nil
+                    and G_reader_settings:nilOrTrue(ENABLED_KEY)
+            end,
             callback = function(touchmenu_instance)
                 if touchmenu_instance then
                     touchmenu_instance:closeMenu()
@@ -4124,17 +4390,6 @@ function Glimpse:_menuItems()
             separator = true,
         },
         {
-            text = _("Invert in Night Mode"),
-            help_text = _("While KOReader's night mode is on, show images inverted (light lines on a dark background). Also toggleable from the viewer's ⋯ menu."),
-            checked_func = function()
-                return G_reader_settings:isTrue(INVERT_KEY)
-            end,
-            callback = function()
-                G_reader_settings:saveSetting(INVERT_KEY,
-                    not G_reader_settings:isTrue(INVERT_KEY))
-            end,
-        },
-        {
             text = _("Show Nav Buttons"),
             help_text = _("Show ‹ and › buttons in the viewer for switching between images, as an alternative to swiping. A button is grayed out when there is no image on its side."),
             checked_func = function()
@@ -4146,8 +4401,19 @@ function Glimpse:_menuItems()
             end,
         },
         {
+            text = _("Show Zoom Controls"),
+            help_text = _("Show a vertical −/fit/+ control in the viewer for zooming in and out, as an alternative to double-tap and pinch. The middle button returns to the fitted view."),
+            checked_func = function()
+                return G_reader_settings:isTrue(ZOOMCTL_KEY)
+            end,
+            callback = function()
+                G_reader_settings:saveSetting(ZOOMCTL_KEY,
+                    not G_reader_settings:isTrue(ZOOMCTL_KEY))
+            end,
+        },
+        {
             text = _("Quick Actions"),
-            help_text = _("Choose which actions appear in the viewer's ⋯ menu. Reset Rotation is automatic (shown while an image is rotated) and Restore ignored images only appears when some are ignored."),
+            help_text = _("Choose which actions appear in the viewer's ⋯ menu. Reset Rotation is automatic (shown while an image is rotated)."),
             sub_item_table = (function()
                 local t = {}
                 for _, d in ipairs(QUICK_ACTIONS) do
@@ -4166,30 +4432,22 @@ function Glimpse:_menuItems()
                 end
                 return t
             end)(),
-        },
-        {
-            text_func = function()
-                local n = self:_hiddenCount()
-                if n > 0 then
-                    return T(_("Restore ignored images (%1)"), n)
-                end
-                return _("Restore ignored images")
-            end,
-            help_text = _("Bring back images you ignored with 'Ignore Image' in the viewer's ⋯ menu (or by long-pressing in the Gallery). Remembered per book. Images the relevance filter set aside are added back individually from the Gallery's Ignored tab."),
-            enabled_func = function() return self:_hiddenCount() > 0 end,
-            keep_menu_open = true,
             separator = true,
-            callback = function(touchmenu_instance)
-                self.ui.doc_settings:delSetting("glimpse_hidden")
-                UIManager:show(Notification:new{ text = _("Ignored images restored.") })
-                if touchmenu_instance then
-                    touchmenu_instance:updateItems()
-                end
-            end,
         },
         {
             text = _("Advanced"),
             sub_item_table = {
+                {
+                    text = _("Invert Images in Night Mode"),
+                    help_text = _("While KOReader's night mode is on, show images inverted (light lines on a dark background). Also toggleable from the viewer's ⋯ menu."),
+                    checked_func = function()
+                        return G_reader_settings:isTrue(INVERT_KEY)
+                    end,
+                    callback = function()
+                        G_reader_settings:saveSetting(INVERT_KEY,
+                            not G_reader_settings:isTrue(INVERT_KEY))
+                    end,
+                },
                 {
                     text = _("Ignore irrelevant images"),
                     help_text = _("Set aside covers, publisher logos, ornaments and other non-reference imagery, keeping maps, family trees, diagrams and illustrations. Turn off to see every image in the book. Wrongly kept images can be ignored from the viewer's ⋯ menu; wrongly set-aside ones added back from the Gallery's Ignored tab."),
@@ -4203,13 +4461,50 @@ function Glimpse:_menuItems()
                     end,
                 },
                 {
-                    text = _("Show image captions (beta)"),
+                    text = _("Show image captions"),
                     help_text = _("Show the image's caption from the book, overlaid in the viewer's top-left corner."),
                     checked_func = function()
                         return G_reader_settings:nilOrTrue(CAPTIONS_KEY)
                     end,
                     callback = function()
                         G_reader_settings:flipNilOrTrue(CAPTIONS_KEY)
+                    end,
+                },
+                {
+                    text_func = function()
+                        return T(_("Maximum zoom: %1%"),
+                            math.floor(_maxZoomMult() * 100 + 0.5))
+                    end,
+                    help_text = _("How far you can zoom in, as a percentage of the image's own resolution. Double-tap jumps to this level and pinch stops here. Higher reveals more on detailed maps, but past 100% it is upscaling, so very high can look soft."),
+                    sub_item_table = (function()
+                        local t = {}
+                        for _idx, mult in ipairs(MAX_ZOOM_CHOICES) do
+                            local pct = math.floor(mult * 100 + 0.5)
+                            t[_idx] = {
+                                text = (mult == DEFAULT_MAX_ZOOM)
+                                    and T(_("%1% (recommended)"), pct)
+                                    or T(_("%1%"), pct),
+                                radio = true,
+                                checked_func = function()
+                                    return _maxZoomMult() == mult
+                                end,
+                                callback = function()
+                                    G_reader_settings:saveSetting(MAX_ZOOM_KEY, mult)
+                                end,
+                            }
+                        end
+                        return t
+                    end)(),
+                },
+                {
+                    text = _("Suppress \"format not supported\" notice"),
+                    help_text = _("Silence the message shown when Glimpse is opened on a book format it doesn't support (PDF, comics, manga…). Handy if a reading gesture sometimes triggers Glimpse on non-EPUB files. Off by default."),
+                    checked_func = function()
+                        return G_reader_settings:isTrue(SUPPRESS_UNSUPPORTED_KEY)
+                    end,
+                    callback = function()
+                        G_reader_settings:saveSetting(SUPPRESS_UNSUPPORTED_KEY,
+                            not G_reader_settings:isTrue(SUPPRESS_UNSUPPORTED_KEY))
                     end,
                 },
                 {
@@ -4224,7 +4519,7 @@ function Glimpse:_menuItems()
                     separator = true,
                 },
                 {
-                    text = _("Disable shadow"),
+                    text = _("Disabled shadows"),
                     help_text = _("Remove the drawer's drop shadow. The shadow is a dithered gradient — the main cause of e-ink ghosting behind the drawer — so turn it off if a ghost lingers after closing Glimpse. No visible effect on LCD screens."),
                     checked_func = function()
                         return G_reader_settings:isTrue(SHADOW_KEY)

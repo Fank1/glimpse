@@ -11,3 +11,7 @@ builder/fixture_extracted/
 
 # Local README/Reddit media (hosted as GitHub release assets, not committed)
 for-readme-and-reddit/
+
+# Local scratch (browser MCP output, Figma frame grabs)
+.playwright-mcp/
+figma-*.png

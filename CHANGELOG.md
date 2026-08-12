@@ -1,5 +1,27 @@
 # Changelog
 
+## Unreleased (in pre-release testing, for the next public release)
+
+Everything below has shipped only in pre-release builds so far. It must be
+folded into the notes of the next public release.
+
+**🔍 Zoom, your way**
+- Double-tap now zooms to 200% by default (was 150%), so a quick tap reveals more detail.
+- New setting to choose how far you can zoom, from 150% up to 400% (Tools → Glimpse → Advanced → Maximum zoom).
+- Optional on-screen Zoom Controls: a small vertical minus / fit / plus strip in the viewer for zooming without pinching or double-tapping. Turn it on under Tools → Glimpse → Show Zoom Controls (or the viewer's Quick Actions). The plus and minus dim when you reach a limit, and the middle button returns to the fitted view.
+
+**🧭 A tidier menu**
+- New "Enable Glimpse" switch at the top turns the whole plugin on or off, so you can silence it without unbinding your gesture.
+- The top row now clearly reads "Gesture to open: ..." so you can see at a glance which gesture opens Glimpse.
+- New option to silence the "format not supported" message, for when a reading gesture sometimes opens Glimpse on a PDF or comic (Advanced, off by default).
+- Restoring ignored images now lives only in the Gallery's Ignored tab; the separate menu entry was removed.
+- Smaller wording tidy-ups (image captions are no longer marked "beta").
+
+**✨ Viewer polish**
+- Navigation buttons at the very start or end of your images now keep their normal look instead of turning see-through.
+- Alignment fixes so the page dots and the zoom controls sit correctly, including no longer shifting when you zoom in.
+- Clearer zoom control dividers in night mode.
+
 ## What's new since 1.0.0
 
 **🖼️ A proper gallery, with a place for filtered-out images**

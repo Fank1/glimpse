@@ -57,8 +57,15 @@ Updates → *Check for updates*.
   swipe through one at a time; its tap target is padded well beyond the
   dots themselves. A small image opens a bit larger than its native
   size already (up to 150%, never more than actually fits); double-tap
-  to zoom in further (2× that) and again to return. A "Reset" button only
-  appears once you're actually zoomed past the resting view.
+  zooms to the maximum — 200% of the image's own resolution by default,
+  adjustable under Advanced → *Maximum zoom* — and again to return. A
+  "Reset" button only appears once you're actually zoomed past the
+  resting view.
+- **Zoom control (optional):** add *Show Zoom Control* from Quick Actions to
+  put a vertical **−  / fit / +** pill in the viewer, above the corner
+  buttons. Minus and plus step the zoom; the middle "fit" button returns to
+  the resting view (greyed out while you're already fitted). With it on, the
+  step buttons replace the "Reset" button as the way back to fit.
 - **Mode switch (⋯ menu):** the viewer's ⋯ menu shows *Mode: Images up to
   here* / *Mode: All images*; tap it to flip the mode and reopen on the
   same image where possible, with a brief notice naming the mode you
@@ -66,18 +73,22 @@ Updates → *Check for updates*.
   scope is holding back.
 - **Quick Actions:** the contents of the ⋯ menu are configurable under
   Tools → Glimpse → *Quick Actions* — hide the rows you don't use, or add
-  nav buttons, captions and Restore ignored images to it.
+  nav buttons and captions to it.
 
 ### Settings (Tools → Glimpse)
 
 | Setting | Meaning |
 | --- | --- |
+| Enable Glimpse *(checkbox, on)* | Master switch. When off, the bound gesture and *Open Glimpse* do nothing, silencing Glimpse without unbinding its gesture. |
 | Mode: Show images up to current chapter *(default)* | Images past your current chapter stay hidden (no spoilers). |
 | Mode: Show all images | Everything, incl. parts you haven't reached. |
-| Quick Actions | Choose which actions appear in the viewer's ⋯ menu: Gallery, Ignore Image, the Mode switch, Rotate 90°, Show in Book, Restore ignored images, Show Nav Buttons, Show Image Captions and Invert in Night Mode. Defaults to the original six; the last three are off until you add them. (Reset Rotation is automatic; Restore only appears when something is ignored.) |
-| Restore ignored images | Undo the viewer's per-book **Ignore Image**. (Images the relevance filter set aside are added back individually from the Gallery's Ignored pile.) |
+| Show Nav Buttons *(checkbox, off)* | Show ‹ and › buttons in the viewer for switching between images. |
+| Show Zoom Controls *(checkbox, off)* | Show a vertical −/fit/+ control in the viewer for zooming; the middle button returns to the fitted view. |
+| Quick Actions | Choose which actions appear in the viewer's ⋯ menu: Gallery, Ignore Image, the Mode switch, Rotate 90°, Show in Book, Show Nav Buttons, Show Zoom Control, Show Image Captions and Invert in Night Mode. Defaults to the original six; the last three are off until you add them. (Reset Rotation is automatic, shown while an image is rotated. Ignored images are added back from the Gallery's Ignored tab.) |
 | Advanced → Ignore irrelevant images *(checkbox, on)* | Sets aside covers, publisher logos, ornaments and other non-reference imagery. Off = every image in the book. |
-| Advanced → Show image captions (beta) *(checkbox, on)* | Show the image's caption from the book as a solid tab tucked into the viewer's top-left corner (white with black text in day mode, black with white text at night), wrapping onto multiple lines for longer captions. |
+| Advanced → Show image captions *(checkbox, on)* | Show the image's caption from the book as a solid tab tucked into the viewer's top-left corner (white with black text in day mode, black with white text at night), wrapping onto multiple lines for longer captions. |
+| Advanced → Maximum zoom *(150%–400%, default 200%)* | How far you can zoom in, as a percentage of the image's own resolution. Double-tap jumps to this level and pinch stops there. Higher shows more on detailed maps; past 100% is upscaling, so very high can look soft. |
+| Advanced → Suppress "format not supported" notice *(checkbox, off)* | Silence the message shown when Glimpse is opened on a format it doesn't support (PDF, comics, manga). Handy if a reading gesture sometimes triggers Glimpse on non-EPUB files. |
 | Advanced → Enable top menu tap zone *(checkbox, on)* | While the viewer is open, a tap along the top edge opens KOReader's top menu (only that one, never the bottom menu) over the drawer. Off leaves the top edge inert. |
 | Advanced → Rescan this book | Drop the cached scan (cached in the book's own `.sdr` sidecar folder, so it travels with the book between devices); use if the file was replaced or images seem out of date. |
 | Updates → Check for updates | Fetch the latest GitHub release and install it in place (with backup and rollback), then offer a restart. |
