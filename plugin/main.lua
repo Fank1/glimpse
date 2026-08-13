@@ -112,10 +112,10 @@ local function _quick_label(key)
         gallery    = _("Gallery"),
         hide       = _("Ignore Image"),
         mode       = _("Mode switch"),
-        rotate     = _("Rotate 90°"),
+        rotate     = _("Rotate image"),
         showinbook = _("Show in Book"),
         prevnext   = _("Show Nav Buttons Toggle"),
-        zoomctl    = _("Show Zoom Control Toggle"),
+        zoomctl    = _("Show Zoom Controls Toggle"),
         captions   = _("Show Image Captions Toggle"),
         invert     = _("Invert in Night Mode Toggle"),
     })[key] or key
@@ -2678,9 +2678,11 @@ function GlimpseViewer:_showMoreMenu()
             end,
         }
     end
-    if _quick_enabled("rotate") then
+    -- Rotate makes no sense for a bookmarked page (it's a rendered page, not a
+    -- reference image), so hide it (and Reset Rotation) while viewing one
+    if _quick_enabled("rotate") and not cur_is_bookmark then
         items[#items + 1] = {
-            text = _("Rotate 90°"),
+            text = _("Rotate image"),
             icon = _PLUGIN_DIR .. "/assets/rotate.svg",
             callback = function() self:_rotateCurrent() end,
         }
@@ -2709,7 +2711,7 @@ function GlimpseViewer:_showMoreMenu()
     end
     if _quick_enabled("zoomctl") then
         items[#items + 1] = {
-            text = _("Show Zoom Control"),
+            text = _("Show Zoom Controls"),
             check = G_reader_settings:isTrue(ZOOMCTL_KEY),
             callback = function() self:_toggleZoomControl() end,
         }
@@ -3691,7 +3693,15 @@ function Glimpse:_requestBookmarkThumb(im)
     self._bm_batch = self._bm_batch or "glimpse_bookmarks"
     self:_suppressDogear() -- keep the dogear fold out of the rendered page
     self._bm_pending[im.path] = true
-    local w, h = Screen:getWidth(), Screen:getHeight()
+    -- Render at the drawer's display size, not full screen. The single view
+    -- fits the page into the ~80%-wide drawer, so a full-screen tile is
+    -- oversampled (and the Gallery's 1/3-width cells downscale it further); a
+    -- drawer-sized tile is still crisp at the resting (fit) view while cutting
+    -- each cached page's memory to ~two-thirds. Zoom past fit just upscales,
+    -- as it already did — a bookmark has no sharper source than its thumbnail.
+    local ratio = GlimpseViewer.panel_ratio or 1
+    local w = math.max(1, math.floor(Screen:getWidth() * ratio))
+    local h = Screen:getHeight()
     -- A cached tile makes getPageThumbnail invoke the callback SYNCHRONOUSLY,
     -- re-entering during the closure that requested it. In that case the
     -- closure's own re-check picks up the tile, so we must NOT also poke the
@@ -4927,6 +4937,17 @@ function Glimpse:_menuItems()
             end,
         },
         {
+            text = _("Include bookmarked pages"),
+            help_text = _("Also show pages you've bookmarked (the dogear bookmark) in the Gallery, rendered as page thumbnails and marked with a bookmark badge, in reading order alongside the images. A quick way to keep a reference page a swipe away. Off by default."),
+            checked_func = function()
+                return G_reader_settings:isTrue(BOOKMARKS_KEY)
+            end,
+            callback = function()
+                G_reader_settings:saveSetting(BOOKMARKS_KEY,
+                    not G_reader_settings:isTrue(BOOKMARKS_KEY))
+            end,
+        },
+        {
             text = _("Quick Actions"),
             help_text = _("Choose which actions appear in the viewer's ⋯ menu. Reset Rotation is automatic (shown while an image is rotated)."),
             sub_item_table = (function()
@@ -4973,17 +4994,6 @@ function Glimpse:_menuItems()
                         local now_on = self:getFilterLevel() ~= "all"
                         G_reader_settings:saveSetting(FILTER_KEY,
                             now_on and "all" or "balanced")
-                    end,
-                },
-                {
-                    text = _("Include bookmarked pages"),
-                    help_text = _("Also show pages you've bookmarked (the dogear bookmark) in the Gallery, rendered as page thumbnails and marked with a bookmark badge, in reading order alongside the images. A quick way to keep a reference page a swipe away. Off by default."),
-                    checked_func = function()
-                        return G_reader_settings:isTrue(BOOKMARKS_KEY)
-                    end,
-                    callback = function()
-                        G_reader_settings:saveSetting(BOOKMARKS_KEY,
-                            not G_reader_settings:isTrue(BOOKMARKS_KEY))
                     end,
                 },
                 {

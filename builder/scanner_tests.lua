@@ -258,6 +258,92 @@ do
     eq(#inc, 0, "tall uncaptioned image dropped")
 end
 
+-- ── reference-name filenames (map / family tree / diagram / ...) ────────────
+do
+    -- whole-token matches only
+    check(scanner.reference_name("OEBPS/images/img_map1.jpg"), "img_map1 is reference name")
+    check(scanner.reference_name("Map_of_Westeros.jpg"), "map_of is reference name")
+    check(scanner.reference_name("family_tree.jpg"), "family_tree is reference name")
+    check(scanner.reference_name("greyhold-family-tree.png"), "family-tree is reference name")
+    check(scanner.reference_name("diagram3.svg"), "diagram is reference name")
+    check(scanner.reference_name("timeline.png"), "timeline is reference name")
+    check(scanner.reference_name("floor-plan.jpg"), "floor-plan is reference name")
+    -- must NOT trip on words that merely CONTAIN a token
+    check(not scanner.reference_name("champion.jpg"), "champion not reference name")
+    check(not scanner.reference_name("maple-leaf.png"), "maple not reference name")
+    check(not scanner.reference_name("planet.png"), "planet not reference name")
+    check(not scanner.reference_name("streetlight.jpg"), "streetlight not reference name")
+    check(not scanner.reference_name("chapter04.jpg"), "chapter not reference name")
+
+    local function img(t)
+        t.files_count = t.files_count or 1
+        t.total_count = t.total_count or 1
+        t.spine_index = t.spine_index or 1
+        t.order = t.order or 1
+        return t
+    end
+    -- an endpaper map in the FIRST spine file: an uncaptioned portrait image
+    -- there is normally cut as front matter (a title page), but the "map"
+    -- filename rescues it (real case: Endurance's voyage maps)
+    local inc = scanner.filter({ img{ path = "OEBPS/img_map1.jpg",
+        width = 395, height = 600, spine_index = 1 } }, "balanced")
+    eq(#inc, 1, "front-matter map kept via reference name")
+    inc = scanner.filter({ img{ path = "OEBPS/title.jpg",
+        width = 395, height = 600, spine_index = 1 } }, "balanced")
+    eq(#inc, 0, "front-matter title art (no reference name) still cut")
+    -- a family tree a hair under the size floor (real case: dinosaur cladogram
+    -- at 512x192, short side just below balanced's 200) kept via the name
+    inc = scanner.filter({ img{ path = "family_tree.jpg",
+        width = 512, height = 192, spine_index = 10 } }, "balanced")
+    eq(#inc, 1, "under-floor family tree kept via reference name")
+    inc = scanner.filter({ img{ path = "ornament.jpg",
+        width = 512, height = 192, spine_index = 10 } }, "balanced")
+    eq(#inc, 0, "under-floor unnamed image still cut")
+end
+
+-- ── reference-rich (non-fiction) adaptive relaxation ───────────────────────
+do
+    local function img(t)
+        t.files_count = t.files_count or 1
+        t.total_count = t.total_count or 1
+        t.spine_index = t.spine_index or 10
+        return t
+    end
+    -- an uncaptioned mid-size diagram (308x320): balanced drops it (long side
+    -- 320 < 350), a reference-rich book keeps it (uncaptioned ref relief)
+    local function make(n_big)
+        local imgs = {}
+        -- distinct sizes so the fillers don't collapse into a "series"
+        for i = 1, n_big do
+            imgs[i] = img{ path = "big" .. i, width = 410 + i, height = 500, order = i }
+        end
+        imgs[#imgs + 1] = img{ path = "panel.png", width = 308, height = 320, order = 90 }
+        -- a SMALL captioned drop-cap must stay out even in a ref-rich book
+        -- (neutral caption: not a chapter/decorative heading)
+        imgs[#imgs + 1] = img{ path = "dropcap", width = 146, height = 149,
+                               caption = "Illuminated initial letter", order = 91 }
+        return imgs
+    end
+
+    -- sparse book (1 big figure): not reference-rich, mid-size diagram stays out
+    local inc, stats = scanner.filter(make(1), "balanced")
+    check(not stats.reference_rich, "sparse book is not reference-rich")
+    eq(stats.reasons["panel.png"], "small", "sparse book drops the mid-size figure")
+
+    -- reference-rich book (>= REF_RICH_MIN big figures): diagram admitted
+    inc, stats = scanner.filter(make(9), "balanced")
+    check(stats.reference_rich, "many-figure book flagged reference-rich")
+    eq(stats.reasons["panel.png"], "keep", "ref-rich keeps the uncaptioned mid-size figure")
+    -- the small captioned drop-cap is NOT rescued (caption path unchanged)
+    eq(stats.reasons["dropcap"], "small", "ref-rich still drops the small captioned drop-cap")
+    -- every big figure kept at balanced is still kept (no regression)
+    eq(stats.reasons["big1"], "keep", "ref-rich never drops a prior keep")
+
+    -- strict never auto-relaxes, even for a reference-rich book
+    local _, sstats = scanner.filter(make(9), "strict")
+    check(not sstats.reference_rich, "strict does not auto-relax")
+end
+
 -- ── decorative captions and dimension series ───────────────────────────────
 
 do

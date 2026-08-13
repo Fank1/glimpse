@@ -5,8 +5,12 @@
 Everything below has shipped only in pre-release builds so far. It must be
 folded into the notes of the next public release.
 
+**🎯 A smarter relevance filter (fewer good images wrongly hidden)**
+- Maps, family trees, diagrams and charts named as such (`map`, `family-tree`, `diagram`, `chart`, `timeline`, …) are now recognized as reference content, so an endpaper map or a family tree that used to fall just under the size cutoff is kept.
+- Illustrated non-fiction gets a gentler filter automatically: when a book already keeps lots of figures (cookbooks, science, how-to), Glimpse lowers the size floor for that book so its smaller diagrams and charts come through too — while novels stay strict, so their decorative bits don't leak in. (Validated across a 200+ book library.)
+
 **🔖 Bookmarked pages in the Gallery**
-- Turn on Tools → Glimpse → Advanced → Include bookmarked pages to also see the pages you've bookmarked (the dogear) in the Gallery, rendered as page thumbnails and marked with a bookmark badge, sitting in reading order among the images. A quick way to keep a reference page (a glossary, a family tree, a map that lives in the text) a swipe away. Tap one to read it full-size, or use Show in Book to jump there.
+- Turn on Tools → Glimpse → Include bookmarked pages to also see the pages you've bookmarked (the dogear) in the Gallery, rendered as page thumbnails and marked with a bookmark badge, sitting in reading order among the images. A quick way to keep a reference page (a glossary, a family tree, a map that lives in the text) a swipe away. Tap one to read it full-size, or use Show in Book to jump there.
 - Open a bookmarked page full-size and a small label in the top-left corner names it — its page number and chapter — so you always know which bookmark you're looking at.
 - *Remove bookmark* — long-press a bookmarked page in the Gallery, or use the viewer's ⋯ menu — deletes the dogear from the book itself, not just its Glimpse cell.
 
@@ -20,7 +24,8 @@ folded into the notes of the next public release.
 - The top row now clearly reads "Gesture to open: ..." so you can see at a glance which gesture opens Glimpse.
 - New option to silence the "format not supported" message, for when a reading gesture sometimes opens Glimpse on a PDF or comic (Advanced, off by default).
 - Restoring ignored images now lives only in the Gallery's Ignored tab; the separate menu entry was removed.
-- Smaller wording tidy-ups (image captions are no longer marked "beta").
+- "Include bookmarked pages" is now a top-level switch in the Glimpse menu instead of being tucked inside Advanced.
+- Smaller wording tidy-ups: "Rotate 90°" is now "Rotate image" (and it's hidden for bookmarked pages, where it doesn't apply); image captions are no longer marked "beta".
 
 **✨ Viewer polish**
 - Navigation buttons at the very start or end of your images now keep their normal look instead of turning see-through.

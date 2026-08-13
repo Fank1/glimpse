@@ -485,6 +485,28 @@ function M.figure_name(path)
         or base:match("%f[%a]fig%d+%f[%A]")) and true or false
 end
 
+-- A filename that names genuine reference content — a map, family tree,
+-- diagram, chart, timeline, floor plan. Like figure_name, a POSITIVE signal:
+-- it earns caption relief (halved size thresholds, ratio slack, and survives
+-- the no-dimensions case) AND exempts the image from the front-matter portrait
+-- cut, so an endpaper map in the first spine file (fantasy/history books ship
+-- maps there) or a family tree a hair under the size floor is kept instead of
+-- mistaken for a title page. Whole-token matches only, so "champion",
+-- "planet", "streetlight" and the like don't trip it. Tiny decorative glyphs
+-- that happen to match (a 45px "palm-tree" emoji) are still caught by the
+-- series/size rules — this only lifts the thresholds, it never force-keeps.
+function M.reference_name(path)
+    local base = (path:match("[^/]+$") or path):lower()
+    return (base:match("%f[%a]maps?%f[%A]")
+        or base:match("family.?tree") or base:match("%f[%a]familytree")
+        or base:match("%f[%a]genealog") or base:match("%f[%a]pedigree")
+        or base:match("%f[%a]cladogram") or base:match("%f[%a]phylogen")
+        or base:match("%f[%a]tree%f[%A]") or base:match("%f[%a]diagram")
+        or base:match("%f[%a]charts?%f[%A]") or base:match("%f[%a]timeline")
+        or base:match("%f[%a]schematic") or base:match("floor.?plan")
+        or base:match("%f[%a]blueprint")) and true or false
+end
+
 -- A caption too weak to shield a chrome-NAMED file (titlepage.jpg,
 -- *logo*, endpaper.jpg ...): decorative text, or the "<Title> by <Author>"
 -- alt that publishers put on title-page art ("Hell Bent by Leigh Bardugo").
@@ -828,6 +850,18 @@ M.MAX_SPINE_FILES = 2     -- referenced from more files = chapter ornament
 M.MIN_SERIES = 4          -- ≥ this many images with identical dimensions =
                           -- a decorative series (chapter/part-opener art)
 M.FRONTMATTER_SPINE = 3   -- spine positions treated as front matter
+-- Illustrated / reference books (non-fiction, cookbooks, science, how-to) keep
+-- many figures at the standard floor; their SMALLER diagrams and charts sit
+-- just under it — content here, decoration in a novel. When a book already
+-- keeps this many images at "balanced", it's treated as reference-rich and
+-- UNCAPTIONED images get a size-floor relief (a genuine diagram carries its
+-- labels baked into the pixels, so it has no HTML caption). Captioned images
+-- are left exactly as they were: they already get the stronger caption relief,
+-- and a SMALL captioned image is usually a decorative drop-cap or vignette
+-- (auto-generated alt), which must stay out even in a reference-rich book.
+M.REF_RICH_MIN = 8
+M.REF_RELIEF = 0.75       -- uncaptioned size thresholds ×0.75 in a ref-rich book
+M.REF_RATIO_RELIEF = 1.2  -- ...and 20% more aspect slack
 
 -- Returns included_list, stats where stats = { total=, included=,
 -- excluded = { cover=n, repeated=n, series=n, decorative=n, frontmatter=n,
@@ -835,12 +869,14 @@ M.FRONTMATTER_SPINE = 3   -- spine positions treated as front matter
 -- reasons = { [path] = "keep" | one of the excluded keys } }.
 -- level: "strict" | "balanced" | "relaxed" | "all"
 function M.filter(images, level)
-    local stats = { total = #images, included = 0, reasons = {},
-                    excluded = { cover = 0, repeated = 0, series = 0,
-                                 decorative = 0, frontmatter = 0, small = 0,
-                                 aspect = 0, nosize = 0 } }
-    local out = {}
+    local function new_stats()
+        return { total = #images, included = 0, reasons = {},
+                 excluded = { cover = 0, repeated = 0, series = 0,
+                              decorative = 0, frontmatter = 0, small = 0,
+                              aspect = 0, nosize = 0 } }
+    end
     if level == "all" then
+        local out, stats = {}, new_stats()
         for _, img in ipairs(images) do
             out[#out + 1] = img
             stats.reasons[img.path] = "keep"
@@ -848,7 +884,6 @@ function M.filter(images, level)
         stats.included = #out
         return out, stats
     end
-    local t = M.LEVELS[level] or M.LEVELS.balanced
 
     -- Pre-pass: group by exact pixel dimensions. Publishers generate
     -- chapter/part-opener art as one unique file per chapter, all with
@@ -882,13 +917,21 @@ function M.filter(images, level)
         end
     end
 
+    -- Classify every image against the level's size gate. `ref_rich` (set on
+    -- the second pass for illustrated books) grants UNCAPTIONED images a size
+    -- relief; captioned images are unaffected, so re-running only ever admits
+    -- MORE uncaptioned size-borderline figures (never drops a prior keep).
+    local t = M.LEVELS[level] or M.LEVELS.balanced
+    local function classify(ref_rich)
+    local stats = new_stats()
+    local out = {}
     for _, img in ipairs(images) do
         local reason
         -- a section-heading alt ("Chapter 1 ...") marks decoration, so it
         -- earns no caption relief
         local decorative = M.decorative_caption(img.caption)
         local captioned = ((img.caption ~= nil or img.in_figure) and not decorative)
-            or M.figure_name(img.path)
+            or M.figure_name(img.path) or M.reference_name(img.path)
         if img.is_cover then
             reason = "cover"
         elseif img.files_count > M.MAX_SPINE_FILES then
@@ -941,8 +984,17 @@ function M.filter(images, level)
                     end
                 else
                     local long, short = math.max(w, h), math.min(w, h)
-                    local max_ratio = t.ratio * (captioned and M.RATIO_RELIEF or 1)
-                    local relief = captioned and M.CAPTION_RELIEF or 1
+                    -- caption relief wins when present; otherwise a reference-
+                    -- rich book grants uncaptioned figures a lighter relief
+                    local relief, ratio_relief
+                    if captioned then
+                        relief, ratio_relief = M.CAPTION_RELIEF, M.RATIO_RELIEF
+                    elseif ref_rich then
+                        relief, ratio_relief = M.REF_RELIEF, M.REF_RATIO_RELIEF
+                    else
+                        relief, ratio_relief = 1, 1
+                    end
+                    local max_ratio = t.ratio * ratio_relief
                     if short > 0 and long / short > max_ratio then
                         reason = "aspect"
                     elseif short < t.short * relief
@@ -961,6 +1013,20 @@ function M.filter(images, level)
         stats.reasons[img.path] = reason or "keep"
     end
     stats.included = #out
+    return out, stats
+    end -- classify
+
+    local out, stats = classify(false)
+    -- Adaptive relaxation: a book that already keeps REF_RICH_MIN+ figures at
+    -- the standard floor is an illustrated/reference book, so re-run granting
+    -- uncaptioned figures the ref-rich size relief to also admit its smaller
+    -- diagrams. Only for "balanced" (the default): "strict" is a deliberate
+    -- tight choice, "relaxed"/"all" are already permissive. A pure novel keeps
+    -- almost nothing here, so it never trips the gate and stays untouched.
+    if level == "balanced" and stats.included >= M.REF_RICH_MIN then
+        out, stats = classify(true)
+        stats.reference_rich = true
+    end
     return out, stats
 end
 

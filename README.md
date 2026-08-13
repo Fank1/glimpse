@@ -19,8 +19,11 @@ were.
 - Scans the EPUB's HTML directly for images and **filters out ornaments,
   icons, dividers, covers and publisher chrome**, judging each image by its
   size and aspect ratio, repetition across chapters, filename and alt text,
-  position in the book, and captions (a genuine caption or figure-style
-  filename keeps an image; boilerplate text doesn't).
+  position in the book, and captions (a genuine caption, a figure-style
+  filename, or a reference name like `map`/`family-tree`/`diagram` keeps an
+  image; boilerplate text doesn't). Illustrated non-fiction — where the book
+  already keeps many figures — automatically gets a gentler size floor, so its
+  smaller diagrams and charts come through too, while novels stay strict.
 - Remembers the **last image you viewed** per book, including its **zoom
   level and pan position**, and reopens right where you left off, handy
   when you keep returning to the same corner of the same map.
@@ -61,7 +64,7 @@ Updates → *Check for updates*.
   adjustable under Advanced → *Maximum zoom* — and again to return. A
   "Reset" button only appears once you're actually zoomed past the
   resting view.
-- **Zoom control (optional):** add *Show Zoom Control* from Quick Actions to
+- **Zoom control (optional):** add *Show Zoom Controls* from Quick Actions to
   put a vertical **+ / fit / −** pill in the viewer, above the corner
   buttons. Plus and minus step the zoom; the middle "fit" button returns to
   the resting view (greyed out while you're already fitted). With it on, the
@@ -84,9 +87,9 @@ Updates → *Check for updates*.
 | Mode: Show all images | Everything, incl. parts you haven't reached. |
 | Show Nav Buttons *(checkbox, off)* | Show ‹ and › buttons in the viewer for switching between images. |
 | Show Zoom Controls *(checkbox, off)* | Show a vertical +/fit/− control in the viewer for zooming; the middle button returns to the fitted view. |
-| Quick Actions | Choose which actions appear in the viewer's ⋯ menu: Gallery, Ignore Image, the Mode switch, Rotate 90°, Show in Book, Show Nav Buttons, Show Zoom Control, Show Image Captions and Invert in Night Mode. Defaults to the original six; the last three are off until you add them. (Reset Rotation is automatic, shown while an image is rotated. Ignored images are added back from the Gallery's Ignored tab.) |
+| Include bookmarked pages *(checkbox, off)* | Also show pages you've bookmarked (the dogear) in the Gallery, rendered as page thumbnails and marked with a bookmark badge, interleaved with the images in reading order. A quick way to keep a reference page a swipe away. Shown regardless of the spoiler scope. |
+| Quick Actions | Choose which actions appear in the viewer's ⋯ menu: Gallery, Ignore Image, the Mode switch, Rotate image, Show in Book, Show Nav Buttons, Show Zoom Controls, Show Image Captions and Invert in Night Mode. Defaults to the original six; the last three are off until you add them. (Reset Rotation is automatic, shown while an image is rotated. Ignored images are added back from the Gallery's Ignored tab. Rotate and Ignore are replaced by *Remove bookmark* on a bookmarked page.) |
 | Advanced → Ignore irrelevant images *(checkbox, on)* | Sets aside covers, publisher logos, ornaments and other non-reference imagery. Off = every image in the book. |
-| Advanced → Include bookmarked pages *(checkbox, off)* | Also show pages you've bookmarked (the dogear) in the Gallery, rendered as page thumbnails and marked with a bookmark badge, interleaved with the images in reading order. A quick way to keep a reference page a swipe away. Shown regardless of the spoiler scope. |
 | Advanced → Show image captions *(checkbox, on)* | Show the image's caption from the book as a solid tab tucked into the viewer's top-left corner (white with black text in day mode, black with white text at night), wrapping onto multiple lines for longer captions. |
 | Advanced → Maximum zoom *(150%–400%, default 200%)* | How far you can zoom in, as a percentage of the image's own resolution. Double-tap jumps to this level and pinch stops there. Higher shows more on detailed maps; past 100% is upscaling, so very high can look soft. |
 | Advanced → Suppress "format not supported" notice *(checkbox, off)* | Silence the message shown when Glimpse is opened on a format it doesn't support (PDF, comics, manga). Handy if a reading gesture sometimes triggers Glimpse on non-EPUB files. |
@@ -107,7 +110,7 @@ keeping its own aspect ratio instead of being cropped to a uniform tile.
 Paged when there are enough to browse; a *Back* button returns to the
 normal viewer. Tap a thumbnail to jump straight to that image instead.
 
-With **Advanced → Include bookmarked pages** on, the pages you've bookmarked
+With **Include bookmarked pages** on, the pages you've bookmarked
 (the dogear) appear in the grid too, rendered as page thumbnails (via
 KOReader's own page-render service) and marked with a bookmark badge,
 interleaved with the images in reading order. Tap one to see the page
