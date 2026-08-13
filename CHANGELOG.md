@@ -5,10 +5,15 @@
 Everything below has shipped only in pre-release builds so far. It must be
 folded into the notes of the next public release.
 
+**🔖 Bookmarked pages in the Gallery**
+- Turn on Tools → Glimpse → Advanced → Include bookmarked pages to also see the pages you've bookmarked (the dogear) in the Gallery, rendered as page thumbnails and marked with a bookmark badge, sitting in reading order among the images. A quick way to keep a reference page (a glossary, a family tree, a map that lives in the text) a swipe away. Tap one to read it full-size, or use Show in Book to jump there.
+- Open a bookmarked page full-size and a small label in the top-left corner names it — its page number and chapter — so you always know which bookmark you're looking at.
+- *Remove bookmark* — long-press a bookmarked page in the Gallery, or use the viewer's ⋯ menu — deletes the dogear from the book itself, not just its Glimpse cell.
+
 **🔍 Zoom, your way**
 - Double-tap now zooms to 200% by default (was 150%), so a quick tap reveals more detail.
 - New setting to choose how far you can zoom, from 150% up to 400% (Tools → Glimpse → Advanced → Maximum zoom).
-- Optional on-screen Zoom Controls: a small vertical minus / fit / plus strip in the viewer for zooming without pinching or double-tapping. Turn it on under Tools → Glimpse → Show Zoom Controls (or the viewer's Quick Actions). The plus and minus dim when you reach a limit, and the middle button returns to the fitted view.
+- Optional on-screen Zoom Controls: a small vertical plus / fit / minus strip in the viewer for zooming without pinching or double-tapping. Turn it on under Tools → Glimpse → Show Zoom Controls (or the viewer's Quick Actions). The plus and minus dim when you reach a limit, and the middle button returns to the fitted view.
 
 **🧭 A tidier menu**
 - New "Enable Glimpse" switch at the top turns the whole plugin on or off, so you can silence it without unbinding your gesture.

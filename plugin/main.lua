@@ -67,6 +67,7 @@ local CAPTIONS_KEY = "glimpse_captions"        -- caption overlay, ON by default
 local TOP_MENU_KEY = "glimpse_top_menu_zone"   -- tap top strip → KOReader top menu, ON by default (nilOrTrue)
 local SHADOW_KEY = "glimpse_disable_shadow"    -- drop the drawer's gradient shadow, OFF by default (e-ink ghost source)
 local SUPPRESS_UNSUPPORTED_KEY = "glimpse_suppress_unsupported" -- silence the "EPUB only" notice on unsupported files, OFF by default
+local BOOKMARKS_KEY = "glimpse_include_bookmarks" -- include the user's dogear-bookmarked pages (rendered thumbnails) in the Gallery, OFF by default
 local MAX_ZOOM_KEY = "glimpse_max_zoom"        -- zoom ceiling as a multiple of native resolution (double-tap target + pinch clamp)
 local GESTURE_TIP_KEY = "glimpse_gesture_tip_shown" -- one-time menu-open nudge to bind a gesture
 
@@ -304,6 +305,7 @@ end
 local GlimpseBadge = Widget:extend{
     num = 1,
     glyph = nil, -- when set, drawn instead of the number (e.g. "+" on Ignored)
+    icon = nil,  -- SVG path; when set, drawn (square badge) instead of text
     height = Screen:scaleBySize(17),
     radius = Screen:scaleBySize(4),
     stroke = Screen:scaleBySize(1),
@@ -311,13 +313,21 @@ local GlimpseBadge = Widget:extend{
 }
 
 function GlimpseBadge:init()
-    self._txt = TextWidget:new{
-        text = self.glyph or tostring(self.num),
-        face = Font:getFace("cfont", 11),
-        bold = true,
-        fgcolor = Blitbuffer.COLOR_BLACK,
-    }
-    self._w = math.max(self.height, self._txt:getSize().w + 2 * self.pad_h)
+    if self.icon then
+        local sz = Screen:scaleBySize(11)
+        local ok, ibb = pcall(RenderImage.renderSVGImageFile, RenderImage,
+            self.icon, sz, sz)
+        if ok and ibb then self._icon_bb = ibb end
+        self._w = self.height -- square
+    else
+        self._txt = TextWidget:new{
+            text = self.glyph or tostring(self.num),
+            face = Font:getFace("cfont", 11),
+            bold = true,
+            fgcolor = Blitbuffer.COLOR_BLACK,
+        }
+        self._w = math.max(self.height, self._txt:getSize().w + 2 * self.pad_h)
+    end
 end
 
 function GlimpseBadge:getSize()
@@ -331,13 +341,22 @@ function GlimpseBadge:paintTo(bb, x, y)
             self.radius, self.stroke, 0xFF, 0x00)
     end
     bb:alphablitFrom(self._bg_bb, x, y, 0, 0, self._w, self.height)
-    local ts = self._txt:getSize()
-    self._txt:paintTo(bb, x + math.floor((self._w - ts.w) / 2),
-        y + math.floor((self.height - ts.h) / 2))
+    if self._icon_bb then
+        local iw, ih = self._icon_bb:getWidth(), self._icon_bb:getHeight()
+        bb:alphablitFrom(self._icon_bb,
+            x + math.floor((self._w - iw) / 2),
+            y + math.floor((self.height - ih) / 2),
+            0, 0, iw, ih)
+    elseif self._txt then
+        local ts = self._txt:getSize()
+        self._txt:paintTo(bb, x + math.floor((self._w - ts.w) / 2),
+            y + math.floor((self.height - ts.h) / 2))
+    end
 end
 
 function GlimpseBadge:free()
     if self._bg_bb then self._bg_bb:free(); self._bg_bb = nil end
+    if self._icon_bb then self._icon_bb:free(); self._icon_bb = nil end
     if self._txt then self._txt:free() end
 end
 
@@ -434,7 +453,7 @@ end
 
 -- Vertical zoom control (Figma "Zoom Control", node 125:357): a white rounded
 -- pill the width of the chrome buttons, three equal zones split by two light
--- hairlines — minus (top), fit-to-screen (middle), plus (bottom). Same
+-- hairlines — plus (top), fit-to-screen (middle), minus (bottom). Same
 -- white-fill/black-2px-border/day-polarity styling as the buttons, so it
 -- night-inverts identically. `fit_disabled` dims the middle icon to ~20%
 -- (the "image is already fitted" variant), leaving − and + active. Painting
@@ -522,10 +541,10 @@ function GlimpseZoomControl:paintTo(bb, x, y)
             y + math.floor(cy - ibb:getHeight() / 2),
             0, 0, ibb:getWidth(), ibb:getHeight())
     end
-    icon(self.minus_disabled and self._minus_dim_bb or self._minus_bb,
+    icon(self.plus_disabled and self._plus_dim_bb or self._plus_bb,
         third / 2)
     icon(self.fit_disabled and self._fit_dim_bb or self._fit_bb, h / 2)
-    icon(self.plus_disabled and self._plus_dim_bb or self._plus_bb,
+    icon(self.minus_disabled and self._minus_dim_bb or self._minus_bb,
         h - third / 2)
     -- pressed feedback: invert just the tapped zone, clipped to the pill's
     -- rounded silhouette via the bg stencil's alpha (like GlimpseMoreButton)
@@ -637,6 +656,76 @@ end
 function GlimpseCaption:free()
     if self._text then self._text:free() end
     if self._bg_bb then self._bg_bb:free(); self._bg_bb = nil end
+end
+
+-- Bookmark identity pill: shown in the viewer's top-left while a bookmarked
+-- page is displayed full-size (Figma node 156:5). White rounded rectangle,
+-- 2px #cbcbcb border, a bookmark glyph + "Page N (Chapter)" label. Painted in
+-- day polarity like the caption tab, so night mode's framebuffer inversion
+-- flips it to a dark pill with a light glyph and text automatically.
+local GlimpseBookmarkPill = Widget:extend{
+    text = "",
+    icon = nil,                          -- bookmark SVG path
+    max_width = 0,
+    radius = Screen:scaleBySize(8),
+    stroke = Screen:scaleBySize(2),
+    pad_h = Screen:scaleBySize(8),
+    pad_v = Screen:scaleBySize(4),
+    gap = Screen:scaleBySize(4),         -- glyph→text spacing
+    icon_size = Screen:scaleBySize(16),
+    border_gray = 0xCB,                  -- #cbcbcb (Figma)
+}
+
+function GlimpseBookmarkPill:init()
+    if self.icon then
+        local ok, ibb = pcall(RenderImage.renderSVGImageFile, RenderImage,
+            self.icon, self.icon_size, self.icon_size)
+        if ok and ibb then self._icon_bb = ibb end
+    end
+    local iw = self._icon_bb and self._icon_bb:getWidth() or 0
+    local gap = iw > 0 and self.gap or 0
+    -- cap the text to what's left after border padding, glyph and gap, so a
+    -- long chapter title truncates with an ellipsis instead of overflowing
+    local text_cap = self.max_width - 2 * self.pad_h - iw - gap
+    if text_cap < 1 then text_cap = nil end
+    self._txt = TextWidget:new{
+        text = self.text,
+        face = Font:getFace("cfont", 12),
+        bold = true,
+        fgcolor = Blitbuffer.COLOR_BLACK,
+        max_width = text_cap,
+    }
+    local ts = self._txt:getSize()
+    self._w = 2 * self.pad_h + iw + gap + ts.w
+    self._h = 2 * self.pad_v + math.max(self.icon_size, ts.h)
+end
+
+function GlimpseBookmarkPill:getSize()
+    return Geom:new{ w = self._w, h = self._h }
+end
+
+function GlimpseBookmarkPill:paintTo(bb, x, y)
+    self.dimen = Geom:new{ x = x, y = y, w = self._w, h = self._h }
+    if not self._bg_bb then
+        self._bg_bb = make_rounded_stencil(self._w, self._h,
+            self.radius, self.stroke, 0xFF, self.border_gray)
+    end
+    bb:alphablitFrom(self._bg_bb, x, y, 0, 0, self._w, self._h)
+    local cx = x + self.pad_h
+    if self._icon_bb then
+        local iw, ih = self._icon_bb:getWidth(), self._icon_bb:getHeight()
+        bb:alphablitFrom(self._icon_bb, cx,
+            y + math.floor((self._h - ih) / 2), 0, 0, iw, ih)
+        cx = cx + iw + self.gap
+    end
+    local ts = self._txt:getSize()
+    self._txt:paintTo(bb, cx, y + math.floor((self._h - ts.h) / 2))
+end
+
+function GlimpseBookmarkPill:free()
+    if self._bg_bb then self._bg_bb:free(); self._bg_bb = nil end
+    if self._icon_bb then self._icon_bb:free(); self._icon_bb = nil end
+    if self._txt then self._txt:free() end
 end
 
 -- A pill-shaped text button in the SAME style as the ⋯ button: solid white
@@ -999,6 +1088,8 @@ local GlimpseViewer = ImageViewer:extend{
     primary_tab = "shown", -- which pool the single-image view is showing
     on_ignore = nil,       -- function(meta, tab, page): move to Ignored
     on_unignore = nil,     -- function(meta, tab, page): add back to Shown
+    on_remove_bookmark = nil, -- function(meta, from_gallery, tab, page): drop
+                           -- the KOReader dogear (and this item from Glimpse)
     -- gallery masonry (⋯ → Gallery): fixed-width columns, variable heights
     gallery_cols = 3,
     -- No title bar and no button row: everything is image. Position comes
@@ -1326,6 +1417,31 @@ function GlimpseViewer:update()
             -- is rounded (see GlimpseCaption)
             self._caption_wg.overlap_offset = { 0, 0 }
             table.insert(overlay, self._caption_wg)
+        end
+    end
+    -- bookmark identity pill, top-left, when the current item is a bookmark
+    if self._bookmark_pill_wg then
+        self._bookmark_pill_wg:free()
+        self._bookmark_pill_wg = nil
+    end
+    if not self._gallery_mode then
+        local meta = self.image_metas
+            and self.image_metas[self._images_list_cur or 1]
+        if meta and meta.is_bookmark then
+            local label
+            if meta.chapter and meta.chapter ~= "" then
+                label = T(_("Page %1 (%2)"), meta.page or "?", meta.chapter)
+            else
+                label = T(_("Page %1"), meta.page or "?")
+            end
+            local inset = Screen:scaleBySize(12)
+            self._bookmark_pill_wg = GlimpseBookmarkPill:new{
+                text = label,
+                icon = _PLUGIN_DIR .. "/assets/bookmark.svg",
+                max_width = image_area_w - 2 * inset,
+            }
+            self._bookmark_pill_wg.overlap_offset = { inset, inset }
+            table.insert(overlay, self._bookmark_pill_wg)
         end
     end
     table.insert(self.frame_elements, overlay)
@@ -1729,6 +1845,10 @@ function GlimpseViewer:onCloseWidget()
         self._caption_wg:free()
         self._caption_wg = nil
     end
+    if self._bookmark_pill_wg then
+        self._bookmark_pill_wg:free()
+        self._bookmark_pill_wg = nil
+    end
     if self._thumb_bbs then
         for _, t in pairs(self._thumb_bbs) do
             if t.bb then t.bb:free() end
@@ -2097,7 +2217,17 @@ function GlimpseViewer:_openMoveMenu(cell, pos)
     if not meta then return end
     local ignored = self._gallery_tab == "ignored"
     local label, cb
-    if ignored then
+    if meta.is_bookmark then
+        -- a bookmarked page: the move action becomes "Remove bookmark", which
+        -- drops it from Glimpse AND deletes the dogear in the book itself
+        label = _("Remove bookmark")
+        cb = function()
+            if self.on_remove_bookmark then
+                self.on_remove_bookmark(meta, true, self._gallery_tab,
+                    self._gallery_page)
+            end
+        end
+    elseif ignored then
         label = _("Add back to Gallery")
         cb = function()
             if self.on_unignore then
@@ -2303,6 +2433,41 @@ function GlimpseViewer:_thumb(i, w, h)
     return bb
 end
 
+-- A bookmarked page finished rendering (async): drop the placeholder
+-- thumbnail(s) cached for it and repaint so the real page shows.
+function GlimpseViewer:_onBookmarkThumbReady(path)
+    if self._thumb_bbs and self.image_metas then
+        for i, m in ipairs(self.image_metas) do
+            if m.path == path then
+                for _, tab in ipairs({ "shown", "ignored" }) do
+                    local ck = tab .. ":" .. i
+                    local t = self._thumb_bbs[ck]
+                    if t then
+                        if t.bb then t.bb:free() end
+                        self._thumb_bbs[ck] = nil
+                    end
+                end
+            end
+        end
+    end
+    if self._gallery_mode then
+        self:update()
+    else
+        local cur_idx = self._images_list_cur or 1
+        local cur = self.image_metas and self.image_metas[cur_idx]
+        if cur and cur.path == path then
+            -- switchToImageNum no-ops on the same index, so re-pull the
+            -- closure directly (it now returns the real page) and rebuild
+            if self.image and self.image_disposable and self.image.free then
+                self.image:free()
+            end
+            self.image = self._images_list[cur_idx]
+            if type(self.image) == "function" then self.image = self.image() end
+            self:update()
+        end
+    end
+end
+
 -- Builds the masonry page as self.image_container (update() slots it
 -- into the overlay in place of the image). Cell rects are recorded
 -- relative to the drawer content origin for onTap hit-testing.
@@ -2358,8 +2523,28 @@ function GlimpseViewer:_buildGallery()
         }
         addHead(page_wg)
     end
+    -- subtitle: "N images", plus ", M bookmarks" when the bookmarked-pages
+    -- feature has folded any real bookmarks into this pool (don't lump them
+    -- into the image count). Only the Gallery (shown) tab ever holds bookmarks.
+    local _list, tab_metas = self:_tabList()
+    local n_bm = 0
+    if tab_metas then
+        for _idx = 1, #tab_metas do
+            if tab_metas[_idx].is_bookmark then n_bm = n_bm + 1 end
+        end
+    end
+    local n_img = count - n_bm
+    local parts = {}
+    if n_img > 0 or n_bm == 0 then
+        parts[#parts + 1] = (n_img == 1) and _("1 image")
+            or T(_("%1 images"), n_img)
+    end
+    if n_bm > 0 then
+        parts[#parts + 1] = (n_bm == 1) and _("1 bookmark")
+            or T(_("%1 bookmarks"), n_bm)
+    end
     local sub_wg = TextWidget:new{
-        text = count == 1 and _("1 image") or T(_("%1 images"), count),
+        text = table.concat(parts, ", "),
         face = Font:getFace("cfont", 12),
         bold = true,
         fgcolor = Blitbuffer.COLOR_DARK_GRAY,
@@ -2411,6 +2596,21 @@ function GlimpseViewer:_buildGallery()
                 }
                 table.insert(grid, badge)
                 table.insert(self._gallery_badges, badge)
+                -- bookmarked pages get a bookmark badge in the opposite
+                -- (top-right) corner, marking them as pages rather than images
+                local meta = self.image_metas and self.image_metas[c.idx]
+                if meta and meta.is_bookmark then
+                    local bmk = GlimpseBadge:new{
+                        icon = _PLUGIN_DIR .. "/assets/bookmark.svg",
+                    }
+                    local bsz = bmk:getSize()
+                    bmk.overlap_offset = {
+                        c.x + c.w - m.inset - Screen:scaleBySize(3) - bsz.w,
+                        c.y + m.inset + Screen:scaleBySize(3),
+                    }
+                    table.insert(grid, bmk)
+                    table.insert(self._gallery_badges, bmk)
+                end
             end
         end
     end
@@ -2438,6 +2638,9 @@ function GlimpseViewer:_showMoreMenu()
     -- block is gated on its own flag. Toggle rows (prevnext/captions/invert)
     -- draw a checkbox in the icon column and flip the matching setting live.
     local items = {}
+    local cur_meta = self.image_metas
+        and self.image_metas[self._images_list_cur or 1]
+    local cur_is_bookmark = cur_meta and cur_meta.is_bookmark
     if _quick_enabled("gallery") then
         items[#items + 1] = {
             text = _("Gallery"),
@@ -2445,12 +2648,23 @@ function GlimpseViewer:_showMoreMenu()
             callback = function() self:_enterGallery() end,
         }
     end
+    -- the ignore slot: a normal image gets "Ignore Image"; a bookmarked page
+    -- gets "Remove bookmark" instead (drops it from Glimpse and deletes the
+    -- dogear in the book)
     if _quick_enabled("hide") then
-        items[#items + 1] = {
-            text = _("Ignore Image"),
-            icon = _PLUGIN_DIR .. "/assets/hide.svg",
-            callback = function() self:_hideCurrentImage() end,
-        }
+        if cur_is_bookmark then
+            items[#items + 1] = {
+                text = _("Remove bookmark"),
+                icon = _PLUGIN_DIR .. "/assets/bookmark.svg",
+                callback = function() self:_removeCurrentBookmark() end,
+            }
+        else
+            items[#items + 1] = {
+                text = _("Ignore Image"),
+                icon = _PLUGIN_DIR .. "/assets/hide.svg",
+                callback = function() self:_hideCurrentImage() end,
+            }
+        end
     end
     if _quick_enabled("mode") then
         items[#items + 1] = {
@@ -2799,16 +3013,16 @@ function GlimpseViewer:onTap(_, ges)
         end)
         return true
     end
-    -- zoom control: three stacked zones — minus (top), fit-reset (middle,
-    -- inert when already at fit), plus (bottom)
+    -- zoom control: three stacked zones — plus (top), fit-reset (middle,
+    -- inert when already at fit), minus (bottom)
     if self._zoomctl_frame and self._zoomctl_frame.dimen
        and ges.pos:intersectWith(self._zoomctl_frame.dimen) then
         local d = self._zoomctl_frame.dimen
         local zone = math.min(2, math.max(0,
             math.floor((ges.pos.y - d.y) / (d.h / 3))))
         if zone == 0 then
-            if self:_isOverFit() then
-                self:_flashZoomZone(0, function() self:_zoomStep(-1) end)
+            if not self:_isAtMax() then
+                self:_flashZoomZone(0, function() self:_zoomStep(1) end)
             end
         elseif zone == 1 then
             if self:_isOverFit() then
@@ -2819,8 +3033,8 @@ function GlimpseViewer:onTap(_, ges)
                 end)
             end
         else
-            if not self:_isAtMax() then
-                self:_flashZoomZone(2, function() self:_zoomStep(1) end)
+            if self:_isOverFit() then
+                self:_flashZoomZone(2, function() self:_zoomStep(-1) end)
             end
         end
         return true
@@ -3197,6 +3411,49 @@ function GlimpseViewer:_hideCurrentImage()
     end
 end
 
+-- Single-view "Remove bookmark": delete the dogear in the book (via the
+-- plugin callback) and drop this item in place, then advance to a neighbour —
+-- the same in-list surgery as _hideCurrentImage. image/image_metas ARE the
+-- shown pool (bookmarks only exist when "shown" is primary), so removing here
+-- keeps the Gallery consistent without a reopen.
+function GlimpseViewer:_removeCurrentBookmark()
+    local cur = self._images_list_cur
+    local meta = self.image_metas and self.image_metas[cur]
+    if not (meta and meta.is_bookmark) then return end
+    if self.on_remove_bookmark then
+        self.on_remove_bookmark(meta, false)
+    end
+    table.remove(self._images_list, cur)
+    if self.image_metas then
+        table.remove(self.image_metas, cur)
+    end
+    local nb = self._images_list_nb - 1
+    self._images_list_nb = nb
+    if nb < 1 then
+        self:onClose()
+        UIManager:show(Notification:new{ text = _("Bookmark removed.") })
+        return
+    end
+    if self.image and self.image_disposable and self.image.free then
+        self.image:free()
+        self.image = nil
+    end
+    self:_resetHiRes()
+    local new_cur = math.min(cur, nb)
+    self._cur_rotation = self:_prefFor(new_cur).rotation or 0
+    self.image = self._images_list[new_cur]
+    if type(self.image) == "function" then
+        self.image = self.image()
+    end
+    self._images_list_cur = new_cur
+    self:update()
+    UIManager:show(Notification:new{ text = _("Bookmark removed.") })
+    local meta2 = self.image_metas and self.image_metas[new_cur]
+    if meta2 and self.on_image_shown then
+        self.on_image_shown(meta2, new_cur)
+    end
+end
+
 -- ── plugin ──────────────────────────────────────────────────────────────────
 
 local Glimpse = WidgetContainer:extend{
@@ -3291,6 +3548,187 @@ function Glimpse:_hiddenCount()
     local n = 0
     for _ in pairs(self:_hiddenPaths()) do n = n + 1 end
     return n
+end
+
+-- ── bookmarked pages (Advanced → Include bookmarked pages) ──────────────────
+-- The user's dogear-bookmarked pages, surfaced in the Gallery as page
+-- thumbnails rendered by KOReader's own "Skim" service (ReaderThumbnail),
+-- interleaved with the scanned images in reading order. They are a deliberate
+-- flag, so they ignore the spoiler scope. Rendering is asynchronous (a
+-- subprocess renders each page), so a closure hands out a placeholder until
+-- the real tile arrives, then a callback refreshes the view.
+
+-- Reading-position page number for a scanned-image meta, used only to
+-- interleave bookmarks with images. Mirrors "Show in Book"'s xpointer, then
+-- falls back to the chapter (spine fragment) top, then 0 (cover/unknown).
+function Glimpse:_metaPageNumber(meta)
+    local doc = self.ui and self.ui.document
+    if not (doc and doc.getPageFromXPointer) then return 0 end
+    local xp
+    if meta.node_path and meta.spine_index and meta.spine_index > 0
+            and doc.isXPointerInDocument then
+        local cand = string.format("/body/DocFragment[%d]/body/%s",
+            meta.spine_index, meta.node_path)
+        local ok = pcall(function() return doc:isXPointerInDocument(cand) end)
+        if ok and doc:isXPointerInDocument(cand) then xp = cand end
+    end
+    if not xp and meta.spine_index and meta.spine_index > 0 then
+        xp = string.format("/body/DocFragment[%d]", meta.spine_index)
+    end
+    if not xp then return 0 end
+    local ok, page = pcall(function() return doc:getPageFromXPointer(xp) end)
+    return (ok and page) or 0
+end
+
+-- Pseudo-image records for the dogear bookmarks, already in reading order
+-- (annotations are kept position-sorted). Each carries its page number (for
+-- rendering + ordering) and the screen aspect (page thumbnails come out at
+-- the screen ratio, so the masonry cell should match).
+function Glimpse:_collectBookmarkMetas()
+    local out = {}
+    local ann = self.ui and self.ui.annotation
+    local bm = self.ui and self.ui.bookmark
+    if not (ann and bm and ann.annotations) then return out end
+    local sw, sh = Screen:getWidth(), Screen:getHeight()
+    local toc = self.ui and self.ui.toc
+    for _, a in ipairs(ann.annotations) do
+        if not a.drawer then -- a plain page bookmark, not a highlight
+            local page = bm:getBookmarkPageNumber(a)
+            if page then
+                -- chapter title for the identity pill (empty if untitled)
+                local chapter
+                if toc and toc.getTocTitleByPage then
+                    local ok, t = pcall(function()
+                        return toc:getTocTitleByPage(page)
+                    end)
+                    if ok then chapter = t end
+                end
+                out[#out + 1] = {
+                    is_bookmark = true,
+                    page = page,
+                    _page = page,
+                    chapter = chapter,
+                    xpointer = a.page,
+                    path = "glimpse-bm:" .. tostring(a.page),
+                    width = sw,
+                    height = sh,
+                }
+            end
+        end
+    end
+    return out
+end
+
+-- Delete the dogear bookmark this pseudo-meta stands for, from the book's own
+-- annotations. We match on the stored xpointer (meta.xpointer == annotation
+-- .page) rather than a page number, so we remove exactly the right one even
+-- when several bookmarks resolve to the same page. removeItem handles the
+-- dogear-visibility refresh for the current page.
+function Glimpse:_removeBookmark(meta)
+    local ann = self.ui and self.ui.annotation
+    local bm = self.ui and self.ui.bookmark
+    if not (ann and bm and ann.annotations and meta and meta.xpointer) then
+        return false
+    end
+    for i = #ann.annotations, 1, -1 do
+        local a = ann.annotations[i]
+        if not a.drawer and a.page == meta.xpointer then
+            bm:removeItem(a, i)
+            return true
+        end
+    end
+    return false
+end
+
+-- A fresh, disposable page-shaped placeholder shown until the real thumbnail
+-- renders (the viewer/thumbnail owns and frees what closures return).
+function Glimpse:_bookmarkPlaceholder(im)
+    local w = math.max(2, math.floor((im.width or Screen:getWidth()) / 3))
+    local h = math.max(2, math.floor((im.height or Screen:getHeight()) / 3))
+    local bb = Blitbuffer.new(w, h, Blitbuffer.TYPE_BB8)
+    bb:fill(Blitbuffer.COLOR_WHITE)
+    return bb
+end
+
+function Glimpse:_bookmarkThumb(im)
+    return self._bm_cache and self._bm_cache[im.path]
+end
+
+-- ReaderThumbnail renders the page with its dogear fold showing (the page IS
+-- bookmarked), which is redundant with our own bookmark badge and clutters the
+-- thumbnail. The render forks from this process, so stubbing the shared
+-- dogear's paintTo suppresses it in the child; the reader's own dogear is
+-- hidden behind our drawer meanwhile, and we restore it on teardown.
+function Glimpse:_suppressDogear()
+    local dogear = self.ui and self.ui.view and self.ui.view.dogear
+    if dogear and not self._dogear_orig_paint then
+        self._dogear_orig_paint = dogear.paintTo
+        dogear.paintTo = function() end
+    end
+end
+
+function Glimpse:_restoreDogear()
+    local dogear = self.ui and self.ui.view and self.ui.view.dogear
+    if dogear and self._dogear_orig_paint then
+        dogear.paintTo = self._dogear_orig_paint
+    end
+    self._dogear_orig_paint = nil
+end
+
+-- Kick off an async page render for a bookmark (idempotent). On completion we
+-- copy the tile out of ReaderThumbnail's cache (it owns the original, so we
+-- must not free it) and poke the viewer to repaint with the real page. The
+-- tile is rendered in day polarity; the ImageWidget's original_in_nightmode
+-- =false gets it night-styled at paint (exactly like KOReader's PageBrowser),
+-- so no night handling is needed here.
+function Glimpse:_requestBookmarkThumb(im)
+    if not (im and im.is_bookmark and im.page) then return end
+    self._bm_cache = self._bm_cache or {}
+    self._bm_pending = self._bm_pending or {}
+    if self._bm_cache[im.path] or self._bm_pending[im.path] then return end
+    local thumb = self.ui and self.ui.thumbnail
+    if not (thumb and thumb.getPageThumbnail) then return end
+    self._bm_batch = self._bm_batch or "glimpse_bookmarks"
+    self:_suppressDogear() -- keep the dogear fold out of the rendered page
+    self._bm_pending[im.path] = true
+    local w, h = Screen:getWidth(), Screen:getHeight()
+    -- A cached tile makes getPageThumbnail invoke the callback SYNCHRONOUSLY,
+    -- re-entering during the closure that requested it. In that case the
+    -- closure's own re-check picks up the tile, so we must NOT also poke the
+    -- viewer from here (it would re-enter switchToImageNum mid-build and get
+    -- clobbered). `is_async` is false for a synchronous callback (it runs
+    -- before the line after this call) and true for a real deferred one.
+    local is_async = false
+    thumb:getPageThumbnail(im.page, w, h, self._bm_batch,
+        function(tile)
+            if not self._bm_pending then return end -- torn down meanwhile
+            self._bm_pending[im.path] = nil
+            if tile and tile.bb then
+                self._bm_cache[im.path] = tile.bb:copy()
+                if is_async and self._viewer
+                        and self._viewer._onBookmarkThumbReady then
+                    self._viewer:_onBookmarkThumbReady(im.path)
+                end
+            end
+        end)
+    is_async = true
+end
+
+-- Free our page-thumbnail copies and cancel any in-flight renders (called
+-- when the viewer closes).
+function Glimpse:_freeBookmarkThumbs()
+    self:_restoreDogear()
+    local thumb = self.ui and self.ui.thumbnail
+    if thumb and thumb.cancelPageThumbnailRequests and self._bm_batch then
+        pcall(function() thumb:cancelPageThumbnailRequests(self._bm_batch) end)
+    end
+    if self._bm_cache then
+        for k, bb in pairs(self._bm_cache) do
+            if bb then pcall(function() bb:free() end) end
+            self._bm_cache[k] = nil
+        end
+    end
+    self._bm_cache, self._bm_pending = nil, nil
 end
 
 -- ── document access ─────────────────────────────────────────────────────────
@@ -3575,6 +4013,30 @@ function Glimpse:showViewer(whole_book_once)
         end
     end
 
+    -- Advanced → Include bookmarked pages: merge the user's dogear bookmarks
+    -- into the shown collection, in reading order. Bookmarks ignore the
+    -- spoiler scope (a deliberate flag), so they go in AFTER the clip. Both
+    -- lists are already reading-ordered, so assign each image a page number
+    -- and merge the two monotonic lists (images first on ties).
+    if G_reader_settings:isTrue(BOOKMARKS_KEY) then
+        local bms = self:_collectBookmarkMetas()
+        if #bms > 0 then
+            for _, im in ipairs(shown_metas) do
+                im._page = self:_metaPageNumber(im)
+            end
+            local merged, a, b = {}, 1, 1
+            while a <= #shown_metas or b <= #bms do
+                local ia, ib = shown_metas[a], bms[b]
+                if ib == nil or (ia and (ia._page or 0) <= ib._page) then
+                    merged[#merged + 1] = ia; a = a + 1
+                else
+                    merged[#merged + 1] = ib; b = b + 1
+                end
+            end
+            shown_metas = merged
+        end
+    end
+
     -- The single-image viewer works on the shown collection. When the filter
     -- has left nothing shown but there ARE ignored images, opening is opt-in:
     -- the empty state offers "Review filtered-out", which reopens with the
@@ -3687,6 +4149,27 @@ function Glimpse:showViewer(whole_book_once)
     local function make_list(metas)
         local list = { image_disposable = true }
         for i, im in ipairs(metas) do
+            if im.is_bookmark then
+                -- a bookmarked page: render lazily via ReaderThumbnail. Hand
+                -- out our cached page copy, or a placeholder while it renders
+                -- (the async callback repaints once the real tile lands). No
+                -- night pre-invert: pages should invert WITH night mode (like
+                -- the book), and ImageWidget's original_in_nightmode=false does
+                -- exactly that.
+                list[i] = function()
+                    local bb = self:_bookmarkThumb(im)
+                    if bb then return bb:copy() end
+                    self:_requestBookmarkThumb(im)
+                    -- the request can complete SYNCHRONOUSLY when the page is
+                    -- already in KOReader's thumbnail cache (e.g. after a
+                    -- close+reopen), so re-check before falling back to the
+                    -- placeholder — otherwise we'd show a blank page that never
+                    -- refreshes (the sync path fires no async notification)
+                    bb = self:_bookmarkThumb(im)
+                    if bb then return bb:copy() end
+                    return self:_bookmarkPlaceholder(im)
+                end
+            else
             list[i] = function()
                 local night = Screen.night_mode
                 local checked = G_reader_settings:isTrue(INVERT_KEY)
@@ -3707,6 +4190,7 @@ function Glimpse:showViewer(whole_book_once)
                 end
                 return bb
             end
+            end
         end
         return list
     end
@@ -3719,6 +4203,12 @@ function Glimpse:showViewer(whole_book_once)
     local hires_decode = function(index)
         local im = imgs[index]
         if not im then return nil end
+        -- bookmarked pages have no sharper source than the rendered thumbnail;
+        -- keep the resting page (zoom just upscales it)
+        if im.is_bookmark then
+            local bb = self:_bookmarkThumb(im)
+            return bb and bb:copy() or nil
+        end
         return decode(im, true)
     end
 
@@ -3775,7 +4265,16 @@ function Glimpse:showViewer(whole_book_once)
             self:_setImgPref(meta.path, key, value)
         end,
         on_show_in_book = function(meta)
-            if not meta.spine_index or not self.ui.rolling then return end
+            if not self.ui.rolling then return end
+            -- a bookmarked page jumps straight to its own location
+            if meta.is_bookmark then
+                if self.ui.link then
+                    self.ui.link:addCurrentLocationToStack()
+                end
+                self.ui.rolling:onGotoXPointer(meta.xpointer)
+                return
+            end
+            if not meta.spine_index then return end
             if self.ui.link then
                 self.ui.link:addCurrentLocationToStack()
             end
@@ -3863,6 +4362,21 @@ function Glimpse:showViewer(whole_book_once)
             self:showViewer(whole_book_once)
             UIManager:show(Notification:new{ text = _("Added to Gallery") })
         end,
+        -- Remove a bookmarked page: delete the dogear in the book, then drop it
+        -- from Glimpse. From the Gallery long-press we reopen into the same
+        -- tab/page (like on_ignore); from the single-view ⋯ menu the viewer has
+        -- already removed the item in place, so we only delete the dogear.
+        on_remove_bookmark = function(meta, from_gallery, tab, page)
+            self:_removeBookmark(meta)
+            if from_gallery then
+                self._pending_gallery = { tab = tab, page = page }
+                if self._viewer then self._viewer:onClose() end
+                self:showViewer(whole_book_once)
+                -- the single-view path shows its own notice after in-place
+                -- removal; here (reopened into the Gallery) we show it
+                UIManager:show(Notification:new{ text = _("Bookmark removed.") })
+            end
+        end,
     }
     self._viewer = viewer
     -- release the fallback archive handle together with the viewer; also
@@ -3884,6 +4398,7 @@ function Glimpse:showViewer(whole_book_once)
         end
         self.ui.doc_settings:saveSetting("glimpse_view", view)
         self._viewer = nil
+        self:_freeBookmarkThumbs()
         close_reader()
         return orig_close_widget(v)
     end
@@ -4458,6 +4973,17 @@ function Glimpse:_menuItems()
                         local now_on = self:getFilterLevel() ~= "all"
                         G_reader_settings:saveSetting(FILTER_KEY,
                             now_on and "all" or "balanced")
+                    end,
+                },
+                {
+                    text = _("Include bookmarked pages"),
+                    help_text = _("Also show pages you've bookmarked (the dogear bookmark) in the Gallery, rendered as page thumbnails and marked with a bookmark badge, in reading order alongside the images. A quick way to keep a reference page a swipe away. Off by default."),
+                    checked_func = function()
+                        return G_reader_settings:isTrue(BOOKMARKS_KEY)
+                    end,
+                    callback = function()
+                        G_reader_settings:saveSetting(BOOKMARKS_KEY,
+                            not G_reader_settings:isTrue(BOOKMARKS_KEY))
                     end,
                 },
                 {

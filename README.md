@@ -62,8 +62,8 @@ Updates → *Check for updates*.
   "Reset" button only appears once you're actually zoomed past the
   resting view.
 - **Zoom control (optional):** add *Show Zoom Control* from Quick Actions to
-  put a vertical **−  / fit / +** pill in the viewer, above the corner
-  buttons. Minus and plus step the zoom; the middle "fit" button returns to
+  put a vertical **+ / fit / −** pill in the viewer, above the corner
+  buttons. Plus and minus step the zoom; the middle "fit" button returns to
   the resting view (greyed out while you're already fitted). With it on, the
   step buttons replace the "Reset" button as the way back to fit.
 - **Mode switch (⋯ menu):** the viewer's ⋯ menu shows *Mode: Images up to
@@ -83,9 +83,10 @@ Updates → *Check for updates*.
 | Mode: Show images up to current chapter *(default)* | Images past your current chapter stay hidden (no spoilers). |
 | Mode: Show all images | Everything, incl. parts you haven't reached. |
 | Show Nav Buttons *(checkbox, off)* | Show ‹ and › buttons in the viewer for switching between images. |
-| Show Zoom Controls *(checkbox, off)* | Show a vertical −/fit/+ control in the viewer for zooming; the middle button returns to the fitted view. |
+| Show Zoom Controls *(checkbox, off)* | Show a vertical +/fit/− control in the viewer for zooming; the middle button returns to the fitted view. |
 | Quick Actions | Choose which actions appear in the viewer's ⋯ menu: Gallery, Ignore Image, the Mode switch, Rotate 90°, Show in Book, Show Nav Buttons, Show Zoom Control, Show Image Captions and Invert in Night Mode. Defaults to the original six; the last three are off until you add them. (Reset Rotation is automatic, shown while an image is rotated. Ignored images are added back from the Gallery's Ignored tab.) |
 | Advanced → Ignore irrelevant images *(checkbox, on)* | Sets aside covers, publisher logos, ornaments and other non-reference imagery. Off = every image in the book. |
+| Advanced → Include bookmarked pages *(checkbox, off)* | Also show pages you've bookmarked (the dogear) in the Gallery, rendered as page thumbnails and marked with a bookmark badge, interleaved with the images in reading order. A quick way to keep a reference page a swipe away. Shown regardless of the spoiler scope. |
 | Advanced → Show image captions *(checkbox, on)* | Show the image's caption from the book as a solid tab tucked into the viewer's top-left corner (white with black text in day mode, black with white text at night), wrapping onto multiple lines for longer captions. |
 | Advanced → Maximum zoom *(150%–400%, default 200%)* | How far you can zoom in, as a percentage of the image's own resolution. Double-tap jumps to this level and pinch stops there. Higher shows more on detailed maps; past 100% is upscaling, so very high can look soft. |
 | Advanced → Suppress "format not supported" notice *(checkbox, off)* | Silence the message shown when Glimpse is opened on a format it doesn't support (PDF, comics, manga). Handy if a reading gesture sometimes triggers Glimpse on non-EPUB files. |
@@ -105,6 +106,16 @@ you're currently on) and a small number badge showing its reading order,
 keeping its own aspect ratio instead of being cropped to a uniform tile.
 Paged when there are enough to browse; a *Back* button returns to the
 normal viewer. Tap a thumbnail to jump straight to that image instead.
+
+With **Advanced → Include bookmarked pages** on, the pages you've bookmarked
+(the dogear) appear in the grid too, rendered as page thumbnails (via
+KOReader's own page-render service) and marked with a bookmark badge,
+interleaved with the images in reading order. Tap one to see the page
+full-size in the viewer; *Show in Book* jumps to it. While a bookmarked page
+is shown full-size, a small pill in the top-left corner names it — its page
+number and chapter — so you always know which bookmark you're looking at. To
+drop one, use *Remove bookmark* (long-press it in the Gallery, or the viewer's
+⋯ menu) — that deletes the dogear in the book itself, not just its Glimpse cell.
 
 **Gallery / Ignored.** When the relevance filter has set some images aside
 (or you've ignored some), a button on the Gallery's bottom bar toggles
