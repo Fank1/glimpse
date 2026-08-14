@@ -71,6 +71,10 @@ local SUPPRESS_UNSUPPORTED_KEY = "glimpse_suppress_unsupported" -- silence the "
 local BOOKMARKS_KEY = "glimpse_include_bookmarks" -- include the user's dogear-bookmarked pages (rendered thumbnails) in the Gallery, OFF by default
 local MAX_ZOOM_KEY = "glimpse_max_zoom"        -- zoom ceiling as a multiple of native resolution (double-tap target + pinch clamp)
 local GESTURE_TIP_KEY = "glimpse_gesture_tip_shown" -- one-time menu-open nudge to bind a gesture
+-- viewer gesture toggles (Settings → Gestures), all ON by default (nilOrTrue)
+local GESTURE_DOUBLETAP_KEY = "glimpse_gesture_doubletap" -- double-tap → maximum zoom
+local GESTURE_SWIPE_KEY = "glimpse_gesture_swipe"         -- swipe ‹/› → prev/next image
+local GESTURE_PINCH_KEY = "glimpse_gesture_pinch"         -- pinch/spread → zoom out/in
 
 -- Zoom ceiling (multiple of the image's native resolution), user-configurable
 -- under Advanced → Maximum zoom. Double-tap jumps here and pinch stops here.
@@ -97,6 +101,7 @@ local QUICK_ACTIONS = {
     { key = "prevnext",   default = false },
     { key = "zoomctl",    default = false },
     { key = "captions",   default = false },
+    { key = "bookmarks",  default = false },
     { key = "invert",     default = true  },
 }
 local function _quick_enabled(key)
@@ -116,6 +121,7 @@ local function _quick_label(key)
         prevnext   = _("Nav Buttons Toggle"),
         zoomctl    = _("Zoom Controls Toggle"),
         captions   = _("Image Captions Toggle"),
+        bookmarks  = _("Include Bookmarks Toggle"),
         invert     = _("Invert in Night Mode Toggle"),
     })[key] or key
 end
@@ -245,29 +251,30 @@ local function make_rounded_stencil(w, h, r, stroke, fill, outline)
     return bb
 end
 
--- Soft drop shadow for the ACTIVE chrome (Figma: 0px 4px 4px rgba(0,0,0,.5)
--- on the buttons, a similar one under the dot pill). Disabled/inactive
--- buttons get none. A per-pixel-alpha BBRGB32 stencil of a rounded rect —
--- full alpha inside, fading to 0 over `blur` px outside — blitted BEHIND a
--- widget and offset down by `dy`, so only the rim (mostly the bottom) shows.
--- Painted in DAY polarity (black); night mode wants a shadow that still reads
--- as dark, so it stores WHITE, which the framebuffer inversion flips back to
--- dark — exactly what the drawer's own shadow does (see _paintPanel). Cached
--- module-wide: only a handful of distinct sizes, and the buffers are tiny.
+-- Soft drop shadow for the ACTIVE chrome (⋯, nav arrows, zoom control,
+-- Back/Reset). Disabled/inactive buttons get none. A rounded-rect silhouette
+-- that fades out over `blur` px on ALL sides (so the edges are soft, never a
+-- hard cut) and is nudged down `dy` px so the weight sits below the button.
+-- Kept SMALL and FAINT on purpose — a big or dark halo reads as grey fringe
+-- on the bright day page, which is what we're avoiding, not the soft edge
+-- itself. Painted in DAY polarity (black); night mode wants a shadow that
+-- still reads as dark, so it stores WHITE, which the framebuffer inversion
+-- flips back to dark — exactly what the drawer's own shadow does (see
+-- _paintPanel). Cached module-wide (few sizes, tiny buffers).
 local _shadow_cache = {}
-local function drop_shadow_bb(w, h, r, blur, opacity, night)
+local function drop_shadow_bb(w, h, r, blur, dy, opacity, night)
     local value = night and 0xFF or 0x00
-    local key = table.concat({ w, h, r, blur, opacity, value }, ":")
+    local key = table.concat({ w, h, r, blur, dy, opacity, value }, ":")
     if _shadow_cache[key] then return _shadow_cache[key] end
-    local sw, sh = w + 2 * blur, h + 2 * blur
+    local sw, sh = w + 2 * blur, h + 2 * blur + dy
     local bb = Blitbuffer.new(sw, sh, Blitbuffer.TYPE_BBRGB32)
     for py = 0, sh - 1 do
         for px = 0, sw - 1 do
-            -- distance from the rounded rect inset by `blur` on every side
+            -- distance to the silhouette (rounded rect inset by `blur`)
             local sx = math.min(math.max(px + 0.5, blur + r), blur + w - r)
             local sy = math.min(math.max(py + 0.5, blur + r), blur + h - r)
-            local dx, dy = px + 0.5 - sx, py + 0.5 - sy
-            local dist = math.sqrt(dx * dx + dy * dy) - r
+            local ddx, ddy = px + 0.5 - sx, py + 0.5 - sy
+            local dist = math.sqrt(ddx * ddx + ddy * ddy) - r
             local cov = dist <= 0 and 1 or math.max(0, 1 - dist / blur)
             if cov > 0 then
                 -- smoothstep the falloff — reads softer than a linear ramp
@@ -284,10 +291,16 @@ local function drop_shadow_bb(w, h, r, blur, opacity, night)
     return bb
 end
 
--- Blit the drop shadow for a rounded widget of (w,h,r) whose top-left is at
--- (x,y): offset down by `dy`, expanded `blur` px on each side.
-local function paint_drop_shadow(bb, x, y, w, h, r, blur, opacity, dy)
-    local s = drop_shadow_bb(w, h, r, blur, opacity, Screen.night_mode)
+-- Blit the drop shadow for a rounded widget of (w,h,r) at (x,y): expanded
+-- `blur` px on each side (soft edges), offset down `dy`. Lighter on the bright
+-- day page than at night (where a stronger shadow still reads fine).
+local function paint_drop_shadow(bb, x, y, w, h, r, blur, dy, day_op, night_op)
+    -- "Disable shadows" (Advanced) drops the drawer's gradient shadow AND
+    -- these small button shadows together, for e-ink ghosting or taste
+    if G_reader_settings:isTrue(SHADOW_KEY) then return end
+    local night = Screen.night_mode
+    local s = drop_shadow_bb(w, h, r, blur, dy,
+        night and night_op or day_op, night)
     bb:alphablitFrom(s, x - blur, y - blur + dy, 0, 0,
         s:getWidth(), s:getHeight())
 end
@@ -330,9 +343,6 @@ function GlimpsePill:paintTo(bb, x, y)
             fill, outline)
         self._bg_w, self._bg_h = w, h
     end
-    -- Figma: the dot pill casts a drop shadow (tighter blur than the buttons)
-    paint_drop_shadow(bb, x, y, w, h, self.radius,
-        Screen:scaleBySize(3), 0.5, Screen:scaleBySize(4))
     bb:alphablitFrom(self._bg_bb, x, y, 0, 0, w, h)
     local inner_size = self.inner:getSize()
     self.inner:paintTo(bb,
@@ -454,11 +464,11 @@ end
 
 function GlimpseMoreButton:paintTo(bb, x, y)
     self.dimen = Geom:new{ x = x, y = y, w = self.size, h = self.size }
-    -- active buttons cast a drop shadow (Figma 0 4 4 rgba(0,0,0,.5)); a
-    -- disabled dead-end prev/next stays flat, reinforcing that it's inert
+    -- active buttons cast a soft downward drop shadow; a disabled dead-end
+    -- prev/next stays flat, reinforcing that it's inert
     if not self.disabled then
         paint_drop_shadow(bb, x, y, self.size, self.size, self.radius,
-            Screen:scaleBySize(4), 0.5, Screen:scaleBySize(4))
+            Screen:scaleBySize(2), Screen:scaleBySize(2), 0.3, 0.5)
     end
     if not self._bg_bb then
         -- disabled (dead-end prev/next): keep the white fill for consistency
@@ -601,9 +611,9 @@ function GlimpseZoomControl:paintTo(bb, x, y)
         self._bg_bb = make_rounded_stencil(w, h, self.radius, self.stroke,
             0xFF, 0x00)
     end
-    -- active control: same drop shadow as the buttons
+    -- active control: same soft drop shadow as the buttons
     paint_drop_shadow(bb, x, y, w, h, self.radius,
-        Screen:scaleBySize(4), 0.5, Screen:scaleBySize(4))
+        Screen:scaleBySize(2), Screen:scaleBySize(2), 0.3, 0.5)
     bb:alphablitFrom(self._bg_bb, x, y, 0, 0, w, h)
     -- two hairline dividers at the zone boundaries (h/3, 2h/3)
     local third = h / 3
@@ -868,9 +878,9 @@ function GlimpseTextButton:paintTo(bb, x, y)
         self._bg_bb = make_rounded_stencil(self._w, self.height,
             self.radius, self.stroke, 0xFF, 0x00)
     end
-    -- active button: same drop shadow as the ⋯ button
+    -- active button: same soft drop shadow as the ⋯ button
     paint_drop_shadow(bb, x, y, self._w, self.height, self.radius,
-        Screen:scaleBySize(4), 0.5, Screen:scaleBySize(4))
+        Screen:scaleBySize(2), Screen:scaleBySize(2), 0.3, 0.5)
     bb:alphablitFrom(self._bg_bb, x, y, 0, 0, self._w, self.height)
     local tsz = self._text_wg:getSize()
     local icon_w = self._icon_bb and (self.icon_size + self.icon_gap) or 0
@@ -909,6 +919,124 @@ function GlimpseTextButton:free()
     if self._text_wg then
         self._text_wg:free()
     end
+end
+
+-- Gallery tab switcher (Figma "New Switcher", node 161:193): a segmented
+-- control showing BOTH pools at once — "Gallery [n]" and "Ignored [n]" — with
+-- the current pool on a black pill. White wrapper with a 2px black border; the
+-- active segment's label and count are white, the inactive segment's black.
+-- The count is a small bordered chip (subtle #565656 border on the black pill,
+-- #898989 on white). Day polarity like the rest of the chrome — night mode's
+-- framebuffer inversion yields the dark variant. The parent hit-tests the two
+-- segments via :hitSegment (self._seg_dimens is filled in at paint time).
+local GlimpseTabSwitcher = Widget:extend{
+    segments = nil,   -- { {label=, count=}, {label=, count=} }
+    active = 1,       -- 1-based index of the active segment
+    height = Screen:scaleBySize(41),
+    radius = Screen:scaleBySize(8),
+    active_radius = Screen:scaleBySize(4),
+    stroke = Screen:scaleBySize(2),
+    pad = Screen:scaleBySize(5),        -- wrapper border → segment inset
+    seg_pad = Screen:scaleBySize(12),   -- content inset within a segment
+    label_gap = Screen:scaleBySize(6),  -- label ↔ count chip
+    -- count chip: a bit taller than before, and square for a single digit
+    -- (badge_min_w == badge_h), widening only when the number needs it
+    badge_h = Screen:scaleBySize(17),
+    badge_min_w = Screen:scaleBySize(17),
+    badge_pad = Screen:scaleBySize(3),
+    badge_radius = Screen:scaleBySize(4),
+    badge_stroke = math.max(1, Screen:scaleBySize(1)),
+    border_active = 0x56,               -- #565656 chip border on the black pill
+    border_inactive = 0x89,             -- #898989 chip border on white
+}
+
+function GlimpseTabSwitcher:init()
+    local face = Font:getFace("cfont", 15)
+    local cface = Font:getFace("cfont", 11)
+    self._lbl, self._cnt, self._badge_w = {}, {}, {}
+    local seg_content = 0
+    for i, seg in ipairs(self.segments) do
+        local fg = (i == self.active) and Blitbuffer.COLOR_WHITE
+            or Blitbuffer.COLOR_BLACK
+        self._lbl[i] = TextWidget:new{
+            text = seg.label, face = face, bold = true, fgcolor = fg }
+        self._cnt[i] = TextWidget:new{
+            text = tostring(seg.count), face = cface, bold = true, fgcolor = fg }
+        local bw = math.max(self.badge_min_w,
+            self._cnt[i]:getSize().w + 2 * self.badge_pad)
+        self._badge_w[i] = bw
+        local cw = self._lbl[i]:getSize().w + self.label_gap + bw
+        if cw > seg_content then seg_content = cw end
+    end
+    self._seg_w = seg_content + 2 * self.seg_pad
+    self._w = 2 * self._seg_w + 2 * self.pad
+    self._seg_dimens = {}
+end
+
+function GlimpseTabSwitcher:getSize()
+    return Geom:new{ w = self._w, h = self.height }
+end
+
+function GlimpseTabSwitcher:paintTo(bb, x, y)
+    local w, h = self._w, self.height
+    self.dimen = Geom:new{ x = x, y = y, w = w, h = h }
+    -- same soft downward shadow as the active buttons, so it lifts off the grid
+    paint_drop_shadow(bb, x, y, w, h, self.radius,
+        Screen:scaleBySize(2), Screen:scaleBySize(2), 0.3, 0.5)
+    if not self._wrap_bb then
+        self._wrap_bb = make_rounded_stencil(w, h, self.radius,
+            self.stroke, 0xFF, 0x00)
+    end
+    bb:alphablitFrom(self._wrap_bb, x, y, 0, 0, w, h)
+    -- active-segment pill: a solid black rounded rect, inset by `pad`
+    local seg_h = h - 2 * self.pad
+    if not self._active_bb then
+        self._active_bb = make_rounded_stencil(self._seg_w, seg_h,
+            self.active_radius, self.stroke, 0x00, 0x00)
+    end
+    bb:alphablitFrom(self._active_bb,
+        x + self.pad + (self.active - 1) * self._seg_w, y + self.pad,
+        0, 0, self._seg_w, seg_h)
+    -- segments: label + count chip, centered in each half
+    self._badge_bb = self._badge_bb or {}
+    for i = 1, #self.segments do
+        local seg_x = x + self.pad + (i - 1) * self._seg_w
+        self._seg_dimens[i] = Geom:new{ x = seg_x, y = y, w = self._seg_w, h = h }
+        local lbl, cnt = self._lbl[i], self._cnt[i]
+        local lsz, csz = lbl:getSize(), cnt:getSize()
+        local bw = self._badge_w[i]
+        local cx = seg_x + math.floor(
+            (self._seg_w - (lsz.w + self.label_gap + bw)) / 2)
+        lbl:paintTo(bb, cx, y + math.floor((h - lsz.h) / 2))
+        local bx = cx + lsz.w + self.label_gap
+        local by = y + math.floor((h - self.badge_h) / 2)
+        if not self._badge_bb[i] then
+            local col = (i == self.active) and self.border_active
+                or self.border_inactive
+            self._badge_bb[i] = make_rounded_stencil(bw, self.badge_h,
+                self.badge_radius, self.badge_stroke, nil, col)
+        end
+        bb:alphablitFrom(self._badge_bb[i], bx, by, 0, 0, bw, self.badge_h)
+        cnt:paintTo(bb, bx + math.floor((bw - csz.w) / 2),
+            by + math.floor((self.badge_h - csz.h) / 2))
+    end
+end
+
+function GlimpseTabSwitcher:hitSegment(pos)
+    for i, d in ipairs(self._seg_dimens or {}) do
+        if d and pos:intersectWith(d) then return i end
+    end
+end
+
+function GlimpseTabSwitcher:free()
+    if self._wrap_bb then self._wrap_bb:free(); self._wrap_bb = nil end
+    if self._active_bb then self._active_bb:free(); self._active_bb = nil end
+    if self._badge_bb then
+        for _, b in pairs(self._badge_bb) do if b then b:free() end end
+        self._badge_bb = nil
+    end
+    for _, t in ipairs(self._lbl or {}) do t:free() end
+    for _, t in ipairs(self._cnt or {}) do t:free() end
 end
 
 -- One row of the ⋯ popup: an optional left icon (black-line SVG on
@@ -977,6 +1105,10 @@ local GlimpseCard = WidgetContainer:extend{
     radius = Screen:scaleBySize(9),
     stroke = Screen:scaleBySize(2),
     outline = 0x00,     -- black border, matching the old FrameContainer
+    -- a soft drop shadow lifts the floating menu off the page/drawer; a
+    -- touch larger than the button shadow since it's a bigger surface
+    shadow_blur = Screen:scaleBySize(4),
+    shadow_dy = Screen:scaleBySize(3),
 }
 
 function GlimpseCard:getSize()
@@ -997,6 +1129,10 @@ function GlimpseCard:paintTo(bb, x, y)
         self._ring_bb = make_rounded_stencil(sz.w, sz.h,
             self.radius, self.stroke, nil, self.outline)
     end
+    -- shadow first, under the opaque card fill (skipped when "Disable
+    -- shadows" is on, via paint_drop_shadow's own guard)
+    paint_drop_shadow(bb, x, y, sz.w, sz.h, self.radius,
+        self.shadow_blur, self.shadow_dy, 0.3, 0.5)
     bb:alphablitFrom(self._fill_bb, x, y, 0, 0, sz.w, sz.h)
     self[1]:paintTo(bb, x, y)
     bb:alphablitFrom(self._ring_bb, x, y, 0, 0, sz.w, sz.h)
@@ -1132,8 +1268,20 @@ end
 -- The widget's own dimen is the full screen (CenterContainer), so default
 -- show/close refreshes would flash the whole drawer; refresh only the
 -- anchored menu rectangle instead (known after MovableContainer paints).
+-- The rectangle is padded to also cover the cards' drop shadow, otherwise
+-- the shadow's outer feather is painted but never flushed (invisible on
+-- show, then a ghost left behind on close).
+GlimpsePopupMenu.shadow_pad = GlimpseCard.shadow_blur + GlimpseCard.shadow_dy
+
+function GlimpsePopupMenu:refreshRegion()
+    local d = self.movable and self.movable.dimen
+    if not d then return nil end
+    local p = self.shadow_pad
+    return Geom:new{ x = d.x - p, y = d.y - p, w = d.w + 2 * p, h = d.h + 2 * p }
+end
+
 function GlimpsePopupMenu:dismiss()
-    local region = self.movable.dimen
+    local region = self:refreshRegion()
     if region and self._restore_region then
         region = region:combine(self._restore_region)
     end
@@ -1190,6 +1338,7 @@ local GlimpseViewer = ImageViewer:extend{
     on_show_menu = nil,    -- function(): open KOReader's top menu (only)
     scope = nil,           -- effective scope: "read_so_far" | "whole_book"
     on_toggle_scope = nil, -- function(): flip the scope setting and reopen
+    on_toggle_bookmarks = nil, -- function(): flip "include bookmarks" and reopen
     get_pref = nil,        -- function(meta) -> per-image prefs {rotation=}
     set_pref = nil,        -- function(meta, key, value)
     -- Gallery tabs. The single-image view uses image/image_metas (= the
@@ -1456,17 +1605,21 @@ function GlimpseViewer:update()
                 right_bound = math.min(right_bound, f.overlap_offset[1])
             end
         end
-        -- the gallery Shown/Ignored toggle STRETCHES to fill the bottom bar;
+        -- the gallery tab switcher is a fixed-width control LEFT-aligned right
+        -- after the Prev arrow (Back + Next own the right end), per the design;
         -- the dot pill just centres within the span
-        if self._gallery_mode and self._pill_frame.setWidth then
-            -- keep a gap from the Prev arrow when it's there, but go flush to
-            -- the left content margin when it isn't (single-page galleries have
-            -- no arrows, so the toggle should reach the same margin the arrow
-            -- would occupy — not leave a phantom gap where it used to be)
+        if self._gallery_mode then
+            local sw_w = self._pill_frame:getSize().w
             local pill_left = self._nav_prev_frame
                 and (left_bound + btn_gap) or left_bound
-            local pill_right = right_bound - btn_gap
-            self._pill_frame:setWidth(pill_right - pill_left)
+            -- keep a real gap to the right-side chrome (Back / Next): if the
+            -- left-aligned position would crowd or overlap it, shift the
+            -- switcher left just enough to preserve that margin (but never
+            -- past its left bound)
+            local max_left = right_bound - btn_gap - sw_w
+            if max_left < pill_left then
+                pill_left = math.max(left_bound, max_left)
+            end
             self._pill_frame.overlap_offset = {
                 pill_left, self.height - self._pill_frame:getSize().h - bottom_inset,
             }
@@ -2145,14 +2298,16 @@ function GlimpseViewer:_buildPill()
         -- The button names the destination: from the collection it offers
         -- "Show Ignored (n)", from the Ignored pool "Show Gallery (n)".
         if self:_hasIgnoredTab() then
-            local label
-            if self._gallery_tab == "ignored" then
-                local shown_n = self.shown_metas and #self.shown_metas or 0
-                label = T(_("Show Gallery (%1)"), shown_n)
-            else
-                label = T(_("Show Ignored (%1)"), self:_ignoredCount())
-            end
-            self._pill_frame = GlimpseTextButton:new{ text = label, bold = true }
+            -- both pools shown at once as a segmented switcher; the active
+            -- segment is the pool on screen. Tap a segment to switch (onTap).
+            local shown_n = self.shown_metas and #self.shown_metas or 0
+            self._pill_frame = GlimpseTabSwitcher:new{
+                segments = {
+                    { label = _("Gallery"), count = shown_n },
+                    { label = _("Ignored"), count = self:_ignoredCount() },
+                },
+                active = (self._gallery_tab == "ignored") and 2 or 1,
+            }
         end
         return
     end
@@ -2402,7 +2557,7 @@ function GlimpseViewer:_openMoveMenu(cell, pos)
             self:update()
         end
     end
-    UIManager:show(menu, function() return "ui", menu.movable.dimen end)
+    UIManager:show(menu, function() return "ui", menu:refreshRegion() end)
 end
 
 -- Masonry layout for ALL images, computed once per viewer (the image
@@ -2586,7 +2741,19 @@ function GlimpseViewer:_onBookmarkThumbReady(path)
         end
     end
     if self._gallery_mode then
-        self:update()
+        -- Coalesce a burst of async page renders into ONE gallery repaint.
+        -- A gallery page full of bookmarks lands its rendered tiles roughly
+        -- together (they're generated in subprocesses and collected in the
+        -- same pass), and repainting per tile meant N full grid rebuilds +
+        -- e-ink refreshes — the sluggishness when opening a bookmark-heavy
+        -- Gallery. One update on the next tick redraws them all at once.
+        if not self._bm_repaint_scheduled then
+            self._bm_repaint_scheduled = true
+            UIManager:nextTick(function()
+                self._bm_repaint_scheduled = nil
+                if self._gallery_mode then self:update() end
+            end)
+        end
     else
         local cur_idx = self._images_list_cur or 1
         local cur = self.image_metas and self.image_metas[cur_idx]
@@ -2632,8 +2799,6 @@ function GlimpseViewer:_buildGallery()
     self._gallery_badges = {}
     local band_top = self:_headMetrics().band_top
     local on_ignored_tab = self._gallery_tab == "ignored"
-    local active_is_primary = (self._gallery_tab or "shown")
-        == (self.primary_tab or "shown")
     local count = select(3, self:_tabList())
     local title_wg = TextWidget:new{
         text = on_ignored_tab and _("Ignored") or _("Gallery"),
@@ -2694,16 +2859,17 @@ function GlimpseViewer:_buildGallery()
         if bb then
             -- every thumbnail gets a subtle rounded outline so adjacent
             -- images (which otherwise butt edge to edge) stay visually
-            -- distinct; the current image gets a heavier black one on
-            -- top of that (only on the pool the single-view is showing)
-            local is_cur = active_is_primary
-                and c.idx == (self._images_list_cur or 1)
+            -- distinct. The heavier black outline is no longer a "current
+            -- image" marker (that was lost on people) — it now accentuates
+            -- the cell you're long-pressing (paired with the dim veil over
+            -- the others), so the selection reads clearly.
+            local is_spotlight = self._dim_except_idx == c.idx
             local cell = CenterContainer:new{
                 dimen = Geom:new{ w = c.w, h = c.h },
                 FrameContainer:new{
-                    bordersize = is_cur
+                    bordersize = is_spotlight
                         and Screen:scaleBySize(2) or Screen:scaleBySize(1),
-                    color = is_cur and Blitbuffer.COLOR_BLACK
+                    color = is_spotlight and Blitbuffer.COLOR_BLACK
                         or Blitbuffer.COLOR_GRAY,
                     radius = Screen:scaleBySize(3),
                     padding = Screen:scaleBySize(2),
@@ -2857,6 +3023,13 @@ function GlimpseViewer:_showMoreMenu()
             callback = function() self:_toggleCaptions() end,
         }
     end
+    if _quick_enabled("bookmarks") then
+        items[#items + 1] = {
+            text = _("Include Bookmarks in Gallery"),
+            check = G_reader_settings:isTrue(BOOKMARKS_KEY),
+            callback = function() self:_toggleBookmarks() end,
+        }
+    end
     if _quick_enabled("invert") then
         items[#items + 1] = {
             -- checkbox drawn in the icon column (see GlimpseMenuRow),
@@ -2911,7 +3084,7 @@ function GlimpseViewer:_showMoreMenu()
     -- region function: the anchored rect is only known after the
     -- MovableContainer paints, and a full-screen refresh flashes the map
     UIManager:show(menu, function()
-        return "ui", menu.movable.dimen
+        return "ui", menu:refreshRegion()
     end)
 end
 
@@ -3008,11 +3181,21 @@ function GlimpseViewer:_toggleCaptions()
     self:update()
 end
 
+-- Flipping "Include Bookmarks in Gallery" changes the image SET (it folds
+-- the dogear pages in or out), so unlike the display toggles it can't just
+-- repaint — it hands off to the plugin to flip the setting and reopen the
+-- viewer, rebuilding the collection (like the scope switch does).
+function GlimpseViewer:_toggleBookmarks()
+    if self.on_toggle_bookmarks then self.on_toggle_bookmarks() end
+end
+
 -- Manual double-tap detection from instant Tap events: a second tap close
 -- in time and position counts as a double-tap. Only consulted where the
 -- single tap would do nothing (middle area at fit, anywhere while zoomed),
 -- so no single-tap action ever has to be delayed or undone.
 function GlimpseViewer:_checkDoubleTap(ges)
+    -- Settings → Gestures → Double-tap for maximum zoom (on by default)
+    if not G_reader_settings:nilOrTrue(GESTURE_DOUBLETAP_KEY) then return end
     local now = time.now()
     local slop = Screen:scaleBySize(50)
     local lt = self._last_tap
@@ -3187,14 +3370,18 @@ function GlimpseViewer:onTap(_, ges)
         return true
     end
     if self._gallery_mode then
-        -- the Shown/Ignored toggle (bottom-center pill)
-        if self._pill_frame and self._pill_frame.dimen
-           and ges.pos:intersectWith(self._pill_frame.dimen) then
-            self:_flashButton(self._pill_frame, function()
-                self:_switchGalleryTab(
-                    self._gallery_tab == "ignored" and "shown" or "ignored")
-            end)
-            return true
+        -- the tab switcher: tap a segment to show that pool (tapping the
+        -- already-active segment is a no-op)
+        local sw = self._pill_frame
+        if sw and sw.hitSegment then
+            local seg = sw:hitSegment(ges.pos)
+            if seg then
+                local tab = (seg == 2) and "ignored" or "shown"
+                if tab ~= self._gallery_tab then
+                    self:_switchGalleryTab(tab)
+                end
+                return true
+            end
         end
         -- thumbnail: tap opens it ONLY when this pool is what the single-image
         -- view shows (the primary/Gallery tab). A tap on an Ignored
@@ -3300,8 +3487,12 @@ function GlimpseViewer:onSwipe(arg, ges)
         return true
     end
     if self.scale_factor == 0 then
+        -- Settings → Gestures → Swipe left/right to navigate (on by default).
+        -- Only the single-image nav is gated; the Gallery's swipe-to-page is
+        -- its primary affordance and stays on.
         local d = ges.direction
-        if self._images_list and (d == "west" or d == "east") then
+        if self._images_list and (d == "west" or d == "east")
+                and G_reader_settings:nilOrTrue(GESTURE_SWIPE_KEY) then
             local forward = d == "west"
             if BD.mirroredUILayout() then forward = not forward end
             if forward then
@@ -3324,6 +3515,19 @@ function GlimpseViewer:onMultiSwipe(_, ges)
     return true
 end
 
+-- Settings → Gestures → Pinch to zoom in/out (on by default). Spread zooms
+-- in, pinch zooms out (upstream ImageViewer); swallow both when the user has
+-- turned the gesture off, so a stray pinch can't change the zoom.
+function GlimpseViewer:onSpread(arg, ges)
+    if not G_reader_settings:nilOrTrue(GESTURE_PINCH_KEY) then return true end
+    return ImageViewer.onSpread(self, arg, ges)
+end
+
+function GlimpseViewer:onPinch(arg, ges)
+    if not G_reader_settings:nilOrTrue(GESTURE_PINCH_KEY) then return true end
+    return ImageViewer.onPinch(self, arg, ges)
+end
+
 -- Long-press a Gallery thumbnail opens a small anchored menu with the one
 -- move action for that pool (Ignore this image / Add back to Gallery);
 -- see _openMoveMenu. Outside the gallery, defer to upstream (long-press
@@ -3335,6 +3539,26 @@ function GlimpseViewer:onHold(_, ges)
         return true
     end
     return ImageViewer.onHold(self, _, ges)
+end
+
+-- Upstream ImageViewer:onHoldRelease turns a hold-with-no-move into a
+-- full-screen refresh (self.dithered + setDirty "full"). Over the drawer that
+-- flashes the whole page and re-blends the side shadow, so a stray long-press
+-- on the image reads as a glitch. Drop that branch: a hold that actually
+-- moved still pans a zoomed image, a stationary one is simply ignored. (In
+-- the gallery the hold already opened the move menu, so nothing to release.)
+function GlimpseViewer:onHoldRelease(_, ges)
+    if self._gallery_mode then return true end
+    if self._panning then
+        self._panning = false
+        self._pan_relative_x = ges.pos.x - self._pan_relative_x
+        self._pan_relative_y = ges.pos.y - self._pan_relative_y
+        if math.abs(self._pan_relative_x) >= self.pan_threshold
+                or math.abs(self._pan_relative_y) >= self.pan_threshold then
+            self:panBy(-self._pan_relative_x, -self._pan_relative_y)
+        end
+    end
+    return true
 end
 
 -- On the SDL emulator, mouse wheel / two-finger trackpad scroll arrives as
@@ -4490,6 +4714,19 @@ function Glimpse:showViewer(whole_book_once)
                     or _("Mode: Images up to here"),
             })
         end,
+        -- ⋯ → "Include Bookmarks in Gallery": flip the setting and reopen so
+        -- the dogear pages fold in/out of the collection (same close+reopen
+        -- dance as the scope switch; glimpse_last keeps our place).
+        on_toggle_bookmarks = function()
+            local now_on = G_reader_settings:isTrue(BOOKMARKS_KEY)
+            G_reader_settings:saveSetting(BOOKMARKS_KEY, not now_on)
+            if self._viewer then self._viewer:onClose() end
+            self:showViewer()
+            UIManager:show(Notification:new{
+                text = now_on and _("Bookmarked pages hidden")
+                    or _("Bookmarked pages shown"),
+            })
+        end,
         -- Gallery long-press, Shown tab: move this image to Ignored (hide it
         -- and drop any force-add). Persist, then reopen back into the Gallery
         -- on the same tab/page (the scan is cached, so the reopen is cheap).
@@ -5084,33 +5321,12 @@ function Glimpse:_menuItems()
                 scope_item("whole_book", _("Show all images"),
                     _("Show reference images from anywhere in the book, including parts you haven't reached yet.")),
             },
-            separator = true,
         },
         {
-            text = _("Show Nav Buttons"),
-            help_text = _("Show ‹ and › buttons in the viewer for switching between images, as an alternative to swiping. A button is grayed out when there is no image on its side."),
-            checked_func = function()
-                return G_reader_settings:isTrue(NAV_BUTTONS_KEY)
-            end,
-            callback = function()
-                G_reader_settings:saveSetting(NAV_BUTTONS_KEY,
-                    not G_reader_settings:isTrue(NAV_BUTTONS_KEY))
-            end,
-        },
-        {
-            text = _("Show Zoom Controls"),
-            help_text = _("Show a vertical −/fit/+ control in the viewer for zooming in and out, as an alternative to double-tap and pinch. The middle button returns to the fitted view."),
-            checked_func = function()
-                return G_reader_settings:isTrue(ZOOMCTL_KEY)
-            end,
-            callback = function()
-                G_reader_settings:saveSetting(ZOOMCTL_KEY,
-                    not G_reader_settings:isTrue(ZOOMCTL_KEY))
-            end,
-        },
-        {
-            text = _("Include bookmarked pages"),
-            help_text = _("Also show pages you've bookmarked (the dogear bookmark) in the Gallery, rendered as page thumbnails and marked with a bookmark badge, in reading order alongside the images. A quick way to keep a reference page a swipe away. Off by default."),
+            -- sits directly under Mode: it also shapes what the Gallery holds.
+            -- Renamed from "Include bookmarked pages"; also a Quick Action.
+            text = _("Include Bookmarks in Gallery"),
+            help_text = _("Also show the pages you've bookmarked (the dogear bookmark) in the Gallery, rendered as page thumbnails and marked with a bookmark badge, in reading order alongside the images — a quick way to keep a reference page a swipe away. Off by default. Also available from the viewer's ⋯ menu (see Quick Actions)."),
             checked_func = function()
                 return G_reader_settings:isTrue(BOOKMARKS_KEY)
             end,
@@ -5118,6 +5334,7 @@ function Glimpse:_menuItems()
                 G_reader_settings:saveSetting(BOOKMARKS_KEY,
                     not G_reader_settings:isTrue(BOOKMARKS_KEY))
             end,
+            separator = true,
         },
         {
             text = _("Quick Actions"),
@@ -5143,8 +5360,30 @@ function Glimpse:_menuItems()
             separator = true,
         },
         {
-            text = _("Advanced"),
+            text = _("Settings"),
             sub_item_table = {
+                {
+                    text = _("Show Nav Buttons"),
+                    help_text = _("Show ‹ and › buttons in the viewer for switching between images, as an alternative to swiping. A button is grayed out when there is no image on its side."),
+                    checked_func = function()
+                        return G_reader_settings:isTrue(NAV_BUTTONS_KEY)
+                    end,
+                    callback = function()
+                        G_reader_settings:saveSetting(NAV_BUTTONS_KEY,
+                            not G_reader_settings:isTrue(NAV_BUTTONS_KEY))
+                    end,
+                },
+                {
+                    text = _("Show Zoom Controls"),
+                    help_text = _("Show a vertical −/fit/+ control in the viewer for zooming in and out, as an alternative to double-tap and pinch. The middle button returns to the fitted view."),
+                    checked_func = function()
+                        return G_reader_settings:isTrue(ZOOMCTL_KEY)
+                    end,
+                    callback = function()
+                        G_reader_settings:saveSetting(ZOOMCTL_KEY,
+                            not G_reader_settings:isTrue(ZOOMCTL_KEY))
+                    end,
+                },
                 {
                     text = _("Invert Images in Night Mode"),
                     help_text = _("While KOReader's night mode is on, show images inverted (light lines on a dark background). Also toggleable from the viewer's ⋯ menu."),
@@ -5154,18 +5393,6 @@ function Glimpse:_menuItems()
                     callback = function()
                         G_reader_settings:saveSetting(INVERT_KEY,
                             not G_reader_settings:isTrue(INVERT_KEY))
-                    end,
-                },
-                {
-                    text = _("Ignore irrelevant images"),
-                    help_text = _("Set aside covers, publisher logos, ornaments and other non-reference imagery, keeping maps, family trees, diagrams and illustrations. Turn off to see every image in the book. Wrongly kept images can be ignored from the viewer's ⋯ menu; wrongly set-aside ones added back from the Gallery's Ignored tab."),
-                    checked_func = function()
-                        return self:getFilterLevel() ~= "all"
-                    end,
-                    callback = function()
-                        local now_on = self:getFilterLevel() ~= "all"
-                        G_reader_settings:saveSetting(FILTER_KEY,
-                            now_on and "all" or "balanced")
                     end,
                 },
                 {
@@ -5205,6 +5432,70 @@ function Glimpse:_menuItems()
                     end)(),
                 },
                 {
+                    text = _("Enable top menu tap zone"),
+                    help_text = _("While the viewer is open, a tap along the top edge of the screen opens KOReader's top menu (only the top menu, never the bottom one) over the drawer, instead of doing nothing. Turn off to keep the top edge inert."),
+                    checked_func = function()
+                        return G_reader_settings:nilOrTrue(TOP_MENU_KEY)
+                    end,
+                    callback = function()
+                        G_reader_settings:flipNilOrTrue(TOP_MENU_KEY)
+                    end,
+                },
+                {
+                    text = _("Gestures"),
+                    sub_item_table = {
+                        {
+                            text = _("Double-tap for maximum zoom"),
+                            help_text = _("Double-tap the image to jump to the maximum zoom (centered on the tap), and again to return to the fitted view. On by default."),
+                            checked_func = function()
+                                return G_reader_settings:nilOrTrue(GESTURE_DOUBLETAP_KEY)
+                            end,
+                            callback = function()
+                                G_reader_settings:flipNilOrTrue(GESTURE_DOUBLETAP_KEY)
+                            end,
+                        },
+                        {
+                            text = _("Swipe left/right to navigate"),
+                            help_text = _("Swipe left or right across the image to move to the next or previous image. On by default. (The Gallery's swipe-to-page is unaffected.)"),
+                            checked_func = function()
+                                return G_reader_settings:nilOrTrue(GESTURE_SWIPE_KEY)
+                            end,
+                            callback = function()
+                                G_reader_settings:flipNilOrTrue(GESTURE_SWIPE_KEY)
+                            end,
+                        },
+                        {
+                            text = _("Pinch to zoom in/out"),
+                            help_text = _("Pinch or spread two fingers on the image to zoom out or in. On by default."),
+                            checked_func = function()
+                                return G_reader_settings:nilOrTrue(GESTURE_PINCH_KEY)
+                            end,
+                            callback = function()
+                                G_reader_settings:flipNilOrTrue(GESTURE_PINCH_KEY)
+                            end,
+                        },
+                    },
+                },
+            },
+        },
+        {
+            text = _("Advanced"),
+            sub_item_table = {
+                {
+                    -- inverted sense: checked = filtering OFF (default unchecked,
+                    -- i.e. filtering ON). Flips the same balanced/all setting.
+                    text = _("Disable irrelevant image filtering"),
+                    help_text = _("By default Glimpse sets aside covers, publisher logos, ornaments and other non-reference imagery, keeping maps, family trees, diagrams and illustrations. Enable this to switch that off and see every image in the book. (Individual wrongly-kept images can instead be ignored from the viewer's ⋯ menu; wrongly set-aside ones added back from the Gallery's Ignored tab.)"),
+                    checked_func = function()
+                        return self:getFilterLevel() == "all"
+                    end,
+                    callback = function()
+                        local disabled_now = self:getFilterLevel() == "all"
+                        G_reader_settings:saveSetting(FILTER_KEY,
+                            disabled_now and "balanced" or "all")
+                    end,
+                },
+                {
                     text = _("Suppress \"format not supported\" notice"),
                     help_text = _("Silence the message shown when Glimpse is opened on a book format it doesn't support (PDF, comics, manga…). Handy if a reading gesture sometimes triggers Glimpse on non-EPUB files. Off by default."),
                     checked_func = function()
@@ -5216,18 +5507,7 @@ function Glimpse:_menuItems()
                     end,
                 },
                 {
-                    text = _("Enable top menu tap zone"),
-                    help_text = _("While the viewer is open, a tap along the top edge of the screen opens KOReader's top menu (only the top menu, never the bottom one) over the drawer, instead of doing nothing. Turn off to keep the top edge inert."),
-                    checked_func = function()
-                        return G_reader_settings:nilOrTrue(TOP_MENU_KEY)
-                    end,
-                    callback = function()
-                        G_reader_settings:flipNilOrTrue(TOP_MENU_KEY)
-                    end,
-                    separator = true,
-                },
-                {
-                    text = _("Disabled shadows"),
+                    text = _("Disable shadows"),
                     help_text = _("Remove the drawer's drop shadow. The shadow is a dithered gradient — the main cause of e-ink ghosting behind the drawer — so turn it off if a ghost lingers after closing Glimpse. No visible effect on LCD screens."),
                     checked_func = function()
                         return G_reader_settings:isTrue(SHADOW_KEY)
@@ -5239,7 +5519,6 @@ function Glimpse:_menuItems()
                     separator = true,
                 },
                 {
-                    -- rarely needed, so tucked in here rather than the main list
                     text = _("Rescan this book"),
                     help_text = _("Glimpse caches its scan of the book. Use this if the book file was replaced or images seem out of date."),
                     keep_menu_open = true,

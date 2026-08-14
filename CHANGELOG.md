@@ -8,6 +8,7 @@ folded into the notes of the next public release.
 **🐛 Fixes**
 - The Glimpse menu's top row now shows the gesture that opens Glimpse even when no book is open (it was wrongly reading "none set" in the file browser).
 - When a book has no reference images and you're reviewing the Ignored pile, the gallery's Back button now closes Glimpse instead of surfacing an ignored image as if it were kept.
+- A stray long-press on the image (or a bookmarked page) no longer flashes the whole screen and disturbs the drawer's shadow — the press is simply ignored now.
 
 **🎯 A smarter relevance filter (fewer good images wrongly hidden)**
 - Maps, family trees, diagrams and charts named as such (`map`, `family-tree`, `diagram`, `chart`, `timeline`, …) are now recognized as reference content, so an endpaper map or a family tree that used to fall just under the size cutoff is kept.
@@ -28,16 +29,21 @@ folded into the notes of the next public release.
 - The top row now clearly reads "Gesture to open: ..." so you can see at a glance which gesture opens Glimpse.
 - New option to silence the "format not supported" message, for when a reading gesture sometimes opens Glimpse on a PDF or comic (Advanced, off by default).
 - Restoring ignored images now lives only in the Gallery's Ignored tab; the separate menu entry was removed.
-- "Include bookmarked pages" is now a top-level switch in the Glimpse menu instead of being tucked inside Advanced.
+- Reorganized the menu: the top level now keeps just the essentials (Enable, the gesture row, Open Glimpse, Mode, Include Bookmarks in Gallery) plus the Quick Actions, **Settings**, Advanced and Updates sub-menus. Most toggles (nav buttons, zoom controls, invert in night mode, captions, maximum zoom, top-menu-zone) now live under **Settings**, and **Advanced** holds *Disable irrelevant image filtering*, *Suppress "format not supported" notice*, *Disable shadows* and *Rescan this book*.
+- New **Settings → Gestures** sub-menu to turn the viewer's touch gestures on or off individually: *Double-tap for maximum zoom*, *Swipe left/right to navigate*, and *Pinch to zoom in/out* (all on by default). Handy if a gesture conflicts with how you hold your device.
+- "Include bookmarked pages" is now **Include Bookmarks in Gallery**, sitting directly under Mode — and it's also available as a Quick Action in the viewer's ⋯ menu.
+- "Ignore irrelevant images" is now **Disable irrelevant image filtering** (off by default — same behavior, clearer wording), and "Disabled shadows" is now **Disable shadows**.
 - Gallery is always available now: it sits at the bottom of the ⋯ menu as its own item (it's the most common jump), so it's no longer one of the configurable Quick Actions.
 - Shorter ⋯ menu labels — "Nav Buttons", "Zoom Controls", "Image Captions" (dropped the "Show" prefix) — and the spoiler scope now reads "Mode: Spoiler-free" instead of "Mode: Images up to here".
 - Smaller wording tidy-ups: "Rotate 90°" is now "Rotate image" (and it's hidden for bookmarked pages, where it doesn't apply); image captions are no longer marked "beta".
 
 **✨ Viewer polish**
-- The viewer's active buttons (⋯, the nav arrows, the zoom control, Back/Reset and the page-position pill) now cast a soft drop shadow so they lift off the image; buttons that are greyed out at a dead end stay flat, reinforcing that they're inactive.
+- The Gallery's Shown/Ignored control is now a segmented switcher showing **both** pools and their counts at once ("Gallery [n]" / "Ignored [n]"), with the current one highlighted — tap a segment to switch, instead of a single button that flipped between the two.
+- The viewer's active buttons (⋯, the nav arrows, the zoom control, Back/Reset), the Gallery's Shown/Ignored switcher, and the ⋯ pop-up menu now cast a soft downward shadow so they lift off the image; buttons that are greyed out at a dead end stay flat, reinforcing that they're inactive. (Advanced → *Disable shadows* now turns all of these off too, alongside the drawer's shadow.)
 - The page-position pill's corners are a touch less rounded, matching the updated design.
 - In the Gallery, the page arrows now always show (greyed out on a single page) so the bottom bar's buttons stay put instead of jumping around as you page.
-- Long-pressing a Gallery thumbnail now dims the other thumbnails — and lifts the action tooltip a little higher — so the image you pressed stands out.
+- Long-pressing a Gallery thumbnail now spotlights it — the pressed image gets a bold outline while the others dim — and the action tooltip sits a little higher. (The bold outline used to mark the last image you viewed, a hint most people missed; it's put to better use here.)
+- Opening a Gallery full of bookmarked pages is snappier: the page renders that used to trigger a repaint each are now batched into one.
 - Navigation buttons at the very start or end of your images now keep their normal look instead of turning see-through.
 - Alignment fixes so the page dots and the zoom controls sit correctly, including no longer shifting when you zoom in.
 - Clearer zoom control dividers in night mode.

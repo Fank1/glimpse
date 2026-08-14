@@ -87,15 +87,21 @@ Updates → *Check for updates*.
 | Enable Glimpse *(checkbox, on)* | Master switch. When off, the bound gesture and *Open Glimpse* do nothing, silencing Glimpse without unbinding its gesture. |
 | Mode: Show images up to current chapter *(default)* | Images past your current chapter stay hidden (no spoilers). |
 | Mode: Show all images | Everything, incl. parts you haven't reached. |
-| Show Nav Buttons *(checkbox, off)* | Show ‹ and › buttons in the viewer for switching between images. |
-| Show Zoom Controls *(checkbox, off)* | Show a vertical +/fit/− control in the viewer for zooming; the middle button returns to the fitted view. |
-| Include bookmarked pages *(checkbox, off)* | Also show pages you've bookmarked (the dogear) in the Gallery, rendered as page thumbnails and marked with a bookmark badge, interleaved with the images in reading order. A quick way to keep a reference page a swipe away. Shown regardless of the spoiler scope. |
-| Quick Actions | Choose which actions appear in the viewer's ⋯ menu: Ignore Image, the Mode switch, Rotate image, Show in Book, Nav Buttons, Zoom Controls, Image Captions and Invert in Night Mode. The last three are off until you add them. (Gallery is always present, pinned to the bottom of the ⋯ menu as its own item, so it isn't in this list. Reset Rotation is automatic, shown while an image is rotated. Ignored images are added back from the Gallery's Ignored tab. Rotate and Ignore are replaced by *Remove bookmark* on a bookmarked page.) |
-| Advanced → Ignore irrelevant images *(checkbox, on)* | Sets aside covers, publisher logos, ornaments and other non-reference imagery. Off = every image in the book. |
-| Advanced → Show image captions *(checkbox, on)* | Show the image's caption from the book as a solid tab tucked into the viewer's top-left corner (white with black text in day mode, black with white text at night), wrapping onto multiple lines for longer captions. |
-| Advanced → Maximum zoom *(150%–400%, default 200%)* | How far you can zoom in, as a percentage of the image's own resolution. Double-tap jumps to this level and pinch stops there. Higher shows more on detailed maps; past 100% is upscaling, so very high can look soft. |
+| Include Bookmarks in Gallery *(checkbox, off)* | Sits just under Mode. Also show pages you've bookmarked (the dogear) in the Gallery, rendered as page thumbnails and marked with a bookmark badge, interleaved with the images in reading order. A quick way to keep a reference page a swipe away. Shown regardless of the spoiler scope. Also available in the viewer's ⋯ menu (add it under Quick Actions). |
+| Quick Actions | Choose which actions appear in the viewer's ⋯ menu: Ignore Image, the Mode switch, Rotate image, Show in Book, Nav Buttons, Zoom Controls, Image Captions, Include Bookmarks in Gallery and Invert in Night Mode. Several are off until you add them. (Gallery is always present, pinned to the bottom of the ⋯ menu as its own item, so it isn't in this list. Reset Rotation is automatic, shown while an image is rotated. Ignored images are added back from the Gallery's Ignored tab. Rotate and Ignore are replaced by *Remove bookmark* on a bookmarked page.) |
+| Settings → Show Nav Buttons *(checkbox, off)* | Show ‹ and › buttons in the viewer for switching between images. |
+| Settings → Show Zoom Controls *(checkbox, off)* | Show a vertical +/fit/− control in the viewer for zooming; the middle button returns to the fitted view. |
+| Settings → Invert Images in Night Mode *(checkbox, off)* | While KOReader's night mode is on, show images inverted (light lines on a dark background). Also on the viewer's ⋯ menu. |
+| Settings → Show image captions *(checkbox, on)* | Show the image's caption from the book as a solid tab tucked into the viewer's top-left corner (white with black text in day mode, black with white text at night), wrapping onto multiple lines for longer captions. |
+| Settings → Maximum zoom *(150%–400%, default 200%)* | How far you can zoom in, as a percentage of the image's own resolution. Double-tap jumps to this level and pinch stops there. Higher shows more on detailed maps; past 100% is upscaling, so very high can look soft. |
+| Settings → Suppress "format not supported" notice *(checkbox, off)* | Silence the message shown when Glimpse is opened on a format it doesn't support (PDF, comics, manga). Handy if a reading gesture sometimes triggers Glimpse on non-EPUB files. |
+| Settings → Enable top menu tap zone *(checkbox, on)* | While the viewer is open, a tap along the top edge opens KOReader's top menu (only that one, never the bottom menu) over the drawer. Off leaves the top edge inert. |
+| Settings → Gestures → Double-tap for maximum zoom *(checkbox, on)* | Double-tap the image to jump to the maximum zoom (centered on the tap) and again to return to fit. Off disables the double-tap. |
+| Settings → Gestures → Swipe left/right to navigate *(checkbox, on)* | Swipe across the image to move to the next/previous image. Off disables it (the Gallery's swipe-to-page is unaffected). |
+| Settings → Gestures → Pinch to zoom in/out *(checkbox, on)* | Pinch or spread on the image to zoom. Off disables the pinch/spread zoom. |
+| Advanced → Disable irrelevant image filtering *(checkbox, off)* | Normally Glimpse sets aside covers, publisher logos, ornaments and other non-reference imagery. Turn this on to switch that off and see every image in the book. |
 | Advanced → Suppress "format not supported" notice *(checkbox, off)* | Silence the message shown when Glimpse is opened on a format it doesn't support (PDF, comics, manga). Handy if a reading gesture sometimes triggers Glimpse on non-EPUB files. |
-| Advanced → Enable top menu tap zone *(checkbox, on)* | While the viewer is open, a tap along the top edge opens KOReader's top menu (only that one, never the bottom menu) over the drawer. Off leaves the top edge inert. |
+| Advanced → Disable shadows *(checkbox, off)* | Remove the drawer's drop shadow — the main cause of e-ink ghosting behind the drawer. No visible effect on LCD screens. |
 | Advanced → Rescan this book | Drop the cached scan (cached in the book's own `.sdr` sidecar folder, so it travels with the book between devices); use if the file was replaced or images seem out of date. |
 | Updates → Check for updates | Fetch the latest GitHub release and install it in place (with backup and rollback), then offer a restart. |
 | Updates → Include pre-release versions *(checkbox, off)* | Also offer releases marked pre-release on GitHub: test builds, at your own risk. Normal update checks never see those. |
@@ -106,13 +112,14 @@ opens Glimpse, at the top of the list.
 ### Gallery
 
 ⋯ → *Gallery* shows every image as a Pinterest-style masonry grid, each
-thumbnail with a subtle rounded outline (a heavier one marks the image
-you're currently on) and a small number badge showing its reading order,
-keeping its own aspect ratio instead of being cropped to a uniform tile.
-Paged when there are enough to browse; a *Back* button returns to the
-normal viewer. Tap a thumbnail to jump straight to that image instead.
+thumbnail with a subtle rounded outline and a small number badge showing
+its reading order, keeping its own aspect ratio instead of being cropped to
+a uniform tile. Paged when there are enough to browse (the page arrows are
+always present, greyed out when there's only one page); a *Back* button
+returns to the normal viewer. Tap a thumbnail to jump straight to that
+image instead.
 
-With **Include bookmarked pages** on, the pages you've bookmarked
+With **Include Bookmarks in Gallery** on, the pages you've bookmarked
 (the dogear) appear in the grid too, rendered as page thumbnails (via
 KOReader's own page-render service) and marked with a bookmark badge,
 interleaved with the images in reading order. Tap one to see the page
@@ -123,14 +130,16 @@ drop one, use *Remove bookmark* (long-press it in the Gallery, or the viewer's
 ⋯ menu) — that deletes the dogear in the book itself, not just its Glimpse cell.
 
 **Gallery / Ignored.** When the relevance filter has set some images aside
-(or you've ignored some), a button on the Gallery's bottom bar toggles
-between your **Gallery** (the images you keep) and the **Ignored** pile —
-every image not in the Gallery, whether the filter dropped it as irrelevant
-*or* you ignored it by hand. The header names the current view and its count.
+(or you've ignored some), a segmented switcher on the Gallery's bottom bar
+shows both pools at once — **Gallery** (the images you keep) and the
+**Ignored** pile — each with its count, the current one highlighted. Tap a
+segment to switch. The Ignored pile is every image not in the Gallery,
+whether the filter dropped it as irrelevant *or* you ignored it by hand. The
+header also names the current view and its count.
 **Long-press** a thumbnail and a small menu pops up just above it — *Ignore this
 image* in the Gallery, *Add back to Gallery* in the Ignored pile — while the
-other thumbnails dim so the one you pressed stands out. (Tapping an
-Ignored thumbnail does nothing; the long-press is the way in.) That's the fix
+pressed thumbnail takes a bold outline and the others dim, so it stands out.
+(Tapping an Ignored thumbnail does nothing; the long-press is the way in.) That's the fix
 when the filter set aside an image you actually want — the map it deemed
 irrelevant — without switching to *Mode: All images*. The moves persist per
 book. If the filter set aside *everything*, the empty state offers **Review
