@@ -5,6 +5,10 @@
 Everything below has shipped only in pre-release builds so far. It must be
 folded into the notes of the next public release.
 
+**🐛 Fixes**
+- The Glimpse menu's top row now shows the gesture that opens Glimpse even when no book is open (it was wrongly reading "none set" in the file browser).
+- When a book has no reference images and you're reviewing the Ignored pile, the gallery's Back button now closes Glimpse instead of surfacing an ignored image as if it were kept.
+
 **🎯 A smarter relevance filter (fewer good images wrongly hidden)**
 - Maps, family trees, diagrams and charts named as such (`map`, `family-tree`, `diagram`, `chart`, `timeline`, …) are now recognized as reference content, so an endpaper map or a family tree that used to fall just under the size cutoff is kept.
 - Illustrated non-fiction gets a gentler filter automatically: when a book already keeps lots of figures (cookbooks, science, how-to), Glimpse lowers the size floor for that book so its smaller diagrams and charts come through too — while novels stay strict, so their decorative bits don't leak in. (Validated across a 200+ book library.)
@@ -25,9 +29,15 @@ folded into the notes of the next public release.
 - New option to silence the "format not supported" message, for when a reading gesture sometimes opens Glimpse on a PDF or comic (Advanced, off by default).
 - Restoring ignored images now lives only in the Gallery's Ignored tab; the separate menu entry was removed.
 - "Include bookmarked pages" is now a top-level switch in the Glimpse menu instead of being tucked inside Advanced.
+- Gallery is always available now: it sits at the bottom of the ⋯ menu as its own item (it's the most common jump), so it's no longer one of the configurable Quick Actions.
+- Shorter ⋯ menu labels — "Nav Buttons", "Zoom Controls", "Image Captions" (dropped the "Show" prefix) — and the spoiler scope now reads "Mode: Spoiler-free" instead of "Mode: Images up to here".
 - Smaller wording tidy-ups: "Rotate 90°" is now "Rotate image" (and it's hidden for bookmarked pages, where it doesn't apply); image captions are no longer marked "beta".
 
 **✨ Viewer polish**
+- The viewer's active buttons (⋯, the nav arrows, the zoom control, Back/Reset and the page-position pill) now cast a soft drop shadow so they lift off the image; buttons that are greyed out at a dead end stay flat, reinforcing that they're inactive.
+- The page-position pill's corners are a touch less rounded, matching the updated design.
+- In the Gallery, the page arrows now always show (greyed out on a single page) so the bottom bar's buttons stay put instead of jumping around as you page.
+- Long-pressing a Gallery thumbnail now dims the other thumbnails — and lifts the action tooltip a little higher — so the image you pressed stands out.
 - Navigation buttons at the very start or end of your images now keep their normal look instead of turning see-through.
 - Alignment fixes so the page dots and the zoom controls sit correctly, including no longer shifting when you zoom in.
 - Clearer zoom control dividers in night mode.

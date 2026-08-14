@@ -69,14 +69,16 @@ Updates → *Check for updates*.
   buttons. Plus and minus step the zoom; the middle "fit" button returns to
   the resting view (greyed out while you're already fitted). With it on, the
   step buttons replace the "Reset" button as the way back to fit.
-- **Mode switch (⋯ menu):** the viewer's ⋯ menu shows *Mode: Images up to
-  here* / *Mode: All images*; tap it to flip the mode and reopen on the
+- **Mode switch (⋯ menu):** the viewer's ⋯ menu shows *Mode: Spoiler-free*
+  / *Mode: All images*; tap it to flip the mode and reopen on the
   same image where possible, with a brief notice naming the mode you
   switched to. The gallery heading tells you how many images the chapter
   scope is holding back.
 - **Quick Actions:** the contents of the ⋯ menu are configurable under
   Tools → Glimpse → *Quick Actions* — hide the rows you don't use, or add
-  nav buttons and captions to it.
+  nav buttons and captions to it. *Gallery* always sits at the bottom of the
+  ⋯ menu as its own item (it's the most common jump), so it isn't listed
+  among the configurable rows.
 
 ### Settings (Tools → Glimpse)
 
@@ -88,7 +90,7 @@ Updates → *Check for updates*.
 | Show Nav Buttons *(checkbox, off)* | Show ‹ and › buttons in the viewer for switching between images. |
 | Show Zoom Controls *(checkbox, off)* | Show a vertical +/fit/− control in the viewer for zooming; the middle button returns to the fitted view. |
 | Include bookmarked pages *(checkbox, off)* | Also show pages you've bookmarked (the dogear) in the Gallery, rendered as page thumbnails and marked with a bookmark badge, interleaved with the images in reading order. A quick way to keep a reference page a swipe away. Shown regardless of the spoiler scope. |
-| Quick Actions | Choose which actions appear in the viewer's ⋯ menu: Gallery, Ignore Image, the Mode switch, Rotate image, Show in Book, Show Nav Buttons, Show Zoom Controls, Show Image Captions and Invert in Night Mode. Defaults to the original six; the last three are off until you add them. (Reset Rotation is automatic, shown while an image is rotated. Ignored images are added back from the Gallery's Ignored tab. Rotate and Ignore are replaced by *Remove bookmark* on a bookmarked page.) |
+| Quick Actions | Choose which actions appear in the viewer's ⋯ menu: Ignore Image, the Mode switch, Rotate image, Show in Book, Nav Buttons, Zoom Controls, Image Captions and Invert in Night Mode. The last three are off until you add them. (Gallery is always present, pinned to the bottom of the ⋯ menu as its own item, so it isn't in this list. Reset Rotation is automatic, shown while an image is rotated. Ignored images are added back from the Gallery's Ignored tab. Rotate and Ignore are replaced by *Remove bookmark* on a bookmarked page.) |
 | Advanced → Ignore irrelevant images *(checkbox, on)* | Sets aside covers, publisher logos, ornaments and other non-reference imagery. Off = every image in the book. |
 | Advanced → Show image captions *(checkbox, on)* | Show the image's caption from the book as a solid tab tucked into the viewer's top-left corner (white with black text in day mode, black with white text at night), wrapping onto multiple lines for longer captions. |
 | Advanced → Maximum zoom *(150%–400%, default 200%)* | How far you can zoom in, as a percentage of the image's own resolution. Double-tap jumps to this level and pinch stops there. Higher shows more on detailed maps; past 100% is upscaling, so very high can look soft. |
@@ -125,8 +127,9 @@ drop one, use *Remove bookmark* (long-press it in the Gallery, or the viewer's
 between your **Gallery** (the images you keep) and the **Ignored** pile —
 every image not in the Gallery, whether the filter dropped it as irrelevant
 *or* you ignored it by hand. The header names the current view and its count.
-**Long-press** a thumbnail and a small menu pops up next to it — *Ignore this
-image* in the Gallery, *Add back to Gallery* in the Ignored pile. (Tapping an
+**Long-press** a thumbnail and a small menu pops up just above it — *Ignore this
+image* in the Gallery, *Add back to Gallery* in the Ignored pile — while the
+other thumbnails dim so the one you pressed stands out. (Tapping an
 Ignored thumbnail does nothing; the long-press is the way in.) That's the fix
 when the filter set aside an image you actually want — the map it deemed
 irrelevant — without switching to *Mode: All images*. The moves persist per

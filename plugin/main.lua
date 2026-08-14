@@ -34,6 +34,7 @@ local TextWidget = require("ui/widget/textwidget")
 local TextBoxWidget = require("ui/widget/textboxwidget")
 local UIManager = require("ui/uimanager")
 local VerticalGroup = require("ui/widget/verticalgroup")
+local VerticalSpan = require("ui/widget/verticalspan")
 local Widget = require("ui/widget/widget")
 local WidgetContainer = require("ui/widget/container/widgetcontainer")
 local lfs = require("libs/libkoreader-lfs")
@@ -89,7 +90,6 @@ end
 -- longer a ⋯ Quick Action.)
 local QUICK_ACTIONS_KEY = "glimpse_quick_actions"
 local QUICK_ACTIONS = {
-    { key = "gallery",    default = true  },
     { key = "hide",       default = true  },
     { key = "mode",       default = true  },
     { key = "rotate",     default = true  },
@@ -109,14 +109,13 @@ local function _quick_enabled(key)
 end
 local function _quick_label(key)
     return ({
-        gallery    = _("Gallery"),
         hide       = _("Ignore Image"),
         mode       = _("Mode switch"),
         rotate     = _("Rotate image"),
         showinbook = _("Show in Book"),
-        prevnext   = _("Show Nav Buttons Toggle"),
-        zoomctl    = _("Show Zoom Controls Toggle"),
-        captions   = _("Show Image Captions Toggle"),
+        prevnext   = _("Nav Buttons Toggle"),
+        zoomctl    = _("Zoom Controls Toggle"),
+        captions   = _("Image Captions Toggle"),
         invert     = _("Invert in Night Mode Toggle"),
     })[key] or key
 end
@@ -246,7 +245,54 @@ local function make_rounded_stencil(w, h, r, stroke, fill, outline)
     return bb
 end
 
--- The stadium-shaped pill behind the dots / "n / N" counter. Default is
+-- Soft drop shadow for the ACTIVE chrome (Figma: 0px 4px 4px rgba(0,0,0,.5)
+-- on the buttons, a similar one under the dot pill). Disabled/inactive
+-- buttons get none. A per-pixel-alpha BBRGB32 stencil of a rounded rect —
+-- full alpha inside, fading to 0 over `blur` px outside — blitted BEHIND a
+-- widget and offset down by `dy`, so only the rim (mostly the bottom) shows.
+-- Painted in DAY polarity (black); night mode wants a shadow that still reads
+-- as dark, so it stores WHITE, which the framebuffer inversion flips back to
+-- dark — exactly what the drawer's own shadow does (see _paintPanel). Cached
+-- module-wide: only a handful of distinct sizes, and the buffers are tiny.
+local _shadow_cache = {}
+local function drop_shadow_bb(w, h, r, blur, opacity, night)
+    local value = night and 0xFF or 0x00
+    local key = table.concat({ w, h, r, blur, opacity, value }, ":")
+    if _shadow_cache[key] then return _shadow_cache[key] end
+    local sw, sh = w + 2 * blur, h + 2 * blur
+    local bb = Blitbuffer.new(sw, sh, Blitbuffer.TYPE_BBRGB32)
+    for py = 0, sh - 1 do
+        for px = 0, sw - 1 do
+            -- distance from the rounded rect inset by `blur` on every side
+            local sx = math.min(math.max(px + 0.5, blur + r), blur + w - r)
+            local sy = math.min(math.max(py + 0.5, blur + r), blur + h - r)
+            local dx, dy = px + 0.5 - sx, py + 0.5 - sy
+            local dist = math.sqrt(dx * dx + dy * dy) - r
+            local cov = dist <= 0 and 1 or math.max(0, 1 - dist / blur)
+            if cov > 0 then
+                -- smoothstep the falloff — reads softer than a linear ramp
+                cov = cov * cov * (3 - 2 * cov)
+                local a = math.floor(opacity * cov * 255 + 0.5)
+                if a > 0 then
+                    bb:setPixel(px, py,
+                        Blitbuffer.ColorRGB32(value, value, value, a))
+                end
+            end
+        end
+    end
+    _shadow_cache[key] = bb
+    return bb
+end
+
+-- Blit the drop shadow for a rounded widget of (w,h,r) whose top-left is at
+-- (x,y): offset down by `dy`, expanded `blur` px on each side.
+local function paint_drop_shadow(bb, x, y, w, h, r, blur, opacity, dy)
+    local s = drop_shadow_bb(w, h, r, blur, opacity, Screen.night_mode)
+    bb:alphablitFrom(s, x - blur, y - blur + dy, 0, 0,
+        s:getWidth(), s:getHeight())
+end
+
+-- The pill behind the dots / "n / N" counter. Default is
 -- the design's black fill + 2px white stroke (keeps the dots legible over
 -- dark images). `inverted` flips it to a white fill + black stroke: used
 -- for the "n / N" text fallback, which as a solid black block with white
@@ -255,6 +301,7 @@ local GlimpsePill = WidgetContainer:extend{
     inner = nil, -- content, centered
     padding_h = Screen:scaleBySize(9),
     height = Screen:scaleBySize(21),
+    radius = Screen:scaleBySize(8), -- Figma "less rounding" (was a full stadium)
     stroke = Screen:scaleBySize(2),
     inverted = nil,
 }
@@ -279,9 +326,13 @@ function GlimpsePill:paintTo(bb, x, y)
         if self._bg_bb then self._bg_bb:free() end
         local fill = self.inverted and 0xFF or 0x00
         local outline = self.inverted and 0x00 or 0xFF
-        self._bg_bb = make_rounded_stencil(w, h, h / 2, self.stroke, fill, outline)
+        self._bg_bb = make_rounded_stencil(w, h, self.radius, self.stroke,
+            fill, outline)
         self._bg_w, self._bg_h = w, h
     end
+    -- Figma: the dot pill casts a drop shadow (tighter blur than the buttons)
+    paint_drop_shadow(bb, x, y, w, h, self.radius,
+        Screen:scaleBySize(3), 0.5, Screen:scaleBySize(4))
     bb:alphablitFrom(self._bg_bb, x, y, 0, 0, w, h)
     local inner_size = self.inner:getSize()
     self.inner:paintTo(bb,
@@ -360,6 +411,29 @@ function GlimpseBadge:free()
     if self._txt then self._txt:free() end
 end
 
+-- A veil the gallery drops over every thumbnail EXCEPT the long-pressed one,
+-- to spotlight the cell whose action tooltip is open. Blends white over each
+-- other cell at `dim` opacity (day polarity — night's framebuffer inversion
+-- turns it into a matching dark veil), so the dimmed thumbs read at ~1-dim.
+-- Added LAST to the grid so it paints over the thumbnails and their badges.
+local GlimpseDimVeil = Widget:extend{
+    cells = nil,   -- { {x,y,w,h,idx}, ... } in the grid's paint space
+    except = nil,  -- idx kept at full opacity
+    dim = 0.6,     -- white overlay opacity (thumb shows through at ~40%)
+}
+
+function GlimpseDimVeil:getSize()
+    return Geom:new{ w = 0, h = 0 }
+end
+
+function GlimpseDimVeil:paintTo(bb, x, y)
+    for _, c in ipairs(self.cells or {}) do
+        if c.idx ~= self.except then
+            bb:lightenRect(x + c.x, y + c.y, c.w, c.h, self.dim)
+        end
+    end
+end
+
 -- The ⋯ button: solid white rounded square with an anti-aliased 2px black
 -- border, so it stays visible over any image. `disabled` grays the border
 -- and icon (used by prev/next at the ends of the image list); `inverted`
@@ -380,6 +454,12 @@ end
 
 function GlimpseMoreButton:paintTo(bb, x, y)
     self.dimen = Geom:new{ x = x, y = y, w = self.size, h = self.size }
+    -- active buttons cast a drop shadow (Figma 0 4 4 rgba(0,0,0,.5)); a
+    -- disabled dead-end prev/next stays flat, reinforcing that it's inert
+    if not self.disabled then
+        paint_drop_shadow(bb, x, y, self.size, self.size, self.radius,
+            Screen:scaleBySize(4), 0.5, Screen:scaleBySize(4))
+    end
     if not self._bg_bb then
         -- disabled (dead-end prev/next): keep the white fill for consistency
         -- with the enabled buttons — just dim the outline ring and the icon
@@ -521,6 +601,9 @@ function GlimpseZoomControl:paintTo(bb, x, y)
         self._bg_bb = make_rounded_stencil(w, h, self.radius, self.stroke,
             0xFF, 0x00)
     end
+    -- active control: same drop shadow as the buttons
+    paint_drop_shadow(bb, x, y, w, h, self.radius,
+        Screen:scaleBySize(4), 0.5, Screen:scaleBySize(4))
     bb:alphablitFrom(self._bg_bb, x, y, 0, 0, w, h)
     -- two hairline dividers at the zone boundaries (h/3, 2h/3)
     local third = h / 3
@@ -785,6 +868,9 @@ function GlimpseTextButton:paintTo(bb, x, y)
         self._bg_bb = make_rounded_stencil(self._w, self.height,
             self.radius, self.stroke, 0xFF, 0x00)
     end
+    -- active button: same drop shadow as the ⋯ button
+    paint_drop_shadow(bb, x, y, self._w, self.height, self.radius,
+        Screen:scaleBySize(4), 0.5, Screen:scaleBySize(4))
     bb:alphablitFrom(self._bg_bb, x, y, 0, 0, self._w, self.height)
     local tsz = self._text_wg:getSize()
     local icon_w = self._icon_bb and (self.icon_size + self.icon_gap) or 0
@@ -929,6 +1015,10 @@ end
 -- shows an icon OR text, never both.
 local GlimpsePopupMenu = InputContainer:extend{
     items = nil,    -- { {text=, icon=<svg path or nil>, callback=}, ... }
+    footer_item = nil, -- optional {text=, icon=, callback=}: a SEPARATE card
+                       -- floating below the main one, for an always-present
+                       -- common action (Gallery) set apart from the rest
+    footer_gap = Screen:scaleBySize(8), -- gap between the main card and footer
     anchor = nil,   -- function -> Geom (like MovableContainer's anchor)
     pad_left = Screen:scaleBySize(16),
     pad_right = Screen:scaleBySize(16),
@@ -939,8 +1029,13 @@ local GlimpsePopupMenu = InputContainer:extend{
 
 function GlimpsePopupMenu:init()
     self._icon_bbs = {}
+    -- the footer item shares the icon column and row width with the main
+    -- rows so the two cards line up, so measure it alongside them
+    local all_items = {}
+    for _, it in ipairs(self.items) do all_items[#all_items + 1] = it end
+    if self.footer_item then all_items[#all_items + 1] = self.footer_item end
     local any_lead = false
-    for _, it in ipairs(self.items) do
+    for _, it in ipairs(all_items) do
         if it.icon or it.check ~= nil then any_lead = true break end
     end
     local icon_col = any_lead and (self.icon_size + self.icon_gap) or 0
@@ -948,7 +1043,7 @@ function GlimpsePopupMenu:init()
     -- widest label decides the shared row width
     local max_text_w = 0
     local probes = {}
-    for i, it in ipairs(self.items) do
+    for i, it in ipairs(all_items) do
         local wg = TextWidget:new{
             text = it.text, face = Font:getFace("cfont", 15), bold = true,
         }
@@ -959,44 +1054,62 @@ function GlimpsePopupMenu:init()
     local row_w = self.pad_left + icon_col + max_text_w + self.pad_right
 
     self._rows = {}
-    local vg = VerticalGroup:new{ align = "left" }
-    for i, it in ipairs(self.items) do
-        local icon_bb, lead_wg
-        if it.icon then
-            local ok, ibb = pcall(RenderImage.renderSVGImageFile, RenderImage,
-                it.icon, self.icon_size, self.icon_size)
-            if ok and ibb then
-                icon_bb = ibb
-                self._icon_bbs[#self._icon_bbs + 1] = ibb
+    -- build a card holding `list`, appending each row to self._rows for the
+    -- shared tap hit-test; icons/checkboxes/dividers exactly as before
+    local function build_card(list)
+        local vg = VerticalGroup:new{ align = "left" }
+        for i, it in ipairs(list) do
+            local icon_bb, lead_wg
+            if it.icon then
+                local ok, ibb = pcall(RenderImage.renderSVGImageFile,
+                    RenderImage, it.icon, self.icon_size, self.icon_size)
+                if ok and ibb then
+                    icon_bb = ibb
+                    self._icon_bbs[#self._icon_bbs + 1] = ibb
+                end
+            elseif it.check ~= nil then
+                -- checkbox glyph, a bit larger than the label, drawn in the
+                -- icon column so it aligns with the other rows' icons
+                lead_wg = TextWidget:new{
+                    text = it.check and "☑" or "☐",
+                    face = Font:getFace("cfont", 22),
+                    fgcolor = Blitbuffer.COLOR_BLACK,
+                }
             end
-        elseif it.check ~= nil then
-            -- checkbox glyph, a bit larger than the label, drawn in the
-            -- icon column so it aligns with the other rows' icons
-            lead_wg = TextWidget:new{
-                text = it.check and "☑" or "☐",
-                face = Font:getFace("cfont", 22),
-                fgcolor = Blitbuffer.COLOR_BLACK,
+            local row = GlimpseMenuRow:new{
+                text = it.text, icon_bb = icon_bb, lead_wg = lead_wg,
+                width = row_w, height = self.row_h, icon_col = icon_col,
+                icon_size = self.icon_size, pad_left = self.pad_left,
             }
+            row._callback = it.callback
+            self._rows[#self._rows + 1] = row
+            table.insert(vg, row)
+            if i < #list then
+                table.insert(vg, LineWidget:new{
+                    background = Blitbuffer.COLOR_GRAY,
+                    dimen = Geom:new{ w = row_w, h = Screen:scaleBySize(1) },
+                })
+            end
         end
-        local row = GlimpseMenuRow:new{
-            text = it.text, icon_bb = icon_bb, lead_wg = lead_wg, width = row_w,
-            height = self.row_h, icon_col = icon_col,
-            icon_size = self.icon_size, pad_left = self.pad_left,
+        return GlimpseCard:new{ vg }
+    end
+
+    local content
+    if self.footer_item then
+        -- main card, a gap, then the footer as its OWN detached card so it
+        -- reads as a separate, always-present action
+        content = VerticalGroup:new{ align = "left",
+            build_card(self.items),
+            VerticalSpan:new{ width = self.footer_gap },
+            build_card({ self.footer_item }),
         }
-        row._callback = it.callback
-        self._rows[#self._rows + 1] = row
-        table.insert(vg, row)
-        if i < #self.items then
-            table.insert(vg, LineWidget:new{
-                background = Blitbuffer.COLOR_GRAY,
-                dimen = Geom:new{ w = row_w, h = Screen:scaleBySize(1) },
-            })
-        end
+    else
+        content = build_card(self.items)
     end
 
     self.movable = MovableContainer:new{
         anchor = self.anchor,
-        GlimpseCard:new{ vg },
+        content,
     }
     self[1] = CenterContainer:new{
         dimen = Screen:getSize(),
@@ -1227,9 +1340,10 @@ function GlimpseViewer:update()
     local nb = self._images_list_nb or 1
     if self._gallery_mode then
         -- gallery: the arrows page the grid and are its primary
-        -- affordance, so they show regardless of the setting (hidden
-        -- when everything fits on one page)
-        nav = self:_galleryPages() > 1
+        -- affordance, so they ALWAYS show here (regardless of the setting or
+        -- page count) — greyed out at a single page, so the bottom bar's
+        -- layout stays put instead of the toggle/close jumping around
+        nav = true
         cur = self._gallery_page or 1
         nb = self:_galleryPages()
     end
@@ -2176,7 +2290,16 @@ function GlimpseViewer:_enterGallery(page, tab)
 end
 
 function GlimpseViewer:_exitGallery(idx)
+    -- Back (no idx) from a root gallery — a review-the-Ignored-pile session with
+    -- no accepted images behind it — closes Glimpse rather than dropping into a
+    -- single ignored image. Tapping a specific thumbnail passes an idx, opens
+    -- that image, and clears the flag so a later Back returns to it.
+    if not idx and self._gallery_is_root then
+        self:onClose()
+        return
+    end
     self._gallery_mode = false
+    if idx then self._gallery_is_root = false end
     if idx and idx ~= (self._images_list_cur or 1) then
         self:switchToImageNum(idx) -- runs update()
     else
@@ -2242,6 +2365,10 @@ function GlimpseViewer:_openMoveMenu(cell, pos)
             end
         end
     end
+    -- spotlight the pressed cell: dim every other thumbnail while the tooltip
+    -- is open (rebuild + repaint the grid with the veil, cleared on dismiss)
+    self._dim_except_idx = meta and cell.idx
+    self:update()
     local menu
     menu = GlimpsePopupMenu:new{
         items = { { text = label, callback = cb } },
@@ -2249,16 +2376,16 @@ function GlimpseViewer:_openMoveMenu(cell, pos)
         row_h = Screen:scaleBySize(38),
         pad_left = Screen:scaleBySize(12),
         pad_right = Screen:scaleBySize(12),
-        -- centred on the touch point, floating a little ABOVE it: the menu
-        -- pops up so its bottom sits `lift` px clear of the finger (rises its
-        -- full height upward from there), instead of resting right on the
-        -- press. Still flips below when near the top of the screen.
+        -- centred on the touch point, floating ABOVE it: the menu pops up so
+        -- its bottom sits `lift` px clear of the finger (rises its full height
+        -- upward from there), instead of resting right on the press. Still
+        -- flips below when near the top of the screen.
         anchor = function()
             local w = menu.movable and menu.movable.dimen
                 and menu.movable.dimen.w or 0
             local ox = self.main_frame.dimen.x
             local pad = Screen:scaleBySize(4)
-            local lift = Screen:scaleBySize(14)
+            local lift = Screen:scaleBySize(28)
             local x = math.floor((pos and pos.x or 0) - w / 2)
             local maxx = ox + self.width - w - pad
             if maxx < ox + pad then maxx = ox + pad end
@@ -2267,6 +2394,14 @@ function GlimpseViewer:_openMoveMenu(cell, pos)
             return Geom:new{ x = x, y = y, w = 0, h = 0 }, false
         end,
     }
+    -- clear the spotlight when the tooltip closes (tap-through action or
+    -- tap-outside both route through onCloseWidget → on_dismiss)
+    menu.on_dismiss = function()
+        if self._dim_except_idx then
+            self._dim_except_idx = nil
+            self:update()
+        end
+    end
     UIManager:show(menu, function() return "ui", menu.movable.dimen end)
 end
 
@@ -2614,17 +2749,23 @@ function GlimpseViewer:_buildGallery()
             end
         end
     end
+    -- while a long-press action tooltip is open, dim every OTHER cell so the
+    -- pressed one stands out (painted last → over the thumbnails and badges)
+    if self._dim_except_idx then
+        table.insert(grid, GlimpseDimVeil:new{
+            cells = self._gallery_cells,
+            except = self._dim_except_idx,
+            overlap_offset = { 0, 0 },
+        })
+    end
     self.image_container = grid
 end
 
--- Would the ⋯ popup have at least one row? Mirrors the gating in
--- _showMoreMenu so update() can hide the ⋯ button entirely when the user
--- has turned every Quick Action off.
+-- Would the ⋯ popup have at least one row? Always yes now: Gallery is a
+-- permanent entry (the floating footer card), so the ⋯ button always shows
+-- even if the user has turned off every configurable Quick Action.
 function GlimpseViewer:_hasQuickActions()
-    for _, d in ipairs(QUICK_ACTIONS) do
-        if _quick_enabled(d.key) then return true end
-    end
-    return false
+    return true
 end
 
 -- The ⋯ menu (from the design): gallery, remove from collection, rotate
@@ -2641,13 +2782,6 @@ function GlimpseViewer:_showMoreMenu()
     local cur_meta = self.image_metas
         and self.image_metas[self._images_list_cur or 1]
     local cur_is_bookmark = cur_meta and cur_meta.is_bookmark
-    if _quick_enabled("gallery") then
-        items[#items + 1] = {
-            text = _("Gallery"),
-            icon = _PLUGIN_DIR .. "/assets/gallery.svg",
-            callback = function() self:_enterGallery() end,
-        }
-    end
     -- the ignore slot: a normal image gets "Ignore Image"; a bookmarked page
     -- gets "Remove bookmark" instead (drops it from Glimpse and deletes the
     -- dogear in the book)
@@ -2671,7 +2805,7 @@ function GlimpseViewer:_showMoreMenu()
             -- scope switch: reflects the current view, tap flips it and reopens
             text = self.scope == "whole_book"
                 and _("Mode: All images")
-                or _("Mode: Images up to here"),
+                or _("Mode: Spoiler-free"),
             icon = _PLUGIN_DIR .. "/assets/mode.svg",
             callback = function()
                 if self.on_toggle_scope then self.on_toggle_scope() end
@@ -2704,21 +2838,21 @@ function GlimpseViewer:_showMoreMenu()
     end
     if _quick_enabled("prevnext") then
         items[#items + 1] = {
-            text = _("Show Nav Buttons"),
+            text = _("Nav Buttons"),
             check = G_reader_settings:isTrue(NAV_BUTTONS_KEY),
             callback = function() self:_togglePrevNext() end,
         }
     end
     if _quick_enabled("zoomctl") then
         items[#items + 1] = {
-            text = _("Show Zoom Controls"),
+            text = _("Zoom Controls"),
             check = G_reader_settings:isTrue(ZOOMCTL_KEY),
             callback = function() self:_toggleZoomControl() end,
         }
     end
     if _quick_enabled("captions") then
         items[#items + 1] = {
-            text = _("Show Image Captions"),
+            text = _("Image Captions"),
             check = G_reader_settings:nilOrTrue(CAPTIONS_KEY),
             callback = function() self:_toggleCaptions() end,
         }
@@ -2732,12 +2866,23 @@ function GlimpseViewer:_showMoreMenu()
             callback = function() self:_toggleInvert() end,
         }
     end
-    -- Defensive: with every Quick Action off the ⋯ button is hidden (see
-    -- update()/_hasQuickActions), so this normally can't be reached empty.
-    if #items == 0 then return end
+    -- Gallery is always available, set apart at the very bottom as its own
+    -- floating card (it's the most common jump). If the user has turned off
+    -- every other Quick Action, it becomes the sole (main) row instead.
+    local gallery_item = {
+        text = _("Gallery"),
+        icon = _PLUGIN_DIR .. "/assets/gallery.svg",
+        callback = function() self:_enterGallery() end,
+    }
+    local footer_item = gallery_item
+    if #items == 0 then
+        items = { gallery_item }
+        footer_item = nil
+    end
     local menu
     menu = GlimpsePopupMenu:new{
         items = items,
+        footer_item = footer_item,
         -- anchor to the ⋯ button (bottom row): right edge aligned to the
         -- button's right edge (MovableContainer left-aligns on the anchor,
         -- so shift left by our own width, known by the time ensureAnchor
@@ -4432,6 +4577,12 @@ function Glimpse:showViewer(whole_book_once)
     -- reopen (return to the tab/page the user was on) or the "Review
     -- filtered-out" path (open on the Ignored tab). Done before the first
     -- show so it paints as the gallery, not a flash from single view.
+    -- When there are no accepted images (primary is the Ignored pool), the
+    -- gallery IS the root view — there's no kept collection to drop into, so
+    -- the gallery's Back button closes Glimpse instead of surfacing an ignored
+    -- image as if it were kept (tapping a specific ignored thumbnail still
+    -- opens it, and clears this).
+    viewer._gallery_is_root = (primary_tab == "ignored")
     if self._pending_gallery then
         local pg = self._pending_gallery
         self._pending_gallery = nil
@@ -4804,28 +4955,49 @@ end
 -- Is any gesture in the current context bound to open Glimpse? Used to
 -- gate the one-time "bind a gesture" nudge (no point nagging someone who
 -- already has one).
-function Glimpse:_hasGesture()
+-- Gestures the user has bound to open Glimpse. The gesture is a global
+-- (reader) binding, but self.ui.gestures.gestures is only the CURRENT context's
+-- table — "gesture_fm" when no book is open, which never holds glimpse_show, so
+-- reading it there wrongly reports no gesture. The plugin's persisted data
+-- (self.ui.gestures.data) carries both the "gesture_reader" and "gesture_fm"
+-- sections in either context, so scan those directly for a book-independent
+-- answer. Returns a de-duplicated list of gesture names.
+function Glimpse:_glimpseGestures()
     local g = self.ui and self.ui.gestures
-    if g and type(g.gestures) == "table" then
-        for _, actions in pairs(g.gestures) do
-            if type(actions) == "table" and actions.glimpse_show then
-                return true
+    local data = g and g.data
+    local seen, found = {}, {}
+    if type(data) == "table" then
+        for _, section in ipairs({ "gesture_reader", "gesture_fm" }) do
+            local tbl = data[section]
+            if type(tbl) == "table" then
+                for ges, actions in pairs(tbl) do
+                    if type(actions) == "table" and actions.glimpse_show
+                            and not seen[ges] then
+                        seen[ges] = true
+                        found[#found + 1] = ges
+                    end
+                end
             end
         end
-    end
-    return false
-end
-
-function Glimpse:_gestureLabel()
-    local g = self.ui and self.ui.gestures
-    local found = {}
-    if g and type(g.gestures) == "table" then
+    elseif g and type(g.gestures) == "table" then
+        -- fallback if the data table isn't exposed for some reason
         for ges, actions in pairs(g.gestures) do
-            if type(actions) == "table" and actions.glimpse_show then
+            if type(actions) == "table" and actions.glimpse_show
+                    and not seen[ges] then
+                seen[ges] = true
                 found[#found + 1] = ges
             end
         end
     end
+    return found
+end
+
+function Glimpse:_hasGesture()
+    return #self:_glimpseGestures() > 0
+end
+
+function Glimpse:_gestureLabel()
+    local found = self:_glimpseGestures()
     if #found == 0 then return _("Gesture to open: none set") end
     table.sort(found)
     for i, ges in ipairs(found) do
