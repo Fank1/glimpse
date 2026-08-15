@@ -6,6 +6,7 @@ Everything below has shipped only in pre-release builds so far. It must be
 folded into the notes of the next public release.
 
 **🐛 Fixes**
+- Opening the ⋯ menu is snappier again: the button/menu drop shadows now draw only their visible rim instead of a full card-sized buffer (the centre is always hidden under the menu), so the big ⋯-menu shadow no longer costs a full-surface render each open. Looks identical.
 - The Glimpse menu's top row now shows the gesture that opens Glimpse even when no book is open (it was wrongly reading "none set" in the file browser).
 - When a book has no reference images and you're reviewing the Ignored pile, the gallery's Back button now closes Glimpse instead of surfacing an ignored image as if it were kept.
 - A stray long-press on the image (or a bookmarked page) no longer flashes the whole screen and disturbs the drawer's shadow — the press is simply ignored now.
@@ -33,7 +34,7 @@ folded into the notes of the next public release.
 - New **Settings → Gestures** sub-menu to turn the viewer's touch gestures on or off individually: *Double-tap for maximum zoom*, *Swipe left/right to navigate*, and *Pinch to zoom in/out* (all on by default). Handy if a gesture conflicts with how you hold your device.
 - "Include bookmarked pages" is now **Include Bookmarks in Gallery**, sitting directly under Mode — and it's also available as a Quick Action in the viewer's ⋯ menu.
 - "Ignore irrelevant images" is now **Disable irrelevant image filtering** (off by default — same behavior, clearer wording), and "Disabled shadows" is now **Disable shadows**.
-- Gallery is always available now: it sits at the bottom of the ⋯ menu as its own item (it's the most common jump), so it's no longer one of the configurable Quick Actions.
+- Gallery is always available now: it sits at the bottom of the ⋯ menu as its own item (it's the most common jump), so it's no longer one of the configurable Quick Actions. And if you turn *every* Quick Action off, the ⋯ button (which would otherwise open a menu holding only "Gallery") becomes a Gallery button that jumps straight there in one tap.
 - Shorter ⋯ menu labels — "Nav Buttons", "Zoom Controls", "Image Captions" (dropped the "Show" prefix) — and the spoiler scope now reads "Mode: Spoiler-free" instead of "Mode: Images up to here".
 - Smaller wording tidy-ups: "Rotate 90°" is now "Rotate image" (and it's hidden for bookmarked pages, where it doesn't apply); image captions are no longer marked "beta".
 

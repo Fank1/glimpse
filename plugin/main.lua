@@ -112,6 +112,15 @@ local function _quick_enabled(key)
     end
     return false
 end
+-- True if at least one Quick Action is on. When none are, the ⋯ popup would
+-- hold only "Gallery", so the button jumps straight there instead (see
+-- _buildMoreButton / onTap).
+local function _any_quick_enabled()
+    for _, d in ipairs(QUICK_ACTIONS) do
+        if _quick_enabled(d.key) then return true end
+    end
+    return false
+end
 local function _quick_label(key)
     return ({
         hide       = _("Ignore Image"),
@@ -268,23 +277,37 @@ local function drop_shadow_bb(w, h, r, blur, dy, opacity, night)
     if _shadow_cache[key] then return _shadow_cache[key] end
     local sw, sh = w + 2 * blur, h + 2 * blur + dy
     local bb = Blitbuffer.new(sw, sh, Blitbuffer.TYPE_BBRGB32)
-    for py = 0, sh - 1 do
-        for px = 0, sw - 1 do
-            -- distance to the silhouette (rounded rect inset by `blur`)
-            local sx = math.min(math.max(px + 0.5, blur + r), blur + w - r)
-            local sy = math.min(math.max(py + 0.5, blur + r), blur + h - r)
-            local ddx, ddy = px + 0.5 - sx, py + 0.5 - sy
-            local dist = math.sqrt(ddx * ddx + ddy * ddy) - r
-            local cov = dist <= 0 and 1 or math.max(0, 1 - dist / blur)
-            if cov > 0 then
-                -- smoothstep the falloff — reads softer than a linear ramp
-                cov = cov * cov * (3 - 2 * cov)
-                local a = math.floor(opacity * cov * 255 + 0.5)
-                if a > 0 then
-                    bb:setPixel(px, py,
-                        Blitbuffer.ColorRGB32(value, value, value, a))
-                end
+    -- The widget paints an opaque rounded rect exactly over the silhouette, so
+    -- the shadow's centre is never seen — only the soft rim is. Skip building
+    -- the guaranteed-covered inner rectangle (paint_drop_shadow blits only the
+    -- same rim), so a large surface like the ⋯ menu card costs a thin frame,
+    -- not a full w*h per-pixel build+blit. inL/inR/inT/inB MUST match the band
+    -- geometry in paint_drop_shadow.
+    local inL, inR = blur + r, blur + w - r
+    local inT, inB = blur + r, blur + h - r
+    local function emit(px, py)
+        -- distance to the silhouette (rounded rect inset by `blur`)
+        local sx = math.min(math.max(px + 0.5, blur + r), blur + w - r)
+        local sy = math.min(math.max(py + 0.5, blur + r), blur + h - r)
+        local ddx, ddy = px + 0.5 - sx, py + 0.5 - sy
+        local dist = math.sqrt(ddx * ddx + ddy * ddy) - r
+        local cov = dist <= 0 and 1 or math.max(0, 1 - dist / blur)
+        if cov > 0 then
+            -- smoothstep the falloff — reads softer than a linear ramp
+            cov = cov * cov * (3 - 2 * cov)
+            local a = math.floor(opacity * cov * 255 + 0.5)
+            if a > 0 then
+                bb:setPixel(px, py,
+                    Blitbuffer.ColorRGB32(value, value, value, a))
             end
+        end
+    end
+    for py = 0, sh - 1 do
+        if py >= inT and py < inB then      -- rim rows: only the left/right edges
+            for px = 0, inL - 1 do emit(px, py) end
+            for px = inR, sw - 1 do emit(px, py) end
+        else                                -- rows above/below the centre: full
+            for px = 0, sw - 1 do emit(px, py) end
         end
     end
     _shadow_cache[key] = bb
@@ -301,8 +324,20 @@ local function paint_drop_shadow(bb, x, y, w, h, r, blur, dy, day_op, night_op)
     local night = Screen.night_mode
     local s = drop_shadow_bb(w, h, r, blur, dy,
         night and night_op or day_op, night)
-    bb:alphablitFrom(s, x - blur, y - blur + dy, 0, 0,
-        s:getWidth(), s:getHeight())
+    local sw, sh = s:getWidth(), s:getHeight()
+    local ox, oy = x - blur, y - blur + dy
+    -- blit only the rim (the opaque widget covers the centre); 4 bands cover
+    -- the whole buffer MINUS the inner rectangle that drop_shadow_bb skipped
+    local inL, inR = blur + r, blur + w - r
+    local inT, inB = blur + r, blur + h - r
+    if inR <= inL or inB <= inT then    -- too small to split: one plain blit
+        bb:alphablitFrom(s, ox, oy, 0, 0, sw, sh)
+        return
+    end
+    bb:alphablitFrom(s, ox, oy, 0, 0, sw, inT)                       -- top
+    bb:alphablitFrom(s, ox, oy + inB, 0, inB, sw, sh - inB)          -- bottom
+    bb:alphablitFrom(s, ox, oy + inT, 0, inT, inL, inB - inT)        -- left
+    bb:alphablitFrom(s, ox + inR, oy + inT, inR, inT, sw - inR, inB - inT) -- right
 end
 
 -- The pill behind the dots / "n / N" counter. Default is
@@ -2396,7 +2431,15 @@ function GlimpseViewer:_pillAvailWidth()
 end
 
 function GlimpseViewer:_buildMoreButton()
-    self._more_frame = GlimpseMoreButton:new{}
+    -- With no Quick Actions enabled the ⋯ popup would contain only "Gallery",
+    -- so skip the menu: the button becomes a Gallery icon that jumps straight
+    -- there. Otherwise it's the ⋯ button that opens the popup. The config is
+    -- fixed for the viewer's lifetime, so decide once here.
+    self._more_is_gallery = not _any_quick_enabled()
+    self._more_frame = GlimpseMoreButton:new{
+        icon = self._more_is_gallery
+            and (_PLUGIN_DIR .. "/assets/gallery.svg") or nil,
+    }
 end
 
 -- ── gallery (⋯ → Gallery): a paged masonry grid in the drawer ───────────────
@@ -3326,14 +3369,20 @@ function GlimpseViewer:onTap(_, ges)
     -- the Close button now occupies) from the last single-image paint
     if not self._gallery_mode and self._more_frame and self._more_frame.dimen
        and ges.pos:intersectWith(self._more_frame.dimen) then
-        -- press feedback: repaint the button inverted (rounded, via its
-        -- stencil mask); it stays inverted while the menu is open and
-        -- repaints normal on dismiss, whose region covers the button
-        local d = self._more_frame.dimen
-        self._more_frame.inverted = true
-        UIManager:widgetRepaint(self._more_frame, d.x, d.y)
-        UIManager:setDirty(nil, "fast", d)
-        self:_showMoreMenu()
+        if self._more_is_gallery then
+            -- no Quick Actions: the button IS the Gallery, so jump straight in
+            -- (flash like the other action buttons, no popup)
+            self:_flashButton(self._more_frame, function() self:_enterGallery() end)
+        else
+            -- press feedback: repaint the button inverted (rounded, via its
+            -- stencil mask); it stays inverted while the menu is open and
+            -- repaints normal on dismiss, whose region covers the button
+            local d = self._more_frame.dimen
+            self._more_frame.inverted = true
+            UIManager:widgetRepaint(self._more_frame, d.x, d.y)
+            UIManager:setDirty(nil, "fast", d)
+            self:_showMoreMenu()
+        end
         return true
     end
     if self._nav_prev_frame and self._nav_prev_frame.dimen
