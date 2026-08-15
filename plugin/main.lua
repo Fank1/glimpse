@@ -288,9 +288,10 @@ end
 -- flips back to dark — exactly what the drawer's own shadow does (see
 -- _paintPanel). Cached module-wide (few sizes, tiny buffers).
 local _shadow_cache = {}
-local function drop_shadow_bb(w, h, r, blur, dy, opacity, night)
+local function drop_shadow_bb(w, h, r, blur, dy, opacity, night, dither)
     local value = night and 0xFF or 0x00
-    local key = table.concat({ w, h, r, blur, dy, opacity, value }, ":")
+    local key = table.concat({ w, h, r, blur, dy, opacity, value,
+        dither and 1 or 0 }, ":")
     if _shadow_cache[key] then return _shadow_cache[key] end
     local sw, sh = w + 2 * blur, h + 2 * blur + dy
     local bb = Blitbuffer.new(sw, sh, Blitbuffer.TYPE_BBRGB32)
@@ -312,10 +313,27 @@ local function drop_shadow_bb(w, h, r, blur, dy, opacity, night)
         if cov > 0 then
             -- smoothstep the falloff — reads softer than a linear ramp
             cov = cov * cov * (3 - 2 * cov)
-            local a = math.floor(opacity * cov * 255 + 0.5)
-            if a > 0 then
-                bb:setPixel(px, py,
-                    Blitbuffer.ColorRGB32(value, value, value, a))
+            if dither then
+                -- Binary dot pattern (same SHADOW_BAYER8 the drawer shadow
+                -- uses) instead of a per-pixel alpha: on e-ink a soft alpha
+                -- gradient gets crushed into a dark flash on the partial
+                -- refresh, but a black-or-transparent DOT pattern (density
+                -- encodes darkness) has no gray for the panel to quantize, so
+                -- it settles without the "drawn full-black first" flash. Only
+                -- worthwhile on a wide rim (the ⋯-menu card) — a few scattered
+                -- dots on a tiny button shadow would just look like noise.
+                local level = opacity * cov * 255
+                local threshold = (SHADOW_BAYER8[(px % 8) + 1][(py % 8) + 1] + 0.5) * 4
+                if level > threshold then
+                    bb:setPixel(px, py,
+                        Blitbuffer.ColorRGB32(value, value, value, 255))
+                end
+            else
+                local a = math.floor(opacity * cov * 255 + 0.5)
+                if a > 0 then
+                    bb:setPixel(px, py,
+                        Blitbuffer.ColorRGB32(value, value, value, a))
+                end
             end
         end
     end
@@ -334,13 +352,13 @@ end
 -- Blit the drop shadow for a rounded widget of (w,h,r) at (x,y): expanded
 -- `blur` px on each side (soft edges), offset down `dy`. Lighter on the bright
 -- day page than at night (where a stronger shadow still reads fine).
-local function paint_drop_shadow(bb, x, y, w, h, r, blur, dy, day_op, night_op)
+local function paint_drop_shadow(bb, x, y, w, h, r, blur, dy, day_op, night_op, dither)
     -- "Disable shadows" (Advanced) drops the drawer's gradient shadow AND
     -- these small button shadows together, for e-ink ghosting or taste
     if G_reader_settings:isTrue(SHADOW_KEY) then return end
     local night = Screen.night_mode
     local s = drop_shadow_bb(w, h, r, blur, dy,
-        night and night_op or day_op, night)
+        night and night_op or day_op, night, dither)
     local sw, sh = s:getWidth(), s:getHeight()
     local ox, oy = x - blur, y - blur + dy
     -- blit only the rim (the opaque widget covers the centre); 4 bands cover
@@ -1193,9 +1211,11 @@ function GlimpseCard:paintTo(bb, x, y)
             self.radius, self.stroke, nil, self.outline)
     end
     -- shadow first, under the opaque card fill (skipped when "Disable
-    -- shadows" is on, via paint_drop_shadow's own guard)
+    -- shadows" is on, via paint_drop_shadow's own guard). DITHERED (last arg):
+    -- this wide card rim is where the e-ink "flash black then settle" was
+    -- annoying, and it's big enough for the dot pattern to read as a shadow.
     paint_drop_shadow(bb, x, y, sz.w, sz.h, self.radius,
-        self.shadow_blur, self.shadow_dy, 0.3, 0.5)
+        self.shadow_blur, self.shadow_dy, 0.3, 0.5, true)
     bb:alphablitFrom(self._fill_bb, x, y, 0, 0, sz.w, sz.h)
     self[1]:paintTo(bb, x, y)
     bb:alphablitFrom(self._ring_bb, x, y, 0, 0, sz.w, sz.h)
