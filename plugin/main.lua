@@ -1403,6 +1403,18 @@ function GlimpsePopupMenu:onClose()
     return true
 end
 
+-- The G-sensor's SetRotationMode is delivered to the topmost widget only, so
+-- with this popup open the viewer beneath it never rotates. Dismiss and hand
+-- the rotation to the viewer (via on_rotate) so auto-rotation still works.
+function GlimpsePopupMenu:onSetRotationMode(rotation)
+    if self.on_rotate and rotation ~= nil
+            and rotation ~= Screen:getRotationMode() then
+        self:dismiss()
+        self.on_rotate(rotation)
+        return true
+    end
+end
+
 function GlimpsePopupMenu:onCloseWidget()
     -- row icons are shared from _menu_icon_cache now, so we must NOT free them
     -- here (that would blank them for the next open); they live for the session
@@ -2635,6 +2647,7 @@ function GlimpseViewer:_openMoveMenu(cell, pos)
     local menu
     menu = GlimpsePopupMenu:new{
         items = { { text = label, callback = cb } },
+        on_rotate = function(rot) self:onSetRotationMode(rot) end,
         -- compact: a single short action, so shrink the row from the ⋯ menu's
         row_h = Screen:scaleBySize(38),
         pad_left = Screen:scaleBySize(12),
@@ -3166,6 +3179,7 @@ function GlimpseViewer:_showMoreMenu()
     menu = GlimpsePopupMenu:new{
         items = items,
         footer_item = footer_item,
+        on_rotate = function(rot) self:onSetRotationMode(rot) end,
         -- anchor to the ⋯ button (bottom row): right edge aligned to the
         -- button's right edge (MovableContainer left-aligns on the anchor,
         -- so shift left by our own width, known by the time ensureAnchor
@@ -5479,6 +5493,42 @@ function Glimpse:_menuItems()
             text = _("Settings"),
             sub_item_table = {
                 {
+                    text = _("Gestures"),
+                    sub_item_table = {
+                        {
+                            text = _("Double-tap for maximum zoom"),
+                            help_text = _("Double-tap the image to jump to the maximum zoom (centered on the tap), and again to return to the fitted view. On by default."),
+                            checked_func = function()
+                                return G_reader_settings:nilOrTrue(GESTURE_DOUBLETAP_KEY)
+                            end,
+                            callback = function()
+                                G_reader_settings:flipNilOrTrue(GESTURE_DOUBLETAP_KEY)
+                            end,
+                        },
+                        {
+                            text = _("Swipe left/right to navigate"),
+                            help_text = _("Swipe left or right across the image to move to the next or previous image. On by default. (The Gallery's swipe-to-page is unaffected.)"),
+                            checked_func = function()
+                                return G_reader_settings:nilOrTrue(GESTURE_SWIPE_KEY)
+                            end,
+                            callback = function()
+                                G_reader_settings:flipNilOrTrue(GESTURE_SWIPE_KEY)
+                            end,
+                        },
+                        {
+                            text = _("Pinch to zoom in/out"),
+                            help_text = _("Pinch or spread two fingers on the image to zoom out or in. On by default."),
+                            checked_func = function()
+                                return G_reader_settings:nilOrTrue(GESTURE_PINCH_KEY)
+                            end,
+                            callback = function()
+                                G_reader_settings:flipNilOrTrue(GESTURE_PINCH_KEY)
+                            end,
+                        },
+                    },
+                    separator = true,
+                },
+                {
                     text = _("Show Nav Buttons"),
                     help_text = _("Show ‹ and › buttons in the viewer for switching between images, as an alternative to swiping. A button is grayed out when there is no image on its side."),
                     checked_func = function()
@@ -5556,41 +5606,6 @@ function Glimpse:_menuItems()
                     callback = function()
                         G_reader_settings:flipNilOrTrue(TOP_MENU_KEY)
                     end,
-                },
-                {
-                    text = _("Gestures"),
-                    sub_item_table = {
-                        {
-                            text = _("Double-tap for maximum zoom"),
-                            help_text = _("Double-tap the image to jump to the maximum zoom (centered on the tap), and again to return to the fitted view. On by default."),
-                            checked_func = function()
-                                return G_reader_settings:nilOrTrue(GESTURE_DOUBLETAP_KEY)
-                            end,
-                            callback = function()
-                                G_reader_settings:flipNilOrTrue(GESTURE_DOUBLETAP_KEY)
-                            end,
-                        },
-                        {
-                            text = _("Swipe left/right to navigate"),
-                            help_text = _("Swipe left or right across the image to move to the next or previous image. On by default. (The Gallery's swipe-to-page is unaffected.)"),
-                            checked_func = function()
-                                return G_reader_settings:nilOrTrue(GESTURE_SWIPE_KEY)
-                            end,
-                            callback = function()
-                                G_reader_settings:flipNilOrTrue(GESTURE_SWIPE_KEY)
-                            end,
-                        },
-                        {
-                            text = _("Pinch to zoom in/out"),
-                            help_text = _("Pinch or spread two fingers on the image to zoom out or in. On by default."),
-                            checked_func = function()
-                                return G_reader_settings:nilOrTrue(GESTURE_PINCH_KEY)
-                            end,
-                            callback = function()
-                                G_reader_settings:flipNilOrTrue(GESTURE_PINCH_KEY)
-                            end,
-                        },
-                    },
                 },
             },
         },

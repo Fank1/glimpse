@@ -6,6 +6,7 @@ Everything below has shipped only in pre-release builds so far. It must be
 folded into the notes of the next public release.
 
 **🐛 Fixes**
+- Auto-rotation now works even with the viewer's ⋯ menu open — the menu closes and the drawer re-lays-out for the new orientation, instead of the open menu swallowing the rotation.
 - The ⋯ menu's drop shadow no longer flashes solid black before settling on e-ink: it's now drawn as a fine dithered dot pattern (the same technique as the drawer's shadow) instead of a soft gray gradient, so there are no in-between gray levels for the panel to flash through. It looks the same once settled.
 - Opening the ⋯ menu is snappier: the drop shadows draw only their visible rim (the centre is always hidden under the menu), the rounded card/button shapes now fast-fill their solid interior instead of computing every pixel, and the menu's row icons are cached instead of re-rendered each open. Together these roughly halve the menu-open time in both Day and Night, with the menu looking identical (Night is still a touch heavier than Day — that's a KOReader-wide cost of the inverted-screen render).
 - The Glimpse menu's top row now shows the gesture that opens Glimpse even when no book is open (it was wrongly reading "none set" in the file browser).
