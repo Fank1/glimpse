@@ -30,6 +30,7 @@ local MovableContainer = require("ui/widget/container/movablecontainer")
 local Notification = require("ui/widget/notification")
 local OverlapGroup = require("ui/widget/overlapgroup")
 local RenderImage = require("ui/renderimage")
+local TileCacheItem = require("document/tilecacheitem")
 local TextWidget = require("ui/widget/textwidget")
 local TextBoxWidget = require("ui/widget/textboxwidget")
 local UIManager = require("ui/uimanager")
@@ -40,6 +41,7 @@ local WidgetContainer = require("ui/widget/container/widgetcontainer")
 local lfs = require("libs/libkoreader-lfs")
 local logger = require("logger")
 local time = require("ui/time")
+local md5 = require("ffi/sha2").md5
 local _ = require("gettext")
 local T = require("ffi/util").template
 local Screen = Device.screen
@@ -4134,7 +4136,19 @@ function Glimpse:_removeBookmark(meta)
     for i = #ann.annotations, 1, -1 do
         local a = ann.annotations[i]
         if not a.drawer and a.page == meta.xpointer then
-            bm:removeItem(a, i)
+            bm:removeItem(a, i) -- also updates dogear_visible for the current page
+            -- If the removed bookmark was on the page under the drawer, the
+            -- dogear fold still shows in the visible right-hand sliver because
+            -- nothing has repainted it. removeItem only flips the visibility
+            -- flag; repaint the fold's corner (as KOReader's own toggle does)
+            -- so it disappears immediately instead of only when Glimpse closes.
+            local dogear = self.ui and self.ui.view and self.ui.view.dogear
+            if dogear and dogear.getRefreshRegion and dogear.icon
+                    and dogear.icon.dimen then
+                UIManager:setDirty(self.ui, function()
+                    return "ui", dogear:getRefreshRegion()
+                end)
+            end
             return true
         end
     end
@@ -4153,6 +4167,103 @@ end
 
 function Glimpse:_bookmarkThumb(im)
     return self._bm_cache and self._bm_cache[im.path]
+end
+
+-- The size we render/cache bookmark pages at: the drawer's display size (see
+-- _requestBookmarkThumb). Shared so the disk-cache key matches the render.
+function Glimpse:_bmThumbSize()
+    local ratio = GlimpseViewer.panel_ratio or 1
+    local w = math.max(1, math.floor(Screen:getWidth() * ratio))
+    return w, Screen:getHeight()
+end
+
+-- ── on-disk bookmark-thumbnail cache ────────────────────────────────────────
+-- A rendered page survives closing the book, so reopening the Gallery later
+-- loads instantly from disk instead of re-forking a ~500ms subprocess render
+-- per page. Lives under KOReader's cache (regenerable, disposable — never in
+-- the book's sidecar). Each file is one zstd-compressed page tile, keyed by
+-- book + page + render size + the document's rendering hash, so a font/margin
+-- change (which reflows pages) transparently invalidates the stale renders.
+
+function Glimpse:_bmDiskDir()
+    if self._bm_disk_dir ~= nil then return self._bm_disk_dir or nil end
+    local dir = DataStorage:getDataDir() .. "/cache/glimpse-thumbs/"
+    lfs.mkdir(dir) -- no-op if it already exists
+    self._bm_disk_dir = dir
+    return dir
+end
+
+function Glimpse:_bmDiskPath(im, w, h)
+    local dir = self:_bmDiskDir()
+    if not dir then return nil end
+    local doc = self.ui and self.ui.document
+    local file = (doc and doc.file) or "?"
+    local nm = ""
+    if Screen.night_mode and doc and doc.configurable
+            and doc.configurable.nightmode_images == 1 then
+        nm = "_nm" -- getPageThumbnail bakes night pages differently; key apart
+    end
+    local rhash = 0
+    if doc and doc.getDocumentRenderingHash then
+        local ok, r = pcall(function() return doc:getDocumentRenderingHash(false) end)
+        if ok and r then rhash = r end
+    end
+    local key = string.format("%s|p%d|w%d|h%d|r%s%s",
+        file, im.page, w, h, tostring(rhash), nm)
+    return dir .. md5(key) .. ".tile"
+end
+
+-- Load a previously-saved page tile synchronously (nil if absent/unreadable).
+-- The returned bb is ours to own; _freeBookmarkThumbs frees it like a rendered
+-- copy. Touch the file's mtime on a hit so the size cap evicts truly-cold ones.
+function Glimpse:_loadBookmarkThumbFromDisk(im)
+    local w, h = self:_bmThumbSize()
+    local path = self:_bmDiskPath(im, w, h)
+    if not path or not lfs.attributes(path, "mode") then return nil end
+    local item = TileCacheItem:new{}
+    local ok = pcall(function() item:load(path) end)
+    if ok and item.bb then
+        pcall(function() lfs.touch(path) end)
+        return item.bb
+    end
+    return nil
+end
+
+-- Persist a freshly-rendered page tile. Reads the bb (does not free it), so the
+-- caller keeps ownership of ReaderThumbnail's original.
+function Glimpse:_saveBookmarkThumbToDisk(im, bb, w, h)
+    local path = self:_bmDiskPath(im, w, h)
+    if not path then return end
+    local item = TileCacheItem:new{ bb = bb }
+    pcall(function() item:dump(path) end)
+end
+
+-- Keep the shared thumbnail cache bounded: once per viewer session, drop the
+-- coldest files (by mtime) until the directory is back under the byte cap.
+-- Cheap — a single directory scan, only when we actually cache bookmarks.
+function Glimpse:_pruneBookmarkDiskCache()
+    if self._bm_pruned then return end
+    self._bm_pruned = true
+    local dir = self:_bmDiskDir()
+    if not dir then return end
+    local CAP = 64 * 1024 * 1024 -- 64 MB across all books
+    local files, total = {}, 0
+    for name in lfs.dir(dir) do
+        if name ~= "." and name ~= ".." then
+            local p = dir .. name
+            local a = lfs.attributes(p)
+            if a and a.mode == "file" then
+                files[#files + 1] = { path = p, size = a.size, mtime = a.modification }
+                total = total + (a.size or 0)
+            end
+        end
+    end
+    if total <= CAP then return end
+    table.sort(files, function(a, b) return a.mtime < b.mtime end) -- coldest first
+    for _, f in ipairs(files) do
+        if total <= CAP then break end
+        if pcall(os.remove, f.path) then total = total - (f.size or 0) end
+    end
 end
 
 -- ReaderThumbnail renders the page with its dogear fold showing (the page IS
@@ -4187,6 +4298,15 @@ function Glimpse:_requestBookmarkThumb(im)
     self._bm_cache = self._bm_cache or {}
     self._bm_pending = self._bm_pending or {}
     if self._bm_cache[im.path] or self._bm_pending[im.path] then return end
+    -- Disk cache first: a page render from an earlier session (this book was
+    -- closed and reopened) loads instantly, skipping the subprocess entirely.
+    -- The caller re-checks _bookmarkThumb after this returns, so a disk hit
+    -- shows the real page immediately with no async round-trip.
+    local disk_bb = self:_loadBookmarkThumbFromDisk(im)
+    if disk_bb then
+        self._bm_cache[im.path] = disk_bb
+        return
+    end
     local thumb = self.ui and self.ui.thumbnail
     if not (thumb and thumb.getPageThumbnail) then return end
     self._bm_batch = self._bm_batch or "glimpse_bookmarks"
@@ -4198,9 +4318,7 @@ function Glimpse:_requestBookmarkThumb(im)
     -- drawer-sized tile is still crisp at the resting (fit) view while cutting
     -- each cached page's memory to ~two-thirds. Zoom past fit just upscales,
     -- as it already did — a bookmark has no sharper source than its thumbnail.
-    local ratio = GlimpseViewer.panel_ratio or 1
-    local w = math.max(1, math.floor(Screen:getWidth() * ratio))
-    local h = Screen:getHeight()
+    local w, h = self:_bmThumbSize()
     -- A cached tile makes getPageThumbnail invoke the callback SYNCHRONOUSLY,
     -- re-entering during the closure that requested it. In that case the
     -- closure's own re-check picks up the tile, so we must NOT also poke the
@@ -4214,6 +4332,9 @@ function Glimpse:_requestBookmarkThumb(im)
             self._bm_pending[im.path] = nil
             if tile and tile.bb then
                 self._bm_cache[im.path] = tile.bb:copy()
+                -- persist for instant reopens after the book is closed
+                self:_saveBookmarkThumbToDisk(im, tile.bb, w, h)
+                self:_pruneBookmarkDiskCache()
                 if is_async and self._viewer
                         and self._viewer._onBookmarkThumbReady then
                     self._viewer:_onBookmarkThumbReady(im.path)

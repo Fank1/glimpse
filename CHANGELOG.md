@@ -6,6 +6,7 @@ Everything below has shipped only in pre-release builds so far. It must be
 folded into the notes of the next public release.
 
 **🐛 Fixes**
+- Removing a bookmark now clears its dogear from the page immediately, while Glimpse is still open — the fold in the visible edge of the page updates the moment you remove it, instead of only after Glimpse closes.
 - Auto-rotation now works even with the viewer's ⋯ menu open — the menu closes and the drawer re-lays-out for the new orientation, instead of the open menu swallowing the rotation.
 - The ⋯ menu's drop shadow no longer flashes solid black before settling on e-ink: it's now drawn as a fine dithered dot pattern (the same technique as the drawer's shadow) instead of a soft gray gradient, so there are no in-between gray levels for the panel to flash through. It looks the same once settled.
 - Opening the ⋯ menu is snappier: the drop shadows draw only their visible rim (the centre is always hidden under the menu), the rounded card/button shapes now fast-fill their solid interior instead of computing every pixel, and the menu's row icons are cached instead of re-rendered each open. Together these roughly halve the menu-open time in both Day and Night, with the menu looking identical (Night is still a touch heavier than Day — that's a KOReader-wide cost of the inverted-screen render).
@@ -49,6 +50,7 @@ folded into the notes of the next public release.
 - In the Gallery, the page arrows now always show (greyed out on a single page) so the bottom bar's buttons stay put instead of jumping around as you page.
 - Long-pressing a Gallery thumbnail now spotlights it — the pressed image gets a bold outline while the others dim — and the action tooltip sits a little higher. (The bold outline used to mark the last image you viewed, a hint most people missed; it's put to better use here.)
 - Opening a Gallery full of bookmarked pages is snappier: the page renders that used to trigger a repaint each are now batched into one.
+- Bookmarked-page thumbnails are now cached to disk, so reopening the Gallery after closing the book shows them instantly instead of re-rendering every page from scratch. (The first render of a page is unchanged; only the wait on later visits goes away. The cache is regenerable, capped in size, and rebuilds itself automatically if you change the book's font or margins.)
 - Navigation buttons at the very start or end of your images now keep their normal look instead of turning see-through.
 - Alignment fixes so the page dots and the zoom controls sit correctly, including no longer shifting when you zoom in.
 - Clearer zoom control dividers in night mode.
