@@ -932,7 +932,7 @@ end
 local GlimpseTabSwitcher = Widget:extend{
     segments = nil,   -- { {label=, count=}, {label=, count=} }
     active = 1,       -- 1-based index of the active segment
-    height = Screen:scaleBySize(41),
+    height = Screen:scaleBySize(42),    -- match the buttons so tops line up
     radius = Screen:scaleBySize(8),
     active_radius = Screen:scaleBySize(4),
     stroke = Screen:scaleBySize(2),
@@ -970,7 +970,18 @@ function GlimpseTabSwitcher:init()
     end
     self._seg_w = seg_content + 2 * self.seg_pad
     self._w = 2 * self._seg_w + 2 * self.pad
+    self._nat_w = self._w   -- content width; setWidth only grows past this
     self._seg_dimens = {}
+end
+
+-- Stretch the switcher to a target total width, splitting it evenly between
+-- the two segments so it fills the span the layout hands it (never shrinks
+-- below the natural content width). Called before the first paintTo, so the
+-- lazily-built stencils pick up the final size.
+function GlimpseTabSwitcher:setWidth(w)
+    w = math.max(w or 0, self._nat_w)
+    self._seg_w = math.floor((w - 2 * self.pad) / 2)
+    self._w = 2 * self._seg_w + 2 * self.pad
 end
 
 function GlimpseTabSwitcher:getSize()
@@ -1525,18 +1536,16 @@ function GlimpseViewer:update()
     -- nav buttons are off) — kept out of the top strip entirely so it
     -- never competes with KOReader's own top-of-screen menu gesture.
     if self._gallery_mode then
-        self._close_frame = GlimpseTextButton:new{
-            text = _("Back"),
-            bold = true,
+        -- icon-only Back (square, like the nav arrows) STACKED directly above
+        -- the Next arrow — the same slot ⋯ uses in single-image mode. Off the
+        -- bottom row, so the switcher can span the full width Prev→Next.
+        self._close_frame = GlimpseMoreButton:new{
             icon = _PLUGIN_DIR .. "/assets/back.svg",
         }
-        local size = self._close_frame:getSize()
-        local x = self._nav_next_frame
-            and (self._nav_next_frame.overlap_offset[1] - btn_gap - size.w)
-            or (image_area_w - size.w)
+        local size = self._close_frame.size
         self._close_frame.overlap_offset = {
-            x,
-            self.height - size.h - btn_inset,
+            self._nav_next_frame.overlap_offset[1],
+            self._nav_next_frame.overlap_offset[2] - btn_gap - size,
         }
         table.insert(overlay, self._close_frame)
     elseif self._more_frame and self:_hasQuickActions() then
@@ -1605,20 +1614,20 @@ function GlimpseViewer:update()
                 right_bound = math.min(right_bound, f.overlap_offset[1])
             end
         end
-        -- the gallery tab switcher is a fixed-width control LEFT-aligned right
-        -- after the Prev arrow (Back + Next own the right end), per the design;
+        -- the gallery tab switcher FILLS the span between the Prev and Next
+        -- arrows (Back now stacks above Next, so nothing else shares the row);
         -- the dot pill just centres within the span
         if self._gallery_mode then
-            local sw_w = self._pill_frame:getSize().w
             local pill_left = self._nav_prev_frame
                 and (left_bound + btn_gap) or left_bound
-            -- keep a real gap to the right-side chrome (Back / Next): if the
-            -- left-aligned position would crowd or overlap it, shift the
-            -- switcher left just enough to preserve that margin (but never
-            -- past its left bound)
-            local max_left = right_bound - btn_gap - sw_w
-            if max_left < pill_left then
-                pill_left = math.max(left_bound, max_left)
+            -- the segmented switcher stretches to fill the span; the plain
+            -- "Page X of Y" pill (books with no Ignored pile) has no setWidth
+            -- and just stays left-aligned at the same spot
+            if self._pill_frame.setWidth then
+                -- Next always exists in the gallery (nav is forced on); leave
+                -- it the same gap the other buttons keep between each other
+                local switcher_right = self._nav_next_frame.overlap_offset[1] - btn_gap
+                self._pill_frame:setWidth(switcher_right - pill_left)
             end
             self._pill_frame.overlap_offset = {
                 pill_left, self.height - self._pill_frame:getSize().h - bottom_inset,

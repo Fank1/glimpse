@@ -38,7 +38,8 @@ folded into the notes of the next public release.
 - Smaller wording tidy-ups: "Rotate 90°" is now "Rotate image" (and it's hidden for bookmarked pages, where it doesn't apply); image captions are no longer marked "beta".
 
 **✨ Viewer polish**
-- The Gallery's Shown/Ignored control is now a segmented switcher showing **both** pools and their counts at once ("Gallery [n]" / "Ignored [n]"), with the current one highlighted — tap a segment to switch, instead of a single button that flipped between the two.
+- The Gallery's Shown/Ignored control is now a segmented switcher showing **both** pools and their counts at once ("Gallery [n]" / "Ignored [n]"), with the current one highlighted — tap a segment to switch, instead of a single button that flipped between the two. It now stretches to fill the whole width between the page arrows, so it reads clearly on any screen size.
+- The Gallery's Back button is now a compact icon-only button tucked above the forward arrow (bottom-right), freeing the bottom row for the full-width switcher.
 - The viewer's active buttons (⋯, the nav arrows, the zoom control, Back/Reset), the Gallery's Shown/Ignored switcher, and the ⋯ pop-up menu now cast a soft downward shadow so they lift off the image; buttons that are greyed out at a dead end stay flat, reinforcing that they're inactive. (Advanced → *Disable shadows* now turns all of these off too, alongside the drawer's shadow.)
 - The page-position pill's corners are a touch less rounded, matching the updated design.
 - In the Gallery, the page arrows now always show (greyed out on a single page) so the bottom bar's buttons stay put instead of jumping around as you page.
