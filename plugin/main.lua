@@ -67,7 +67,7 @@ local ZOOMCTL_KEY = "glimpse_zoom_control"     -- overlay −/fit/+ zoom pill, o
 local CAPTIONS_KEY = "glimpse_captions"        -- caption overlay, ON by default (nilOrTrue)
 local TOP_MENU_KEY = "glimpse_top_menu_zone"   -- tap top strip → KOReader top menu, ON by default (nilOrTrue)
 local SHADOW_KEY = "glimpse_disable_shadow"    -- drop the drawer's gradient shadow, OFF by default (e-ink ghost source)
-local FAST_SWITCH_KEY = "glimpse_fast_image_switch" -- image switch uses a flashless partial refresh (may ghost), OFF by default
+local FAST_SWITCH_KEY = "glimpse_fast_image_switch" -- image switch uses a flashless partial refresh (may ghost); ON by default (nilOrTrue)
 local SUPPRESS_UNSUPPORTED_KEY = "glimpse_suppress_unsupported" -- silence the "EPUB only" notice on unsupported files, OFF by default
 local BOOKMARKS_KEY = "glimpse_include_bookmarks" -- include the user's dogear-bookmarked pages (rendered thumbnails) in the Gallery, OFF by default
 local MAX_ZOOM_KEY = "glimpse_max_zoom"        -- zoom ceiling as a multiple of native resolution (double-tap target + pinch clamp)
@@ -1856,11 +1856,11 @@ function GlimpseViewer:update()
     -- suppress return so an open-time switch never leaves the flag dangling.
     local flash_switch = self._flash_switch
     self._flash_switch = nil
-    -- "Fast image switching" (Advanced): the user opts out of the clean full
-    -- clear, trading possible ghosting of the previous image for a flashless
-    -- partial refresh. Default off — the full clear keeps detailed maps crisp.
+    -- "Fast image switching" (Advanced, ON by default): flashless partial
+    -- refresh on switch. Turning it OFF restores the clean full (GC16) clear,
+    -- which scrubs the previous image so detailed maps can't ghost through.
     if flash_switch and not fast
-            and not G_reader_settings:isTrue(FAST_SWITCH_KEY) then
+            and not G_reader_settings:nilOrTrue(FAST_SWITCH_KEY) then
         wfm_mode = "full"
     end
     self.dithered = not fast
@@ -5635,13 +5635,12 @@ function Glimpse:_menuItems()
                 },
                 {
                     text = _("Fast image switching"),
-                    help_text = _("Switch between images with a quick, flashless refresh instead of a full clear. Faster and no flash, but the previous image may briefly ghost through the next one — most noticeable on detailed maps and on slower e-ink panels. No visible effect on LCD screens."),
+                    help_text = _("Switch between images with a quick, flashless refresh instead of a full clear. On by default: faster and no flash. Turn it off if the previous image ghosts through the next one — most noticeable on detailed maps and on slower e-ink panels. No visible effect on LCD screens."),
                     checked_func = function()
-                        return G_reader_settings:isTrue(FAST_SWITCH_KEY)
+                        return G_reader_settings:nilOrTrue(FAST_SWITCH_KEY)
                     end,
                     callback = function()
-                        G_reader_settings:saveSetting(FAST_SWITCH_KEY,
-                            not G_reader_settings:isTrue(FAST_SWITCH_KEY))
+                        G_reader_settings:flipNilOrTrue(FAST_SWITCH_KEY)
                     end,
                     separator = true,
                 },
