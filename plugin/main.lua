@@ -231,30 +231,47 @@ end
 local function make_rounded_stencil(w, h, r, stroke, fill, outline)
     local bb = Blitbuffer.new(w, h, Blitbuffer.TYPE_BBRGB32)
     local no_fill = fill == nil
-    for py = 0, h - 1 do
-        for px = 0, w - 1 do
-            local sx = math.min(math.max(px + 0.5, r), w - r)
-            local sy = math.min(math.max(py + 0.5, r), h - r)
-            local dx, dy = px + 0.5 - sx, py + 0.5 - sy
-            local d = math.sqrt(dx * dx + dy * dy)
-            local cov = math.min(math.max(r - d + 0.5, 0), 1)
-            if cov > 0 then
-                local t_in = math.min(math.max((r - stroke) - d + 0.5, 0), 1)
-                if no_fill then
-                    -- keep only the ring: full alpha in the stroke band,
-                    -- fading to transparent as t_in rises into the interior
-                    local a = cov * (1 - t_in)
-                    if a > 0 then
-                        bb:setPixel(px, py, Blitbuffer.ColorRGB32(
-                            outline, outline, outline,
-                            math.floor(a * 255 + 0.5)))
-                    end
-                else
-                    local g = math.floor(outline + t_in * (fill - outline) + 0.5)
+    -- The inner rectangle [r, w-r) x [r, h-r) is a constant: fully-covered
+    -- interior (opaque `fill`) or, for a border-only ring, empty. Only the
+    -- edge/corner band actually needs the per-pixel sqrt+coverage. Fast-fill
+    -- the interior with one C rect and compute just the band — pixel-identical,
+    -- but a big surface (the ⋯ menu card) no longer costs a full w*h build.
+    local iL, iR, iT, iB = r, w - r, r, h - r
+    local has_interior = iR > iL and iB > iT
+    if has_interior and not no_fill then
+        bb:paintRect(iL, iT, iR - iL, iB - iT,
+            Blitbuffer.ColorRGB32(fill, fill, fill, 0xFF))
+    end
+    local function emit(px, py)
+        local sx = math.min(math.max(px + 0.5, r), w - r)
+        local sy = math.min(math.max(py + 0.5, r), h - r)
+        local dx, dy = px + 0.5 - sx, py + 0.5 - sy
+        local d = math.sqrt(dx * dx + dy * dy)
+        local cov = math.min(math.max(r - d + 0.5, 0), 1)
+        if cov > 0 then
+            local t_in = math.min(math.max((r - stroke) - d + 0.5, 0), 1)
+            if no_fill then
+                -- keep only the ring: full alpha in the stroke band,
+                -- fading to transparent as t_in rises into the interior
+                local a = cov * (1 - t_in)
+                if a > 0 then
                     bb:setPixel(px, py, Blitbuffer.ColorRGB32(
-                        g, g, g, math.floor(cov * 255 + 0.5)))
+                        outline, outline, outline,
+                        math.floor(a * 255 + 0.5)))
                 end
+            else
+                local g = math.floor(outline + t_in * (fill - outline) + 0.5)
+                bb:setPixel(px, py, Blitbuffer.ColorRGB32(
+                    g, g, g, math.floor(cov * 255 + 0.5)))
             end
+        end
+    end
+    for py = 0, h - 1 do
+        if has_interior and py >= iT and py < iB then   -- rim rows: L/R edges only
+            for px = 0, iL - 1 do emit(px, py) end
+            for px = iR, w - 1 do emit(px, py) end
+        else                                            -- full rows (top/bottom)
+            for px = 0, w - 1 do emit(px, py) end
         end
     end
     return bb
@@ -1190,6 +1207,23 @@ function GlimpseCard:free(full)
     WidgetContainer.free(self, full)
 end
 
+-- Rendered menu-row icons, cached module-wide by path+size. The ⋯ menu is
+-- rebuilt on every open; rasterising the same handful of SVGs each time was
+-- pure waste (noticeable on e-ink, and worse in night mode where every blit
+-- is slower). The set is tiny and immutable, so these live for the session.
+local _menu_icon_cache = {}
+local function menu_icon(path, size)
+    local key = path .. ":" .. size
+    local ibb = _menu_icon_cache[key]
+    if ibb == nil then
+        local ok, r = pcall(RenderImage.renderSVGImageFile, RenderImage,
+            path, size, size)
+        ibb = (ok and r) or false   -- cache the failure too, don't retry each open
+        _menu_icon_cache[key] = ibb
+    end
+    return ibb or nil
+end
+
 -- A small popup menu of icon+text rows, anchored to a widget (the ⋯
 -- button). White rounded card with a thin border, gray separators between
 -- rows; tap a row to fire its callback, tap outside to dismiss. Built in
@@ -1210,7 +1244,6 @@ local GlimpsePopupMenu = InputContainer:extend{
 }
 
 function GlimpsePopupMenu:init()
-    self._icon_bbs = {}
     -- the footer item shares the icon column and row width with the main
     -- rows so the two cards line up, so measure it alongside them
     local all_items = {}
@@ -1243,12 +1276,8 @@ function GlimpsePopupMenu:init()
         for i, it in ipairs(list) do
             local icon_bb, lead_wg
             if it.icon then
-                local ok, ibb = pcall(RenderImage.renderSVGImageFile,
-                    RenderImage, it.icon, self.icon_size, self.icon_size)
-                if ok and ibb then
-                    icon_bb = ibb
-                    self._icon_bbs[#self._icon_bbs + 1] = ibb
-                end
+                -- shared, cached bb (do NOT free on close — see _menu_icon_cache)
+                icon_bb = menu_icon(it.icon, self.icon_size)
             elseif it.check ~= nil then
                 -- checkbox glyph, a bit larger than the label, drawn in the
                 -- icon column so it aligns with the other rows' icons
@@ -1354,8 +1383,8 @@ function GlimpsePopupMenu:onClose()
 end
 
 function GlimpsePopupMenu:onCloseWidget()
-    for _, ibb in ipairs(self._icon_bbs) do ibb:free() end
-    self._icon_bbs = {}
+    -- row icons are shared from _menu_icon_cache now, so we must NOT free them
+    -- here (that would blank them for the next open); they live for the session
     if self.on_dismiss then self.on_dismiss() end
 end
 
@@ -3077,7 +3106,9 @@ function GlimpseViewer:_showMoreMenu()
     end
     if _quick_enabled("bookmarks") then
         items[#items + 1] = {
-            text = _("Include Bookmarks in Gallery"),
+            -- shorter here than the plugin menu's "Include Bookmarks in
+            -- Gallery" — the ⋯ popup context already implies the Gallery
+            text = _("Include Bookmarks"),
             check = G_reader_settings:isTrue(BOOKMARKS_KEY),
             callback = function() self:_toggleBookmarks() end,
         }

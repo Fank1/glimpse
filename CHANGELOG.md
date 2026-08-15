@@ -6,7 +6,7 @@ Everything below has shipped only in pre-release builds so far. It must be
 folded into the notes of the next public release.
 
 **🐛 Fixes**
-- Opening the ⋯ menu is snappier again: the button/menu drop shadows now draw only their visible rim instead of a full card-sized buffer (the centre is always hidden under the menu), so the big ⋯-menu shadow no longer costs a full-surface render each open. Looks identical.
+- Opening the ⋯ menu is snappier: the drop shadows draw only their visible rim (the centre is always hidden under the menu), the rounded card/button shapes now fast-fill their solid interior instead of computing every pixel, and the menu's row icons are cached instead of re-rendered each open. Together these roughly halve the menu-open time in both Day and Night, with the menu looking identical (Night is still a touch heavier than Day — that's a KOReader-wide cost of the inverted-screen render).
 - The Glimpse menu's top row now shows the gesture that opens Glimpse even when no book is open (it was wrongly reading "none set" in the file browser).
 - When a book has no reference images and you're reviewing the Ignored pile, the gallery's Back button now closes Glimpse instead of surfacing an ignored image as if it were kept.
 - A stray long-press on the image (or a bookmarked page) no longer flashes the whole screen and disturbs the drawer's shadow — the press is simply ignored now.
