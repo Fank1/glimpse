@@ -102,6 +102,7 @@ Updates → *Check for updates*.
 | Advanced → Disable irrelevant image filtering *(checkbox, off)* | Normally Glimpse sets aside covers, publisher logos, ornaments and other non-reference imagery. Turn this on to switch that off and see every image in the book. |
 | Advanced → Suppress "format not supported" notice *(checkbox, off)* | Silence the message shown when Glimpse is opened on a format it doesn't support (PDF, comics, manga). Handy if a reading gesture sometimes triggers Glimpse on non-EPUB files. |
 | Advanced → Disable shadows *(checkbox, off)* | Remove the drawer's drop shadow — the main cause of e-ink ghosting behind the drawer. No visible effect on LCD screens. |
+| Advanced → Fast image switching *(checkbox, off)* | Switch between images with a quick, flashless refresh instead of a full clear. Faster and no flash, but the previous image may briefly ghost through the next one — most noticeable on detailed maps and slower e-ink panels. No visible effect on LCD screens. |
 | Advanced → Rescan this book | Drop the cached scan (cached in the book's own `.sdr` sidecar folder, so it travels with the book between devices); use if the file was replaced or images seem out of date. |
 | Updates → Check for updates | Fetch the latest GitHub release and install it in place (with backup and rollback), then offer a restart. |
 | Updates → Include pre-release versions *(checkbox, off)* | Also offer releases marked pre-release on GitHub: test builds, at your own risk. Normal update checks never see those. |
