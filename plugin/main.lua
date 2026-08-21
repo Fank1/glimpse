@@ -1860,6 +1860,15 @@ function GlimpseViewer:update()
                 off[1] = self.width - off[1] - ww
             end
         end
+        -- The prev/next arrows are chevrons (‹ back, › forward): their DIRECTION
+        -- is universal, so keep ‹ on the left and › on the right. The mirror
+        -- above put ‹ at the (now-right) flush edge and › at the inner edge —
+        -- swap their positions back so the arrows read correctly. ⋯ (stacked
+        -- above the inner-edge arrow) and the pill stay mirrored.
+        local pf, nf = self._nav_prev_frame, self._nav_next_frame
+        if pf and pf.overlap_offset and nf and nf.overlap_offset then
+            pf.overlap_offset, nf.overlap_offset = nf.overlap_offset, pf.overlap_offset
+        end
     end
     table.insert(self.frame_elements, overlay)
     self.frame_elements:resetLayout()
@@ -1941,6 +1950,7 @@ function GlimpseViewer:update()
     local switching = self._switching
     self._switching = nil
     if switching and not self._gallery_mode and not self._suppress_refresh
+            and not self._full_band_refresh
             and self._overlay and self._image_layer
             and G_reader_settings:nilOrTrue(FAST_SWITCH_KEY) then
         self:_repaintOverlayFast(wfm_mode)
@@ -1949,6 +1959,32 @@ function GlimpseViewer:update()
     if self._suppress_refresh then
         -- showViewer builds the full initial state (remembered image,
         -- restored zoom) before showing, then refreshes once
+        return
+    end
+    -- Content-changing transitions (gallery enter/exit, tab switch) repaint the
+    -- shadow and refresh its WHOLE band, like open/close — otherwise the band,
+    -- which an interior update deliberately leaves alone, can be left half-wiped
+    -- by a later promoted e-ink refresh (very visible on the right layout, where
+    -- the shadow falls toward screen-centre rather than off the far edge). The
+    -- numeric alpha repaints the page under the band first, so the shadow
+    -- re-blend stays accumulation-free (same contract as open).
+    local full_band = self._full_band_refresh
+    self._full_band_refresh = nil
+    if full_band then
+        UIManager:setDirty(self, function()
+            if not self.main_frame.dimen then return end
+            local d = self.main_frame.dimen:combine(orig_dimen)
+            if not G_reader_settings:isTrue(SHADOW_KEY) then
+                local extra = 2 * self.shadow_width - self.shadow_overlap + 1
+                if self._on_right then
+                    local nx = math.max(0, d.x - extra)
+                    d.w = d.w + (d.x - nx); d.x = nx
+                else
+                    d.w = math.min(Screen:getWidth() - d.x, d.w + extra)
+                end
+            end
+            return wfm_mode, d, not fast
+        end)
         return
     end
     -- Interior update: neither the shadow nor the page below changes, so
@@ -2679,6 +2715,7 @@ function GlimpseViewer:_switchGalleryTab(tab)
     if tab == self._gallery_tab then return end
     self._gallery_tab = tab
     self._gallery_page = 1
+    self._full_band_refresh = true
     self:update()
 end
 
@@ -2695,6 +2732,7 @@ function GlimpseViewer:_enterGallery(page, tab)
     -- left behind anyway once the user goes looking for another image
     self.scale_factor = 0
     self._center_x_ratio, self._center_y_ratio = 0.5, 0.5
+    self._full_band_refresh = true
     self:update()
 end
 
@@ -2709,6 +2747,10 @@ function GlimpseViewer:_exitGallery(idx)
     end
     self._gallery_mode = false
     if idx then self._gallery_is_root = false end
+    -- leaving the grid is a content-changing transition like entering it:
+    -- repaint the shadow band and take the full (not light-switch) refresh so
+    -- the grid can't ghost through and the shadow can't be left half-wiped
+    self._full_band_refresh = true
     if idx and idx ~= (self._images_list_cur or 1) then
         self:switchToImageNum(idx) -- runs update()
     else
