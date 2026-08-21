@@ -1580,10 +1580,10 @@ function GlimpseViewer:update()
         dimen = Geom:new{ w = self.width, h = self.height },
         image_layer,
     }
-    -- kept for the light-repaint paths (_updateImageOnly / _livePan): the
-    -- overlay holds the image AND all chrome (nav, ⋯, pill, zoom control,
-    -- caption) in z-order, so repainting it alone redraws everything the
-    -- viewer shows without re-running the drawer's panel/shadow paint.
+    -- kept for the light zoom repaint (_updateImageOnly): the overlay holds the
+    -- image AND all chrome (nav, ⋯, pill, zoom control, caption) in z-order, so
+    -- repainting it alone redraws everything the viewer shows without re-running
+    -- the drawer's panel/shadow paint.
     self._overlay = overlay
     self._image_layer = image_layer
     -- chrome is centered/aligned on the image area (content minus the gap
@@ -3758,51 +3758,20 @@ function GlimpseViewer:_repaintOverlayFast(mode)
     return true
 end
 
--- Move the current image by (dx, dy) pixels, reusing ImageWidget:panBy's
--- offset/clamp math but swallowing the dithered "ui" refresh it queues (we
--- issue our own faster one). Returns true if the visible offset changed.
-function GlimpseViewer:_offsetImageBy(dx, dy)
-    local wg = self._image_wg
-    if not (wg and wg.panBy) then return false end
-    local ox, oy = wg._offset_x, wg._offset_y
-    local saved = UIManager.setDirty
-    UIManager.setDirty = function() end -- momentary: swallow panBy's own refresh
-    local ok, cx, cy = pcall(function() return wg:panBy(dx, dy) end)
-    UIManager.setDirty = saved
-    if ok and cx then self._center_x_ratio, self._center_y_ratio = cx, cy end
-    return ok and (wg._offset_x ~= ox or wg._offset_y ~= oy)
-end
-
--- Live panning: track the finger while it's down. Waveform choice is the whole
--- game on e-ink, and it's a genuine trilemma (fast / no-flash / no-ghost — pick
--- two): "ui"/REAGL is clean but black-wipes (flashes) on each large regional
--- update; "full" is clean but slow and always flashes; the fast waveforms
--- ("fast", "a2") don't flash and are quick but leave ghosting that a full
--- refresh must later scrub. Panning a zoomed image changes ~the whole image
--- area every frame, so there's no small region to isolate — the only levers are
--- the waveform and the interval. We push both to the limit: "a2" (the fastest,
--- 2-level, non-flashing waveform) at the panel's max rate, so motion reads as
--- smooth as e-ink allows; it ghosts during the drag, then onPanRelease does one
--- full flash to clean it. Never dithered (_repaintOverlayFast clears the flags),
--- so no dither pass slows it. Only when zoomed (a fitted image has nothing to
--- pan). LIVE_PAN_WFM is a single knob to retune ("a2" | "fast" | "ui").
-GlimpseViewer.LIVE_PAN_WFM = "a2"      -- fastest waveform (2-level, no flash)
-GlimpseViewer.LIVE_PAN_DT = time.ms(70)  -- refresh as fast as the panel allows
-function GlimpseViewer:_livePan(fdx, fdy)
-    -- panBy takes the content delta, which is opposite the finger's movement
-    if not self:_offsetImageBy(-fdx, -fdy) then return end
-    self._live_panned = true -- something moved: settle on release
-    local now = UIManager:getTime()
-    if self._live_pan_t and now - self._live_pan_t < self.LIVE_PAN_DT then
-        return -- offset already updated; the next allowed frame shows it
-    end
-    self._live_pan_t = now
-    self:_repaintOverlayFast(self.LIVE_PAN_WFM)
-end
-
 -- On the SDL emulator, mouse wheel / two-finger trackpad scroll arrives as
 -- a fake pan gesture tagged mousewheel_direction (real devices never send
 -- it): treat it as zoom, so pinch can be tested without a touchscreen.
+--
+-- Panning otherwise falls through to the stock ImageViewer, which repositions
+-- the image once on release (onPanRelease → panBy → one clean refresh). We
+-- tried live finger-tracking (updating several times a second during the drag)
+-- but every e-ink waveform failed on device: "ui"/REAGL black-wipes (flashes)
+-- each frame, and the fast waveforms ("fast"/"a2") leave the image an
+-- unreadable merged ghost. Since panning a zoomed image changes ~the whole
+-- image area every frame, there's no small region to isolate and no waveform
+-- that is fast, non-flashing AND ghost-free at once — so we match the native
+-- viewer's jump-on-release behaviour instead. (Zoom keeps its light-update
+-- speedup; that's a discrete step, not continuous motion.)
 function GlimpseViewer:onPan(arg, ges)
     if ges and ges.mousewheel_direction and ges.mousewheel_direction ~= 0 then
         if ges.mousewheel_direction > 0 then
@@ -3812,50 +3781,7 @@ function GlimpseViewer:onPan(arg, ges)
         end
         return true
     end
-    -- Live pan a zoomed image (nothing to pan at fit). ges.relative is
-    -- CUMULATIVE from the finger's touch-down point (not a per-event delta),
-    -- so we apply the increment since the previous onPan — otherwise the image
-    -- moves by the ever-growing total each frame and races ahead of the finger
-    -- (the "too speedy / janky" bug). _live_pan_active marks a drag in
-    -- progress so the first event of each drag starts from a zero baseline
-    -- (works whether the drag began via onPan or a hold-then-drag).
-    if not self._gallery_mode and self.scale_factor ~= 0 and self._image_wg
-            and ges and ges.relative then
-        if not self._live_pan_active then
-            self._live_pan_active = true
-            self._pan_last_x, self._pan_last_y = 0, 0
-        end
-        self._panning = true
-        local rx, ry = ges.relative.x, ges.relative.y
-        local dx, dy = rx - self._pan_last_x, ry - self._pan_last_y
-        self._pan_last_x, self._pan_last_y = rx, ry
-        self:_livePan(dx, dy)
-        return true
-    end
     return ImageViewer.onPan(self, arg, ges)
-end
-
--- End of a live pan: offsets were applied frame-by-frame, so don't re-apply
--- the total here. Rebuild clean at the settled position, then force ONE full
--- (flashing GC16) refresh over the image: the fast drag frames leave A2/fast
--- ghosting that a flashless "ui"/"partial" refresh can't scrub, so without
--- this the image stays an unreadable ghost-stack. update()'s own "ui" refresh
--- overlaps this region and merges up to "full" (update_mode takes the stronger
--- waveform), giving a single clean flash. Only when a live pan actually moved.
-function GlimpseViewer:onPanRelease(_, ges)
-    self._panning = false
-    self._live_pan_active = false -- next drag restarts the cumulative baseline
-    if self._live_panned then
-        self._live_panned = false
-        self._live_pan_t = nil
-        self:update()
-        local il = self._image_layer
-        if il and il.dimen then
-            self.dithered = true
-            UIManager:setDirty(self, "full", il.dimen)
-        end
-    end
-    return true
 end
 
 -- Zoom-out floor: never below best-fit. The fit factor is captured while
