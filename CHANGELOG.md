@@ -5,6 +5,9 @@
 Everything below has shipped only in pre-release builds so far. Fold it into
 the notes of the next public release.
 
+**↔️ Choose which side Glimpse opens on**
+- **New Layout setting (Settings → Layout).** Pick whether the panel slides in from the left or the right edge of the screen, whichever suits the hand you hold your device in. The whole drawer mirrors, including its rounded edge and shadow. Also available as a Quick Action in the ⋯ menu.
+
 **⚡ Snappier zoom & switching**
 - Zooming — pinch, the +/− buttons, and double-tap — is quicker: a zoom step now redraws just the image instead of rebuilding the whole viewer each step.
 - Fixed: the viewer's rounded corners no longer square off after a zoom step.
