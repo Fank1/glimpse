@@ -3815,15 +3815,23 @@ function GlimpseViewer:onPan(arg, ges)
 end
 
 -- End of a live pan: offsets were applied frame-by-frame, so don't re-apply
--- the total here — just settle with a clean (dithered) refresh via a full
--- update() so the image is crisp again after the fast drag frames. Only when
--- a live pan actually moved (a drag at fit changes nothing to settle).
+-- the total here. Rebuild clean at the settled position, then force ONE full
+-- (flashing GC16) refresh over the image: the fast drag frames leave A2/fast
+-- ghosting that a flashless "ui"/"partial" refresh can't scrub, so without
+-- this the image stays an unreadable ghost-stack. update()'s own "ui" refresh
+-- overlaps this region and merges up to "full" (update_mode takes the stronger
+-- waveform), giving a single clean flash. Only when a live pan actually moved.
 function GlimpseViewer:onPanRelease(_, ges)
     self._panning = false
     if self._live_panned then
         self._live_panned = false
         self._live_pan_t = nil
         self:update()
+        local il = self._image_layer
+        if il and il.dimen then
+            self.dithered = true
+            UIManager:setDirty(self, "full", il.dimen)
+        end
     end
     return true
 end
