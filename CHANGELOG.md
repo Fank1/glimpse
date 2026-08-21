@@ -7,6 +7,7 @@ the notes of the next public release.
 
 **⚡ Snappier zoom**
 - Zooming — pinch, the +/− buttons, and double-tap — is quicker: a zoom step now redraws just the image instead of rebuilding the whole viewer each step.
+- Fixed: the viewer's rounded corners no longer square off after a zoom step.
 
 **🐛 Update-checker fixes**
 - Checking for updates no longer freezes the device for several seconds when Wi-Fi is up but not fully ready. The check now tests reachability off the UI thread instead of doing a blocking DNS lookup on it, and ignores repeat taps while a check is already running.

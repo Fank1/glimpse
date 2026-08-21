@@ -3741,10 +3741,9 @@ end
 
 -- Repaint just the overlay (image + all chrome) with the given refresh mode,
 -- WITHOUT re-running the drawer's panel/shadow paint (that only changes on
--- open/close and re-blending it would darken the shadow). Shared by the live
--- pan and light zoom paths. Non-dithered: mid-gesture frames don't need it,
--- and a lingering dithered flag on self/the image would otherwise infect the
--- regional refresh and make it slow.
+-- open/close and re-blending it would darken the shadow). Used by the light
+-- zoom path. Non-dithered: a zoom step doesn't need it, and a lingering
+-- dithered flag on self/the image would otherwise infect the regional refresh.
 function GlimpseViewer:_repaintOverlayFast(mode)
     -- OverlapGroup never updates its own dimen.x/y on paint, but the image
     -- layer (a FrameContainer filling the same content area) does — so use it
@@ -3754,6 +3753,15 @@ function GlimpseViewer:_repaintOverlayFast(mode)
     self.dithered = false
     if self._image_wg then self._image_wg.dithered = false end
     UIManager:widgetRepaint(ov, il.dimen.x, il.dimen.y)
+    -- The overlay paints the image's SQUARE corners over the panel's rounded
+    -- corner notches. A full paint fixes this in main_frame.paintTo via
+    -- _restoreCorners; the light path skips main_frame, so re-blend the saved
+    -- rounded corners here too — otherwise the drawer reads as a full rectangle
+    -- after a zoom step.
+    local mf = self.main_frame
+    if self._corner_bbs and mf and mf.dimen then
+        self:_restoreCorners(Screen.bb, mf.dimen.x, mf.dimen.y)
+    end
     UIManager:setDirty(nil, mode, il.dimen)
     return true
 end
