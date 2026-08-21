@@ -6,7 +6,7 @@ Everything below has shipped only in pre-release builds so far. Fold it into
 the notes of the next public release.
 
 **⚡ Snappier zoom and panning**
-- Panning a zoomed image now follows your finger live, several times a second, instead of only jumping to the new spot when you lift off. The drag uses a fast (slightly rougher) refresh, then settles to a clean one the moment you let go.
+- Panning a zoomed image now follows your finger live, a few times a second, instead of only jumping to the new spot when you lift off. The drag updates in grayscale (some light trailing is normal on e-ink), then a clean full refresh the moment you let go.
 - Zooming — pinch, the +/− buttons, and double-tap — is quicker: a zoom step now redraws just the image instead of rebuilding the whole viewer each step.
 
 **🐛 Update-checker fixes**

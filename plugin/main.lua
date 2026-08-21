@@ -3773,11 +3773,14 @@ function GlimpseViewer:_offsetImageBy(dx, dy)
     return ok and (wg._offset_x ~= ox or wg._offset_y ~= oy)
 end
 
--- Live panning: track the finger while it's down (a few frames per second)
--- with a fast, ghosting-tolerant refresh, instead of only jumping to the new
--- position on release. onPanRelease then settles with a clean refresh. Only
--- when zoomed (a fitted image has nothing to pan).
-GlimpseViewer.LIVE_PAN_DT = time.ms(110) -- throttle live refreshes (~9 fps)
+-- Live panning: track the finger while it's down, using the "ui" (REAGL,
+-- full 16-gray, flashless) waveform so each frame stays readable — unlike the
+-- 2-bit "fast"/A2 waveform, which posterizes a photo/map into an unreadable
+-- ghost during the drag. "ui" is slower (~250ms/refresh) and still leaves
+-- light trails on motion, so we throttle to its cadence and clear the trails
+-- with the full refresh in onPanRelease. Only when zoomed (a fitted image has
+-- nothing to pan).
+GlimpseViewer.LIVE_PAN_DT = time.ms(250) -- throttle to the "ui" waveform (~4 fps)
 function GlimpseViewer:_livePan(fdx, fdy)
     -- panBy takes the content delta, which is opposite the finger's movement
     if not self:_offsetImageBy(-fdx, -fdy) then return end
@@ -3787,7 +3790,7 @@ function GlimpseViewer:_livePan(fdx, fdy)
         return -- offset already updated; the next allowed frame shows it
     end
     self._live_pan_t = now
-    self:_repaintOverlayFast("fast")
+    self:_repaintOverlayFast("ui")
 end
 
 -- On the SDL emulator, mouse wheel / two-finger trackpad scroll arrives as
