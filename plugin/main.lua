@@ -1534,6 +1534,14 @@ end
 -- panel_ratio, and the dot pill and ⋯ button are OVERLAID on the image
 -- instead of stacked below it.
 function GlimpseViewer:update()
+    -- Zoom steps (pinch, +/− buttons, double-tap) only change the image and
+    -- the zoom control's dim state — never the rest of the chrome. When a full
+    -- build already exists, take the light path that rebuilds just the image
+    -- instead of tearing down and reconstructing every widget each step.
+    if self._zooming and not self._gallery_mode
+            and self._overlay and self._image_layer and self._image_layer.dimen then
+        return self:_updateImageOnly()
+    end
     self:_clean_image_wg()
     local orig_dimen = self.main_frame.dimen
 
@@ -1572,6 +1580,12 @@ function GlimpseViewer:update()
         dimen = Geom:new{ w = self.width, h = self.height },
         image_layer,
     }
+    -- kept for the light-repaint paths (_updateImageOnly / _livePan): the
+    -- overlay holds the image AND all chrome (nav, ⋯, pill, zoom control,
+    -- caption) in z-order, so repainting it alone redraws everything the
+    -- viewer shows without re-running the drawer's panel/shadow paint.
+    self._overlay = overlay
+    self._image_layer = image_layer
     -- chrome is centered/aligned on the image area (content minus the gap
     -- that keeps it clear of the rounded right edge), like the design
     local image_area_w = self.width - self.image_right_gap
@@ -2365,6 +2379,35 @@ function GlimpseViewer:_new_image_wg()
         dimen = Geom:new{ w = avail_w, h = self.img_container_h },
         self._image_wg,
     }
+end
+
+-- Light update for zoom steps: rebuild ONLY the image widget at the new scale
+-- and swap it into the existing image layer, leaving every other widget (nav,
+-- ⋯, pill, caption) untouched. The zoom control is the sole chrome whose look
+-- depends on zoom (its +/−/fit zones dim at the limits), so refresh its flags
+-- in place. Then repaint the overlay (image + chrome, correct z-order) with a
+-- flashless "ui" refresh — no chrome reconstruction, no shadow re-blend. Falls
+-- back to a full update() if the layer refs aren't ready (should not happen:
+-- update() only routes here once a full build exists).
+function GlimpseViewer:_updateImageOnly()
+    if not (self._image_layer and self._image_layer.dimen and self._overlay) then
+        self._zooming = nil
+        return self:update()
+    end
+    self:_clean_image_wg()
+    self:_new_image_wg()
+    -- swap the freshly-scaled image into the existing layer; FrameContainer
+    -- recomputes its size from the child at paint, so nothing else to relayout
+    self._image_layer[1] = self.image_container
+    local zc = self._zoomctl_frame
+    if zc then
+        local over_fit = self:_isOverFit()
+        zc.fit_disabled = not over_fit
+        zc.minus_disabled = not over_fit
+        zc.plus_disabled = self:_isAtMax()
+        zc.inverted_zone = nil
+    end
+    self:_repaintOverlayFast("ui")
 end
 
 -- Full-resolution decode of the current image, for the zoomed view. Decoded
@@ -3361,7 +3404,10 @@ function GlimpseViewer:onGlimpseDoubleTap(_, ges)
     else
         self.scale_factor = 0
         self._center_x_ratio, self._center_y_ratio = 0.5, 0.5
+        self._fast_refresh = true
+        self._zooming = true -- snap back to fit is a zoom step too (light path)
         self:update()
+        self._zooming = nil
     end
     return true
 end
@@ -3693,11 +3739,60 @@ function GlimpseViewer:onHoldRelease(_, ges)
     return true
 end
 
+-- Repaint just the overlay (image + all chrome) with the given refresh mode,
+-- WITHOUT re-running the drawer's panel/shadow paint (that only changes on
+-- open/close and re-blending it would darken the shadow). Shared by the live
+-- pan and light zoom paths. Non-dithered: mid-gesture frames don't need it,
+-- and a lingering dithered flag on self/the image would otherwise infect the
+-- regional refresh and make it slow.
+function GlimpseViewer:_repaintOverlayFast(mode)
+    -- OverlapGroup never updates its own dimen.x/y on paint, but the image
+    -- layer (a FrameContainer filling the same content area) does — so use it
+    -- for the absolute origin and the refresh region.
+    local ov, il = self._overlay, self._image_layer
+    if not (ov and il and il.dimen) then return false end
+    self.dithered = false
+    if self._image_wg then self._image_wg.dithered = false end
+    UIManager:widgetRepaint(ov, il.dimen.x, il.dimen.y)
+    UIManager:setDirty(nil, mode, il.dimen)
+    return true
+end
+
+-- Move the current image by (dx, dy) pixels, reusing ImageWidget:panBy's
+-- offset/clamp math but swallowing the dithered "ui" refresh it queues (we
+-- issue our own faster one). Returns true if the visible offset changed.
+function GlimpseViewer:_offsetImageBy(dx, dy)
+    local wg = self._image_wg
+    if not (wg and wg.panBy) then return false end
+    local ox, oy = wg._offset_x, wg._offset_y
+    local saved = UIManager.setDirty
+    UIManager.setDirty = function() end -- momentary: swallow panBy's own refresh
+    local ok, cx, cy = pcall(function() return wg:panBy(dx, dy) end)
+    UIManager.setDirty = saved
+    if ok and cx then self._center_x_ratio, self._center_y_ratio = cx, cy end
+    return ok and (wg._offset_x ~= ox or wg._offset_y ~= oy)
+end
+
+-- Live panning: track the finger while it's down (a few frames per second)
+-- with a fast, ghosting-tolerant refresh, instead of only jumping to the new
+-- position on release. onPanRelease then settles with a clean refresh. Only
+-- when zoomed (a fitted image has nothing to pan).
+GlimpseViewer.LIVE_PAN_DT = time.ms(110) -- throttle live refreshes (~9 fps)
+function GlimpseViewer:_livePan(fdx, fdy)
+    -- panBy takes the content delta, which is opposite the finger's movement
+    if not self:_offsetImageBy(-fdx, -fdy) then return end
+    self._live_panned = true -- something moved: settle on release
+    local now = UIManager:getTime()
+    if self._live_pan_t and now - self._live_pan_t < self.LIVE_PAN_DT then
+        return -- offset already updated; the next allowed frame shows it
+    end
+    self._live_pan_t = now
+    self:_repaintOverlayFast("fast")
+end
+
 -- On the SDL emulator, mouse wheel / two-finger trackpad scroll arrives as
 -- a fake pan gesture tagged mousewheel_direction (real devices never send
 -- it): treat it as zoom, so pinch can be tested without a touchscreen.
--- Safe with the follow-up pan_release: upstream's onPanRelease only acts
--- when a real pan set _panning.
 function GlimpseViewer:onPan(arg, ges)
     if ges and ges.mousewheel_direction and ges.mousewheel_direction ~= 0 then
         if ges.mousewheel_direction > 0 then
@@ -3707,7 +3802,30 @@ function GlimpseViewer:onPan(arg, ges)
         end
         return true
     end
+    -- Live pan a zoomed image (nothing to pan at fit). ges.relative is the
+    -- delta since the previous onPan, so applying each keeps the image under
+    -- the finger.
+    if not self._gallery_mode and self.scale_factor ~= 0 and self._image_wg
+            and ges and ges.relative then
+        self._panning = true
+        self:_livePan(ges.relative.x, ges.relative.y)
+        return true
+    end
     return ImageViewer.onPan(self, arg, ges)
+end
+
+-- End of a live pan: offsets were applied frame-by-frame, so don't re-apply
+-- the total here — just settle with a clean (dithered) refresh via a full
+-- update() so the image is crisp again after the fast drag frames. Only when
+-- a live pan actually moved (a drag at fit changes nothing to settle).
+function GlimpseViewer:onPanRelease(_, ges)
+    self._panning = false
+    if self._live_panned then
+        self._live_panned = false
+        self._live_pan_t = nil
+        self:update()
+    end
+    return true
 end
 
 -- Zoom-out floor: never below best-fit. The fit factor is captured while
@@ -3787,6 +3905,11 @@ end
 function GlimpseViewer:_applyNewScaleFactor(new_factor)
     if self._gallery_mode then return end
     self._fast_refresh = true -- mid-gesture zoom step: skip dithering
+    -- Route the update() these paths trigger (here, and inside the upstream
+    -- clamp below) through the light image-only rebuild — a zoom step never
+    -- changes the surrounding chrome. Covers pinch, the +/− buttons, and
+    -- double-tap alike, since all of them land here.
+    self._zooming = true
     if self._image_wg then
         -- upstream reads the widget's extrema, which need a rendered bb
         self._image_wg:getSize()
@@ -3810,9 +3933,11 @@ function GlimpseViewer:_applyNewScaleFactor(new_factor)
             self._center_x_ratio, self._center_y_ratio = 0.5, 0.5
             self:update()
         end
+        self._zooming = nil
         return
     end
     ImageViewer._applyNewScaleFactor(self, new_factor)
+    self._zooming = nil
 end
 
 -- The scale_factor (in capped-bitmap units) at which the image shows at

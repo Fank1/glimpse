@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased (in pre-release testing, for the next public release)
+
+Everything below has shipped only in pre-release builds so far. Fold it into
+the notes of the next public release.
+
+**⚡ Snappier zoom and panning**
+- Panning a zoomed image now follows your finger live, several times a second, instead of only jumping to the new spot when you lift off. The drag uses a fast (slightly rougher) refresh, then settles to a clean one the moment you let go.
+- Zooming — pinch, the +/− buttons, and double-tap — is quicker: a zoom step now redraws just the image instead of rebuilding the whole viewer each step.
+
 ## 1.3.0
 
 A big update since 1.2.0: bookmarked pages join the Gallery, the image filter got smarter, zoom got more flexible, and the whole viewer feels quicker and more polished. I've also put a lot of focus on customizability, as that's how I want a plugin to be!

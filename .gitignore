@@ -2,6 +2,8 @@
 __pycache__/
 dist/
 test-books/
+new-test-books/
+epub-corpus
 books-from-vm/
 analysis-report.txt
 builder/fixture.epub
