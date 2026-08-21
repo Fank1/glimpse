@@ -1892,6 +1892,21 @@ function GlimpseViewer:update()
         wfm_mode = "full"
     end
     self.dithered = not fast
+    -- Light image switch (default on via "Fast image switching"): the chrome is
+    -- freshly rebuilt above (pill, nav state, caption, bookmark pill all
+    -- correct) and the neighbour bitmap is already decoded (see
+    -- _prefetchNeighbors), so skip the slow dithered whole-drawer refresh and
+    -- repaint just the content overlay with a non-dithered, image-region
+    -- refresh — the same fast path zoom uses. Turning the setting OFF falls
+    -- through to the clean dithered clear below (wfm_mode already "full" then).
+    local switching = self._switching
+    self._switching = nil
+    if switching and not self._gallery_mode and not self._suppress_refresh
+            and self._overlay and self._image_layer
+            and G_reader_settings:nilOrTrue(FAST_SWITCH_KEY) then
+        self:_repaintOverlayFast(wfm_mode)
+        return
+    end
     if self._suppress_refresh then
         -- showViewer builds the full initial state (remembered image,
         -- restored zoom) before showing, then refreshes once
@@ -3642,6 +3657,10 @@ function GlimpseViewer:switchToImageNum(image_num)
     -- the previous image doesn't ghost through (see the refresh policy in
     -- update()). switchToImageNum → ImageViewer.switchToImageNum → update().
     self._flash_switch = true
+    -- take the light refresh path in update() (rebuild chrome, but repaint the
+    -- content overlay with a non-dithered image-region refresh instead of a
+    -- dithered whole-drawer one) — gated on "Fast image switching"
+    self._switching = true
     ImageViewer.switchToImageNum(self, image_num)
     local meta = self.image_metas and self.image_metas[image_num]
     if meta and self.on_image_shown then
@@ -3783,10 +3802,23 @@ function GlimpseViewer:_repaintOverlayFast(mode)
     -- layer (a FrameContainer filling the same content area) does — so use it
     -- for the absolute origin and the refresh region.
     local ov, il = self._overlay, self._image_layer
-    if not (ov and il and il.dimen) then return false end
+    if not (ov and il) then return false end
+    local ox, oy, region
+    if il.dimen then
+        ox, oy, region = il.dimen.x, il.dimen.y, il.dimen
+    else
+        -- fresh overlay (rebuilt this update, e.g. a light image switch): it
+        -- hasn't painted yet, so derive the content origin from the persistent
+        -- main_frame + its paddings. widgetRepaint sets il.dimen for next time.
+        local mf = self.main_frame
+        if not (mf and mf.dimen) then return false end
+        ox = mf.dimen.x + (mf.padding_left or 0)
+        oy = mf.dimen.y + (mf.padding_top or 0)
+        region = Geom:new{ x = ox, y = oy, w = self.width, h = self.height }
+    end
     self.dithered = false
     if self._image_wg then self._image_wg.dithered = false end
-    UIManager:widgetRepaint(ov, il.dimen.x, il.dimen.y)
+    UIManager:widgetRepaint(ov, ox, oy)
     -- The overlay paints the image's SQUARE corners over the panel's rounded
     -- corner notches. A full paint fixes this in main_frame.paintTo via
     -- _restoreCorners; the light path skips main_frame, so re-blend the saved
@@ -3796,7 +3828,7 @@ function GlimpseViewer:_repaintOverlayFast(mode)
     if self._corner_bbs and mf and mf.dimen then
         self:_restoreCorners(Screen.bb, mf.dimen.x, mf.dimen.y)
     end
-    UIManager:setDirty(nil, mode, il.dimen)
+    UIManager:setDirty(nil, mode, region)
     return true
 end
 

@@ -8,7 +8,7 @@ the notes of the next public release.
 **⚡ Snappier zoom & switching**
 - Zooming — pinch, the +/− buttons, and double-tap — is quicker: a zoom step now redraws just the image instead of rebuilding the whole viewer each step.
 - Fixed: the viewer's rounded corners no longer square off after a zoom step.
-- Flipping to the next or previous image with the arrows or a swipe is quicker: the neighbouring images are decoded ahead of time in the background, so a switch shows the already-prepared image instead of decoding it on the spot.
+- Flipping to the next or previous image with the arrows or a swipe is quicker: the neighbouring images are decoded ahead of time in the background, so a switch shows the already-prepared image instead of decoding it on the spot, and the switch now redraws just the image area instead of the whole viewer. *(Part of "Fast image switching" — turn it off for the slower, extra-clean redraw.)*
 
 **🐛 Update-checker fixes**
 - Checking for updates no longer freezes the device for several seconds when Wi-Fi is up but not fully ready. The check now tests reachability off the UI thread instead of doing a blocking DNS lookup on it, and ignores repeat taps while a check is already running.
