@@ -3647,6 +3647,40 @@ function GlimpseViewer:switchToImageNum(image_num)
     if meta and self.on_image_shown then
         self.on_image_shown(meta, image_num)
     end
+    self:_prefetchNeighbors()
+end
+
+-- Warm the decode cache for the images on either side of the current one, so
+-- the next arrow/swipe is a copy of an already-decoded bitmap instead of a
+-- fresh decode+cap-scale. The work runs on a short delay so the just-triggered
+-- switch refreshes first, and a generation counter cancels any prefetch left
+-- pending when the user keeps moving — only the position they settle on warms,
+-- and rapid swiping never piles up stale decodes. Calling the list closure is
+-- what populates the shared cache (see the decode closure in showViewer); the
+-- copy it returns is ours to free immediately.
+function GlimpseViewer:_prefetchNeighbors()
+    if self._gallery_mode then return end
+    -- ImageViewer keeps the closure list in _images_list; self.image is the
+    -- CURRENT decoded bitmap after a switch, not the list.
+    local list = self._images_list
+    if type(list) ~= "table" then return end
+    self._prefetch_gen = (self._prefetch_gen or 0) + 1
+    local gen = self._prefetch_gen
+    local cur = self._images_list_cur or 1
+    local nb = self._images_list_nb or 1
+    local targets = {}
+    if cur + 1 <= nb then targets[#targets + 1] = cur + 1 end
+    if cur - 1 >= 1 then targets[#targets + 1] = cur - 1 end
+    for _, idx in ipairs(targets) do
+        local fn = list[idx]
+        if type(fn) == "function" then
+            UIManager:scheduleIn(0.15, function()
+                if self._prefetch_gen ~= gen then return end
+                local ok, bb = pcall(fn)
+                if ok and bb and bb.free then bb:free() end
+            end)
+        end
+    end
 end
 
 -- In fit-to-screen mode panning is a no-op, so horizontal swipes act as
@@ -4083,11 +4117,55 @@ function Glimpse:onGlimpseShow()
 end
 
 function Glimpse:onCloseDocument()
-    -- the decoded-bitmap cache slot (see showViewer) is per book
-    if self._bb_cache then
-        if self._bb_cache.bb then self._bb_cache.bb:free() end
-        self._bb_cache = nil
+    -- the decoded-bitmap cache (see showViewer) is per book
+    self:_bbCacheFree()
+end
+
+-- Small LRU of decoded, display-capped bitmaps keyed by path|night|invert.
+-- Holds the working set around the current image (prev/cur/next) so switching
+-- with the arrows or a swipe is a copy of an already-decoded bitmap instead of
+-- a fresh decode+cap-scale of a multi-megapixel map. Neighbors are warmed by
+-- GlimpseViewer:_prefetchNeighbors after a switch settles; the cap keeps the
+-- footprint bounded on low-RAM devices (the bitmaps are already display-sized).
+Glimpse.BB_CACHE_MAX = 3
+function Glimpse:_bbCacheGet(key)
+    local c = self._bb_cache
+    local e = c and c.map[key]
+    if not e then return nil end
+    c.seq = c.seq + 1
+    e.seq = c.seq
+    return e.bb
+end
+function Glimpse:_bbCachePut(key, bb)
+    local c = self._bb_cache
+    if not c then c = { map = {}, n = 0, seq = 0 }; self._bb_cache = c end
+    local prev = c.map[key]
+    if prev then
+        if prev.bb then prev.bb:free() end
+        c.n = c.n - 1
     end
+    c.seq = c.seq + 1
+    c.map[key] = { bb = bb, seq = c.seq }
+    c.n = c.n + 1
+    while c.n > Glimpse.BB_CACHE_MAX do
+        local lru_key, lru_seq
+        for k, e in pairs(c.map) do
+            if not lru_seq or e.seq < lru_seq then lru_seq, lru_key = e.seq, k end
+        end
+        if not lru_key then break end
+        if c.map[lru_key].bb then c.map[lru_key].bb:free() end
+        c.map[lru_key] = nil
+        c.n = c.n - 1
+    end
+end
+function Glimpse:_bbCacheFree()
+    local c = self._bb_cache
+    if not c then return end
+    for k, e in pairs(c.map) do
+        if e.bb then e.bb:free() end
+        c.map[k] = nil
+    end
+    self._bb_cache = nil
 end
 
 -- ── settings ────────────────────────────────────────────────────────────────
@@ -4892,21 +4970,18 @@ function Glimpse:showViewer(whole_book_once)
             list[i] = function()
                 local night = Screen.night_mode
                 local checked = G_reader_settings:isTrue(INVERT_KEY)
-                -- single-slot decoded-bitmap cache: reopening on the image
-                -- you left (the common "peek at the map again" flow) skips
-                -- the decode and cap-scale — on device that is most of the
+                -- decoded-bitmap cache (small LRU, see _bbCacheGet): reopening
+                -- on the image you left, or switching to a prefetched neighbor,
+                -- skips the decode and cap-scale — on device that is most of the
                 -- open time. The key bakes in everything baked into pixels.
                 local key = im.path .. "|" .. tostring(night) .. tostring(checked)
-                local slot = self._bb_cache
-                if slot and slot.key == key and slot.bb then
+                local cached = self:_bbCacheGet(key)
+                if cached then
                     -- hand out a copy: the viewer owns and frees what we return
-                    return slot.bb:copy()
+                    return cached:copy()
                 end
                 local bb = decode(im, false)
-                if bb then
-                    if slot and slot.bb then slot.bb:free() end
-                    self._bb_cache = { key = key, bb = bb:copy() }
-                end
+                if bb then self:_bbCachePut(key, bb:copy()) end
                 return bb
             end
             end
