@@ -3773,17 +3773,21 @@ function GlimpseViewer:_offsetImageBy(dx, dy)
     return ok and (wg._offset_x ~= ox or wg._offset_y ~= oy)
 end
 
--- Live panning: track the finger while it's down. We use the "fast" waveform,
--- NOT "ui"/REAGL: on many Kobo panels REAGL does a black wipe on each large
--- regional update, so a drag reads as a flashing, jumping image. "fast" is a
--- cruder, low-grey, NON-flashing waveform that updates quickly — the image
--- looks rougher and leaves ghosting mid-drag, but it stays put and moves
--- smoothly, and the ghosting is cleared by the full refresh in onPanRelease.
--- (Never dithered — _repaintOverlayFast clears the dither flags — so there's
--- no dither pass to slow it down either.) Only when zoomed (a fitted image
--- has nothing to pan).
-GlimpseViewer.LIVE_PAN_WFM = "fast"    -- crude + quick + no black flash
-GlimpseViewer.LIVE_PAN_DT = time.ms(120) -- ~8 fps; "fast" is quick enough for it
+-- Live panning: track the finger while it's down. Waveform choice is the whole
+-- game on e-ink, and it's a genuine trilemma (fast / no-flash / no-ghost — pick
+-- two): "ui"/REAGL is clean but black-wipes (flashes) on each large regional
+-- update; "full" is clean but slow and always flashes; the fast waveforms
+-- ("fast", "a2") don't flash and are quick but leave ghosting that a full
+-- refresh must later scrub. Panning a zoomed image changes ~the whole image
+-- area every frame, so there's no small region to isolate — the only levers are
+-- the waveform and the interval. We push both to the limit: "a2" (the fastest,
+-- 2-level, non-flashing waveform) at the panel's max rate, so motion reads as
+-- smooth as e-ink allows; it ghosts during the drag, then onPanRelease does one
+-- full flash to clean it. Never dithered (_repaintOverlayFast clears the flags),
+-- so no dither pass slows it. Only when zoomed (a fitted image has nothing to
+-- pan). LIVE_PAN_WFM is a single knob to retune ("a2" | "fast" | "ui").
+GlimpseViewer.LIVE_PAN_WFM = "a2"      -- fastest waveform (2-level, no flash)
+GlimpseViewer.LIVE_PAN_DT = time.ms(70)  -- refresh as fast as the panel allows
 function GlimpseViewer:_livePan(fdx, fdy)
     -- panBy takes the content delta, which is opposite the finger's movement
     if not self:_offsetImageBy(-fdx, -fdy) then return end
