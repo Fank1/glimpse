@@ -3773,14 +3773,17 @@ function GlimpseViewer:_offsetImageBy(dx, dy)
     return ok and (wg._offset_x ~= ox or wg._offset_y ~= oy)
 end
 
--- Live panning: track the finger while it's down, using the "ui" (REAGL,
--- full 16-gray, flashless) waveform so each frame stays readable — unlike the
--- 2-bit "fast"/A2 waveform, which posterizes a photo/map into an unreadable
--- ghost during the drag. "ui" is slower (~250ms/refresh) and still leaves
--- light trails on motion, so we throttle to its cadence and clear the trails
--- with the full refresh in onPanRelease. Only when zoomed (a fitted image has
--- nothing to pan).
-GlimpseViewer.LIVE_PAN_DT = time.ms(250) -- throttle to the "ui" waveform (~4 fps)
+-- Live panning: track the finger while it's down. We use the "fast" waveform,
+-- NOT "ui"/REAGL: on many Kobo panels REAGL does a black wipe on each large
+-- regional update, so a drag reads as a flashing, jumping image. "fast" is a
+-- cruder, low-grey, NON-flashing waveform that updates quickly — the image
+-- looks rougher and leaves ghosting mid-drag, but it stays put and moves
+-- smoothly, and the ghosting is cleared by the full refresh in onPanRelease.
+-- (Never dithered — _repaintOverlayFast clears the dither flags — so there's
+-- no dither pass to slow it down either.) Only when zoomed (a fitted image
+-- has nothing to pan).
+GlimpseViewer.LIVE_PAN_WFM = "fast"    -- crude + quick + no black flash
+GlimpseViewer.LIVE_PAN_DT = time.ms(120) -- ~8 fps; "fast" is quick enough for it
 function GlimpseViewer:_livePan(fdx, fdy)
     -- panBy takes the content delta, which is opposite the finger's movement
     if not self:_offsetImageBy(-fdx, -fdy) then return end
@@ -3790,7 +3793,7 @@ function GlimpseViewer:_livePan(fdx, fdy)
         return -- offset already updated; the next allowed frame shows it
     end
     self._live_pan_t = now
-    self:_repaintOverlayFast("ui")
+    self:_repaintOverlayFast(self.LIVE_PAN_WFM)
 end
 
 -- On the SDL emulator, mouse wheel / two-finger trackpad scroll arrives as
