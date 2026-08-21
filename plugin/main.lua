@@ -5410,23 +5410,53 @@ function Glimpse._confirm(text, ok_text, ok_callback, cancel_text)
     UIManager:show(dialog)
 end
 
--- Entry point (menu callback): ensure we're online, then check releases.
+-- Entry point (menu callback): ensure we're connected, then check releases.
 -- Wrapped in Trapper so the network wait shows a dismissable spinner.
+--
+-- We use runWhenCONNECTED, not runWhenOnline: runWhenOnline calls isOnline(),
+-- which does a BLOCKING DNS resolve on the UI thread (socket.dns.toip) — when
+-- the network is up but DNS isn't ready yet (common right after Wi-Fi
+-- associates on Kobo) that stalls the whole UI for seconds, and every repeat
+-- tap stalls it again. isConnected() only checks the interface has an IP (a
+-- fast sysfs read), and the real reachability test then happens inside the
+-- dismissable subprocess below (which reports a DNS/network error cleanly
+-- instead of freezing). A re-entrancy guard drops repeat taps while a check
+-- is already in flight, with a safety-net timer so it can never stick on if
+-- the connect callback never fires (e.g. the user declines the Wi-Fi prompt).
 function Glimpse:_checkForUpdate()
+    if self._update_checking then return end
+    self._update_checking = true
+    UIManager:scheduleIn(90, function() self._update_checking = nil end)
     local NetworkMgr = require("ui/network/manager")
-    NetworkMgr:runWhenOnline(function()
+    local go = function()
         local Trapper = require("ui/trapper")
-        Trapper:wrap(function() self:_runUpdateCheck(Trapper) end)
-    end)
+        Trapper:wrap(function()
+            local ok, err = pcall(function() self:_runUpdateCheck(Trapper) end)
+            self._update_checking = nil
+            if not ok then logger.warn("Glimpse update check error:", err) end
+        end)
+    end
+    if NetworkMgr.runWhenConnected then
+        NetworkMgr:runWhenConnected(go)
+    else
+        NetworkMgr:runWhenOnline(go) -- older KOReader without runWhenConnected
+    end
 end
 
 function Glimpse:_runUpdateCheck(Trapper)
     local pre = G_reader_settings:isTrue(PRERELEASE_KEY)
     local api = "https://api.github.com/repos/" .. self.github_repo
         .. (pre and "/releases?per_page=10" or "/releases/latest")
-    -- fetch in a subprocess so the UI stays responsive and dismissable
+    -- fetch in a subprocess so the UI stays responsive and dismissable. Retry
+    -- once after a short pause on failure: right after Wi-Fi associates, DNS
+    -- (resolv.conf) can lag a second or two, so the first resolve fails; the
+    -- pause happens in the subprocess, so the UI never blocks.
     local completed, body = Trapper:dismissableRunInSubprocess(function()
         local b, err = _http_fetch(api)
+        if not b then
+            require("socket").sleep(1.5)
+            b, err = _http_fetch(api)
+        end
         return b or ("ERR:" .. tostring(err))
     end, _("Checking for updates…"), true)
     if not completed then return end -- dismissed by the user

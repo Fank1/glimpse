@@ -9,6 +9,10 @@ the notes of the next public release.
 - Panning a zoomed image now follows your finger live, several times a second, instead of only jumping to the new spot when you lift off. The drag uses a fast (slightly rougher) refresh, then settles to a clean one the moment you let go.
 - Zooming — pinch, the +/− buttons, and double-tap — is quicker: a zoom step now redraws just the image instead of rebuilding the whole viewer each step.
 
+**🐛 Update-checker fixes**
+- Checking for updates no longer freezes the device for several seconds when Wi-Fi is up but not fully ready. The check now tests reachability off the UI thread instead of doing a blocking DNS lookup on it, and ignores repeat taps while a check is already running.
+- A "DNS error / couldn't reach GitHub" right after connecting is now retried automatically once, so an update check fired the moment Wi-Fi associates no longer fails on the first try.
+
 ## 1.3.0
 
 A big update since 1.2.0: bookmarked pages join the Gallery, the image filter got smarter, zoom got more flexible, and the whole viewer feels quicker and more polished. I've also put a lot of focus on customizability, as that's how I want a plugin to be!
