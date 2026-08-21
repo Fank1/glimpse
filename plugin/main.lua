@@ -3805,13 +3805,24 @@ function GlimpseViewer:onPan(arg, ges)
         end
         return true
     end
-    -- Live pan a zoomed image (nothing to pan at fit). ges.relative is the
-    -- delta since the previous onPan, so applying each keeps the image under
-    -- the finger.
+    -- Live pan a zoomed image (nothing to pan at fit). ges.relative is
+    -- CUMULATIVE from the finger's touch-down point (not a per-event delta),
+    -- so we apply the increment since the previous onPan — otherwise the image
+    -- moves by the ever-growing total each frame and races ahead of the finger
+    -- (the "too speedy / janky" bug). _live_pan_active marks a drag in
+    -- progress so the first event of each drag starts from a zero baseline
+    -- (works whether the drag began via onPan or a hold-then-drag).
     if not self._gallery_mode and self.scale_factor ~= 0 and self._image_wg
             and ges and ges.relative then
+        if not self._live_pan_active then
+            self._live_pan_active = true
+            self._pan_last_x, self._pan_last_y = 0, 0
+        end
         self._panning = true
-        self:_livePan(ges.relative.x, ges.relative.y)
+        local rx, ry = ges.relative.x, ges.relative.y
+        local dx, dy = rx - self._pan_last_x, ry - self._pan_last_y
+        self._pan_last_x, self._pan_last_y = rx, ry
+        self:_livePan(dx, dy)
         return true
     end
     return ImageViewer.onPan(self, arg, ges)
@@ -3826,6 +3837,7 @@ end
 -- waveform), giving a single clean flash. Only when a live pan actually moved.
 function GlimpseViewer:onPanRelease(_, ges)
     self._panning = false
+    self._live_pan_active = false -- next drag restarts the cumulative baseline
     if self._live_panned then
         self._live_panned = false
         self._live_pan_t = nil
