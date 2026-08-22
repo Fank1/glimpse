@@ -5883,9 +5883,14 @@ function Glimpse:_showLayoutDialog()
             if want_right == on_right then return end
             -- store nil for the default (left) so it reads as unset
             G_reader_settings:saveSetting(LAYOUT_RIGHT_KEY, want_right or nil)
+            -- Re-lay-out the open drawer IN PLACE on the new side rather than
+            -- closing + reopening: update() reads the setting and rebuilds on
+            -- the new edge, and the full-band refresh spans the combined old+new
+            -- drawer region (the whole width on a side flip), so the old side is
+            -- cleared and the new one drawn without the panel ever disappearing.
             if self._viewer then
-                self._viewer:onClose()
-                self:showViewer()
+                self._viewer._full_band_refresh = true
+                self._viewer:update()
             end
         end,
     })
