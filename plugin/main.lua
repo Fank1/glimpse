@@ -5025,7 +5025,7 @@ function Glimpse:showViewer(whole_book_once)
                     scope_hidden)
             UIManager:show(ConfirmBox:new{
                 text = msg,
-                ok_text = _("Search whole book"),
+                ok_text = _("Show whole book"),
                 ok_callback = function()
                     self:showViewer(true)
                 end,
