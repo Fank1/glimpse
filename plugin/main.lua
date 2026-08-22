@@ -3384,8 +3384,12 @@ function GlimpseViewer:_showMoreMenu()
             local mov = menu.movable
             local w = mov and mov.dimen and mov.dimen.w or 0
             local gap = Screen:scaleBySize(10)
-            return Geom:new{ x = d.x + d.w - w, y = d.y - gap,
-                w = 0, h = d.h }, true
+            -- Left drawer: ⋯ sits at the bottom-right, so align the menu's RIGHT
+            -- edge to the button's right (it grows left, away from the screen
+            -- edge). Right drawer: ⋯ sits at the bottom-left, so align the LEFT
+            -- edges instead (it grows right), keeping the menu on-screen.
+            local x = self._on_right and d.x or (d.x + d.w - w)
+            return Geom:new{ x = x, y = d.y - gap, w = 0, h = d.h }, true
         end,
     }
     -- when the menu closes, also repaint the ⋯ button so its pressed
