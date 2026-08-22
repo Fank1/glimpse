@@ -1566,7 +1566,13 @@ function GlimpseViewer:update()
         return self:_updateImageOnly()
     end
     self:_clean_image_wg()
-    local orig_dimen = self.main_frame.dimen
+    -- COPY, not a reference: FrameContainer:paintTo mutates self.dimen.x/y in
+    -- place on every repaint, so a bare reference would silently become the NEW
+    -- position by the time the refresh-region callback runs — collapsing
+    -- main_frame.dimen:combine(orig_dimen) to just the new rect. That breaks a
+    -- Layout side-flip, where the region must span BOTH the old and new drawer
+    -- positions to clear the old side (the old ink otherwise lingers on e-ink).
+    local orig_dimen = self.main_frame.dimen and self.main_frame.dimen:copy()
 
     -- Layout (Settings → Layout): the drawer sits against the LEFT screen edge
     -- by default, or the RIGHT edge when turned on. The whole panel — border,
