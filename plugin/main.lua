@@ -9,6 +9,7 @@ text for filtering out ornaments and icons.
 
 local BD = require("ui/bidi")
 local Blitbuffer = require("ffi/blitbuffer")
+local ButtonTable = require("ui/widget/buttontable")
 local CenterContainer = require("ui/widget/container/centercontainer")
 local ConfirmBox = require("ui/widget/confirmbox")
 local DataStorage = require("datastorage")
@@ -16,10 +17,12 @@ local DocSettings = require("docsettings")
 local Device = require("device")
 local Dispatcher = require("dispatcher")
 local Event = require("ui/event")
+local FocusManager = require("ui/widget/focusmanager")
 local Font = require("ui/font")
 local FrameContainer = require("ui/widget/container/framecontainer")
 local Geom = require("ui/geometry")
 local GestureRange = require("ui/gesturerange")
+local HorizontalGroup = require("ui/widget/horizontalgroup")
 local ImageViewer = require("ui/widget/imageviewer")
 local ImageWidget = require("ui/widget/imagewidget")
 local InfoMessage = require("ui/widget/infomessage")
@@ -29,7 +32,10 @@ local LuaSettings = require("luasettings")
 local MovableContainer = require("ui/widget/container/movablecontainer")
 local Notification = require("ui/widget/notification")
 local OverlapGroup = require("ui/widget/overlapgroup")
+local RadioButtonTable = require("ui/widget/radiobuttontable")
 local RenderImage = require("ui/renderimage")
+local Size = require("ui/size")
+local TitleBar = require("ui/widget/titlebar")
 local TileCacheItem = require("document/tilecacheitem")
 local TextWidget = require("ui/widget/textwidget")
 local TextBoxWidget = require("ui/widget/textboxwidget")
@@ -72,13 +78,40 @@ local SHADOW_KEY = "glimpse_disable_shadow"    -- drop the drawer's gradient sha
 local FAST_SWITCH_KEY = "glimpse_fast_image_switch" -- image switch uses a flashless partial refresh (may ghost); ON by default (nilOrTrue)
 local SUPPRESS_UNSUPPORTED_KEY = "glimpse_suppress_unsupported" -- silence the "EPUB only" notice on unsupported files, OFF by default
 local BOOKMARKS_KEY = "glimpse_include_bookmarks" -- include the user's dogear-bookmarked pages (rendered thumbnails) in the Gallery, OFF by default
-local LAYOUT_RIGHT_KEY = "glimpse_layout_right" -- drawer anchored to the RIGHT screen edge instead of the left, OFF by default
+local LAYOUT_RIGHT_KEY = "glimpse_layout_right" -- LEGACY (pre-1.3.4): drawer anchored to the RIGHT edge. Now only a migration fallback for PREF_ALIGN_KEY.
+local PREF_ALIGN_KEY = "glimpse_pref_align"    -- "left"/"right": the side used in landscape always, and in portrait when position=side. Default "left".
+local PORTRAIT_POS_KEY = "glimpse_portrait_pos" -- "side"/"bottom"/"top": where the drawer sits in PORTRAIT. Default "side".
 local MAX_ZOOM_KEY = "glimpse_max_zoom"        -- zoom ceiling as a multiple of native resolution (double-tap target + pinch clamp)
 local GESTURE_TIP_KEY = "glimpse_gesture_tip_shown" -- one-time menu-open nudge to bind a gesture
 -- viewer gesture toggles (Settings → Gestures), all ON by default (nilOrTrue)
 local GESTURE_DOUBLETAP_KEY = "glimpse_gesture_doubletap" -- double-tap → maximum zoom
 local GESTURE_SWIPE_KEY = "glimpse_gesture_swipe"         -- swipe ‹/› → prev/next image
 local GESTURE_PINCH_KEY = "glimpse_gesture_pinch"         -- pinch/spread → zoom out/in
+
+-- Layout settings readers (shared by the plugin and the viewer).
+-- Preferred alignment (left/right): new key first, falling back to the legacy
+-- boolean so users who set "Right" before 1.3.4 keep their side.
+local function _prefAlign()
+    local v = G_reader_settings:readSetting(PREF_ALIGN_KEY)
+    if v == "left" or v == "right" then return v end
+    return G_reader_settings:isTrue(LAYOUT_RIGHT_KEY) and "right" or "left"
+end
+-- Portrait position (side/bottom/top); anything unset means "side".
+local function _portraitPos()
+    local v = G_reader_settings:readSetting(PORTRAIT_POS_KEY)
+    if v == "bottom" or v == "top" then return v end
+    return "side"
+end
+-- Effective placement for the CURRENT screen orientation: landscape always uses
+-- a side panel on the preferred side; portrait honors the portrait position, and
+-- position=side falls back to the preferred side. Returns left/right/top/bottom.
+local function _resolvePlacement()
+    local pref = _prefAlign()
+    if Screen:getWidth() > Screen:getHeight() then return pref end -- landscape
+    local pos = _portraitPos()
+    if pos == "top" or pos == "bottom" then return pos end
+    return pref
+end
 
 -- Zoom ceiling (multiple of the image's native resolution), user-configurable
 -- under Advanced → Maximum zoom. Double-tap jumps here and pinch stops here.
@@ -1497,7 +1530,8 @@ local GlimpseViewer = ImageViewer:extend{
     -- value (see showViewer). This literal is only the fallback if unset.
     max_zoom_of_native = DEFAULT_MAX_ZOOM,
     -- Drawer metrics from the design (design px == px at the reference DPI)
-    panel_ratio = 505 / 630,               -- of screen width
+    panel_ratio = 505 / 630,               -- side panel: of screen width
+    band_ratio = 0.5,                      -- top/bottom band: of screen height
     panel_vgap = 0,                        -- full height, border included
     panel_border = Screen:scaleBySize(2),
     panel_radius = Screen:scaleBySize(24), -- right corners only
@@ -1574,20 +1608,37 @@ function GlimpseViewer:update()
     -- positions to clear the old side (the old ink otherwise lingers on e-ink).
     local orig_dimen = self.main_frame.dimen and self.main_frame.dimen:copy()
 
-    -- Layout (Settings → Layout): the drawer sits against the LEFT screen edge
-    -- by default, or the RIGHT edge when turned on. The whole panel — border,
-    -- rounded corners, gradient shadow — and all the overlaid chrome mirror
-    -- horizontally; the outer (screen) edge is always the flush/borderless one.
-    self._on_right = G_reader_settings:isTrue(LAYOUT_RIGHT_KEY)
+    -- Layout (Settings → Layout): the drawer resolves to one of four placements
+    -- from the two settings + the current orientation (see _resolvePlacement):
+    -- a vertical SIDE panel on the left/right edge, or a horizontal BAND across
+    -- the top/bottom in portrait. Either way the outer (screen) edge is the
+    -- flush/borderless one and the inner (page-facing) edge carries the border,
+    -- rounded corners and gradient shadow. Derived flags the rest of the code
+    -- reads: _horizontal (band vs side), _on_right (right side panel), and
+    -- _inner (which edge is the inner one: right/left/bottom/top).
+    self._place = _resolvePlacement()
+    self._horizontal = self._place == "top" or self._place == "bottom"
+    self._on_right = self._place == "right"
+    self._inner = ({ left = "right", right = "left",
+                     top = "bottom", bottom = "top" })[self._place]
 
-    self._panel_w = math.floor(Screen:getWidth() * self.panel_ratio)
-    self._panel_h = Screen:getHeight() - 2 * self.panel_vgap
-    -- content area inside the drawer's border (the outer/screen edge is
-    -- borderless and flush; the inner edge facing the page carries the border
-    -- and rounded corners); self.width/height are what the inherited zoom/pan
-    -- code sizes the image against
-    self.width = self._panel_w - self.panel_border
-    self.height = self._panel_h - 2 * self.panel_border
+    if self._horizontal then
+        -- horizontal band: full screen width, half screen height
+        self._panel_w = Screen:getWidth()
+        self._panel_h = math.floor(Screen:getHeight() * self.band_ratio)
+        -- border on the two side edges + the single inner edge; flush outer edge
+        self.width = self._panel_w - 2 * self.panel_border
+        self.height = self._panel_h - self.panel_border
+    else
+        self._panel_w = math.floor(Screen:getWidth() * self.panel_ratio)
+        self._panel_h = Screen:getHeight() - 2 * self.panel_vgap
+        -- content area inside the drawer's border (the outer/screen edge is
+        -- borderless and flush; the inner edge facing the page carries the border
+        -- and rounded corners); self.width/height are what the inherited zoom/pan
+        -- code sizes the image against
+        self.width = self._panel_w - self.panel_border
+        self.height = self._panel_h - 2 * self.panel_border
+    end
 
     while table.remove(self.frame_elements) do end
     self.frame_elements:resetLayout()
@@ -1628,6 +1679,13 @@ function GlimpseViewer:update()
     -- 14, not 16: the bottom row sits 2px closer to the drawer's bottom
     -- edge than before (the buttons also grew 2px, see GlimpseMoreButton)
     local btn_inset = Screen:scaleBySize(14)
+    -- Top band: the inner (rounded) edge is the band's BOTTOM, so the bottom
+    -- chrome row would sit right on the corner arcs and _restoreCorners would
+    -- clip the buttons. Lift the whole row clear of the corner radius. (Bottom
+    -- band and side panels round a different edge, so they keep the tight inset.)
+    if self._place == "top" then
+        btn_inset = math.max(btn_inset, self.panel_radius)
+    end
     local btn_gap = Screen:scaleBySize(10)
     -- the −/fit/+ zoom control (Quick Action, off by default): only in the
     -- single-image view. When on it occupies the slot above the bottom-right
@@ -1908,20 +1966,37 @@ function GlimpseViewer:update()
     self.main_frame.radius = nil
     self.main_frame.bordersize = 0
     self.main_frame.padding = 0
-    self.main_frame.padding_left = self._on_right and self.panel_border or 0
-    self.main_frame.padding_right = self._on_right and 0 or self.panel_border
-    self.main_frame.padding_top = self.panel_vgap + self.panel_border
-    self.main_frame.padding_bottom = self.panel_vgap + self.panel_border
-    -- anchor the drawer to the chosen screen edge (every update, since the side
-    -- can change): a WidgetContainer with align=nil paints its child at its
-    -- dimen origin, so offset that origin to the right edge for a right drawer.
-    self[1].align = nil
-    if self._on_right then
-        self[1].dimen = Geom:new{ x = Screen:getWidth() - self._panel_w,
-            y = 0, w = self._panel_w, h = Screen:getHeight() }
+    -- Border padding on the three non-flush edges; the outer (screen) edge —
+    -- named by self._place — is flush and borderless. Side panels also carry the
+    -- optional vgap on their top/bottom (currently 0).
+    local b = self.panel_border
+    if self._horizontal then
+        self.main_frame.padding_left = b
+        self.main_frame.padding_right = b
+        self.main_frame.padding_top = self._place == "top" and 0 or b
+        self.main_frame.padding_bottom = self._place == "bottom" and 0 or b
     else
-        self[1].dimen = Geom:new{ x = 0, y = 0,
-            w = Screen:getWidth(), h = Screen:getHeight() }
+        self.main_frame.padding_left = self._on_right and b or 0
+        self.main_frame.padding_right = self._on_right and 0 or b
+        self.main_frame.padding_top = self.panel_vgap + b
+        self.main_frame.padding_bottom = self.panel_vgap + b
+    end
+    -- anchor the drawer to the chosen screen edge (every update, since the
+    -- placement can change): a WidgetContainer with align=nil paints its child at
+    -- its dimen origin, so offset that origin to the far edge for a right panel or
+    -- a bottom band.
+    self[1].align = nil
+    local SW, SH = Screen:getWidth(), Screen:getHeight()
+    if self._place == "right" then
+        self[1].dimen = Geom:new{ x = SW - self._panel_w, y = 0,
+            w = self._panel_w, h = SH }
+    elseif self._place == "top" then
+        self[1].dimen = Geom:new{ x = 0, y = 0, w = SW, h = self._panel_h }
+    elseif self._place == "bottom" then
+        self[1].dimen = Geom:new{ x = 0, y = SH - self._panel_h,
+            w = SW, h = self._panel_h }
+    else -- left
+        self[1].dimen = Geom:new{ x = 0, y = 0, w = SW, h = SH }
     end
     if not self._panel_paint_hooked then
         self._panel_paint_hooked = true
@@ -1996,18 +2071,15 @@ function GlimpseViewer:update()
     local full_band = self._full_band_refresh
     self._full_band_refresh = nil
     if full_band then
+        -- Gallery enter/exit/tab switch: same drawer footprint, so only the drawer
+        -- needs repainting; its numeric alpha repaints the page beneath, and the
+        -- region is the drawer + its shadow band. (A Layout change that MOVES the
+        -- drawer to a new placement does NOT come through here — it close+reopens,
+        -- see _showLayoutDialog, because an in-place refresh can't reliably clear
+        -- the strip the old drawer vacated.)
         UIManager:setDirty(self, function()
             if not self.main_frame.dimen then return end
-            local d = self.main_frame.dimen:combine(orig_dimen)
-            if not G_reader_settings:isTrue(SHADOW_KEY) then
-                local extra = 2 * self.shadow_width - self.shadow_overlap + 1
-                if self._on_right then
-                    local nx = math.max(0, d.x - extra)
-                    d.w = d.w + (d.x - nx); d.x = nx
-                else
-                    d.w = math.min(Screen:getWidth() - d.x, d.w + extra)
-                end
-            end
+            local d = self:_growForShadow(self.main_frame.dimen:combine(orig_dimen))
             return wfm_mode, d, not fast
         end)
         return
@@ -2073,9 +2145,9 @@ function GlimpseViewer:_paintPanel(bb, x, y)
     -- nothing changes there.
     local render_inv = inv
         and not (night and Device.isAndroid and Device:isAndroid())
-    -- side is baked into the cached stencils (border/corner/gradient sides), so
-    -- flipping Layout must rebuild them
-    local skey = tostring(night) .. tostring(render_inv) .. tostring(on_right)
+    -- placement is baked into the cached stencils (border/corner/gradient sides
+    -- and axis), so changing Layout must rebuild them
+    local skey = tostring(night) .. tostring(render_inv) .. self._place
     -- Advanced → Disable shadow: skip the gradient entirely. The dithered
     -- shadow is the main e-ink ghost source, so some users prefer it off.
     local shadow_disabled = G_reader_settings:isTrue(SHADOW_KEY)
@@ -2094,12 +2166,22 @@ function GlimpseViewer:_paintPanel(bb, x, y)
     -- (user tuning 2026-07-22: 2x read as reaching too far, 1.25x as too
     -- narrow — splitting the difference)
     local swidth = night and math.floor(self.shadow_width * 1.5 + 0.5) or self.shadow_width
+    -- Shadow axis: side panels cast the gradient sideways (buffer swidth wide ×
+    -- full height); top/bottom bands cast it vertically (buffer full width ×
+    -- swidth tall — the transpose). The peak (depth i=0) sits at the inner edge
+    -- and fades toward the page; the "far" placements (right panel, bottom band)
+    -- mirror the depth axis so the peak lands against the inner edge.
+    local mirror_far = self._on_right or self._place == "bottom"
+    local free_len = self._horizontal and w or shadow_h
+    local exp_bw = self._horizontal and free_len or swidth
+    local exp_bh = self._horizontal and swidth or free_len
     if not shadow_disabled and (not self._shadow_bb
-            or self._shadow_bb:getHeight() ~= shadow_h
+            or self._shadow_bb:getWidth() ~= exp_bw
+            or self._shadow_bb:getHeight() ~= exp_bh
             or self._shadow_night ~= skey) then
         if self._shadow_bb then self._shadow_bb:free() end
         self._shadow_night = skey
-        self._shadow_bb = Blitbuffer.new(swidth, shadow_h,
+        self._shadow_bb = Blitbuffer.new(exp_bw, exp_bh,
             Blitbuffer.TYPE_BBRGB32)
         local function origFrac(tt)
             if night then
@@ -2162,15 +2244,20 @@ function GlimpseViewer:_paintPanel(bb, x, y)
             -- opaque or fully transparent (a dot, or no dot)
             local level = (orig_level + bump * (peak_level - orig_level)) * 255
             local col = (i % 8) + 1
-            -- column i runs peak (panel edge) → fade. For a right drawer the
-            -- shadow casts leftwards, so write the mirror column: the peak ends
-            -- up at the buffer's RIGHT edge, which is blitted against the
-            -- panel's (left) inner edge below.
-            local ci = on_right and (swidth - 1 - i) or i
-            for j = 0, shadow_h - 1 do
+            -- depth i runs peak (inner edge) → fade. A "far" placement mirrors
+            -- the depth so the peak lands at the buffer edge blitted against the
+            -- panel's inner edge. For a band the depth is the ROW axis and the
+            -- free axis is the buffer's columns (the transpose).
+            local di = mirror_far and (swidth - 1 - i) or i
+            for j = 0, free_len - 1 do
                 local threshold = (SHADOW_BAYER8[col][(j % 8) + 1] + 0.5) * 4
                 local a = level > threshold and 255 or 0
-                self._shadow_bb:setPixel(ci, j, Blitbuffer.ColorRGB32(sv, sv, sv, a))
+                local sc = Blitbuffer.ColorRGB32(sv, sv, sv, a)
+                if self._horizontal then
+                    self._shadow_bb:setPixel(j, di, sc)
+                else
+                    self._shadow_bb:setPixel(di, j, sc)
+                end
             end
         end
         self._shadow_bb:setInverse(render_inv and 1 or 0)
@@ -2180,11 +2267,21 @@ function GlimpseViewer:_paintPanel(bb, x, y)
     local skip_shadow = self._skip_shadow_paint
     self._skip_shadow_paint = nil
     if not skip_shadow and not shadow_disabled then
-        -- left drawer: cast right from the panel's right edge; right drawer:
-        -- cast left from the panel's left edge (buffer already mirrored above)
-        local sx = on_right and (x + self.shadow_overlap - swidth)
-            or (x + w - self.shadow_overlap)
-        bb:alphablitFrom(self._shadow_bb, sx, y, 0, 0, swidth, shadow_h)
+        -- blit the gradient at the inner edge, its first shadow_overlap of depth
+        -- hidden under the panel and the rest cast onto the page:
+        --   left panel   → right of the panel's right edge
+        --   right panel  → left of the panel's left edge
+        --   top band     → below the band's bottom edge
+        --   bottom band  → above the band's top edge
+        local ov = self.shadow_overlap
+        if self._horizontal then
+            local sy = (self._place == "top") and (y + h - ov)
+                or (y + ov - swidth)
+            bb:alphablitFrom(self._shadow_bb, x, sy, 0, 0, w, swidth)
+        else
+            local sx = on_right and (x + ov - swidth) or (x + w - ov)
+            bb:alphablitFrom(self._shadow_bb, sx, y, 0, 0, swidth, shadow_h)
+        end
     end
 
     -- Under-corner snapshots: the panel stencil's arc pixels carry
@@ -2203,18 +2300,17 @@ function GlimpseViewer:_paintPanel(bb, x, y)
         }
     end
     local ucb = self._under_corner_bbs
-    -- the rounded corners sit on the inner edge: right (x+w-cr) for a left
-    -- drawer, left (x) for a right drawer
-    local corner_x = on_right and x or (x + w - cr)
+    -- the two rounded corners sit at the ends of the inner edge (see _cornerGeom)
+    local ugeo = self:_cornerGeom(x, cpy)
     if skip_shadow then
-        bb:blitFrom(ucb[1], corner_x, cpy, 0, 0, cr, cr)
-        bb:blitFrom(ucb[2], corner_x, cpy + h - cr, 0, 0, cr, cr)
+        bb:blitFrom(ucb[1], ugeo[1][1], ugeo[1][2], 0, 0, cr, cr)
+        bb:blitFrom(ucb[2], ugeo[2][1], ugeo[2][2], 0, 0, cr, cr)
     else
         -- match the fb's inverse flag so these copies run on the C blitter
         ucb[1]:setInverse(render_inv and 1 or 0)
         ucb[2]:setInverse(render_inv and 1 or 0)
-        ucb[1]:blitFrom(bb, 0, 0, corner_x, cpy, cr, cr)
-        ucb[2]:blitFrom(bb, 0, 0, corner_x, cpy + h - cr, cr, cr)
+        ucb[1]:blitFrom(bb, 0, 0, ugeo[1][1], ugeo[1][2], cr, cr)
+        ucb[2]:blitFrom(bb, 0, 0, ugeo[2][1], ugeo[2][2], cr, cr)
     end
 
     if not self._panel_bb or self._panel_bb:getWidth() ~= w
@@ -2240,34 +2336,48 @@ function GlimpseViewer:_paintPanel(bb, x, y)
         local bw = night and math.max(2, Screen:scaleBySize(1))
             or self.panel_border
         local r = self.panel_radius
-        -- border on three sides: top, bottom, and the INNER vertical edge
-        -- (right for a left drawer, left for a right drawer). The outer edge is
-        -- flush with the screen edge and borderless.
+        -- border on the three non-flush edges: everything except the outer edge
+        -- named by self._place, which is flush with the screen edge.
         self._panel_bb:paintRectRGB32(0, 0, w, h, c_body)
-        self._panel_bb:paintRectRGB32(0, 0, w, bw, c_edge)
-        self._panel_bb:paintRectRGB32(0, h - bw, w, bw, c_edge)
-        self._panel_bb:paintRectRGB32(on_right and 0 or (w - bw), 0, bw, h, c_edge)
+        if self._place ~= "top" then
+            self._panel_bb:paintRectRGB32(0, 0, w, bw, c_edge)
+        end
+        if self._place ~= "bottom" then
+            self._panel_bb:paintRectRGB32(0, h - bw, w, bw, c_edge)
+        end
+        if self._place ~= "right" then
+            self._panel_bb:paintRectRGB32(w - bw, 0, bw, h, c_edge)
+        end
+        if self._place ~= "left" then
+            self._panel_bb:paintRectRGB32(0, 0, bw, h, c_edge)
+        end
         -- inner-edge corners: AA arcs — body inside, border ring, transparent
-        -- outside (the page shows in the notches). Circle centre and the
-        -- scanned column band both flip to the left for a right drawer.
-        for cy_top = 0, 1 do
-            local ccx = on_right and r or (w - r)
-            local ccy = cy_top == 0 and r or h - r
-            local px_from = on_right and 0 or (w - r)
-            local px_to = on_right and (r - 1) or (w - 1)
-            for px = px_from, px_to do
-                for qy = 0, r - 1 do
-                    local pyy = cy_top == 0 and qy or h - 1 - qy
+        -- outside (the page shows in the notches). The two rounded corners sit at
+        -- the ends of the inner edge; each is an r×r square (its OUTER quadrant),
+        -- with the disc centre r inward. c.cx/c.cy are the centre; c.xd/c.yd point
+        -- from the centre toward the rounded (outer) corner.
+        local corners
+        if self._place == "left" then
+            corners = { {cx=w-r, cy=r, xd=1, yd=-1}, {cx=w-r, cy=h-r, xd=1, yd=1} }
+        elseif self._place == "right" then
+            corners = { {cx=r, cy=r, xd=-1, yd=-1}, {cx=r, cy=h-r, xd=-1, yd=1} }
+        elseif self._place == "top" then
+            corners = { {cx=r, cy=h-r, xd=-1, yd=1}, {cx=w-r, cy=h-r, xd=1, yd=1} }
+        else -- bottom
+            corners = { {cx=r, cy=r, xd=-1, yd=-1}, {cx=w-r, cy=r, xd=1, yd=-1} }
+        end
+        for _, c in ipairs(corners) do
+            local sq_x = c.xd > 0 and c.cx or (c.cx - r)
+            local sq_y = c.yd > 0 and c.cy or (c.cy - r)
+            for px = sq_x, sq_x + r - 1 do
+                for pyy = sq_y, sq_y + r - 1 do
                     local fx, fy = px + 0.5, pyy + 0.5
-                    local x_out = on_right and (fx <= ccx) or (fx >= ccx)
-                    if x_out and (cy_top == 0 and fy <= ccy or cy_top == 1 and fy >= ccy) then
-                        local d = math.sqrt((fx - ccx) ^ 2 + (fy - ccy) ^ 2)
-                        local cov = math.min(math.max(r - d + 0.5, 0), 1)
-                        local t_in = math.min(math.max((r - bw) - d + 0.5, 0), 1)
-                        local g = math.floor(edge + t_in * (body - edge) + 0.5)
-                        self._panel_bb:setPixel(px, pyy,
-                            Blitbuffer.ColorRGB32(g, g, g, math.floor(cov * 255 + 0.5)))
-                    end
+                    local d = math.sqrt((fx - c.cx) ^ 2 + (fy - c.cy) ^ 2)
+                    local cov = math.min(math.max(r - d + 0.5, 0), 1)
+                    local t_in = math.min(math.max((r - bw) - d + 0.5, 0), 1)
+                    local g = math.floor(edge + t_in * (body - edge) + 0.5)
+                    self._panel_bb:setPixel(px, pyy,
+                        Blitbuffer.ColorRGB32(g, g, g, math.floor(cov * 255 + 0.5)))
                 end
             end
         end
@@ -2277,8 +2387,36 @@ function GlimpseViewer:_paintPanel(bb, x, y)
     self:_saveCorners(bb, x, py)
 end
 
+-- The two rounded corners sit at the ends of the inner (page-facing) edge, which
+-- depends on the placement. Returns absolute origins + corner-local disc centres
+-- for both corner squares, shared by the panel-body corner blit, _saveCorners and
+-- _restoreCorners: { {ox, oy, ccx_local, ccy_local}, {...} }. Requires py, the
+-- panel's top in screen coords (x + panel_vgap already folded in by callers).
+function GlimpseViewer:_cornerGeom(x, py)
+    local w, h, r = self._panel_w, self._panel_h, self.panel_radius
+    if self._horizontal then
+        -- inner edge is horizontal (bottom for a top band, top for a bottom
+        -- band); corners at the left and right ends of that edge
+        local oy = (self._place == "top") and (py + h - r) or py
+        local ccy = (self._place == "top") and 0 or r
+        return {
+            { x, oy, r, ccy },          -- left corner: disc centre at local x=r
+            { x + w - r, oy, 0, ccy },  -- right corner: disc centre at local x=0
+        }
+    else
+        -- inner edge is vertical (right for a left panel, left for a right
+        -- panel); corners at the top and bottom ends of that edge
+        local ox = self._on_right and x or (x + w - r)
+        local ccx = self._on_right and r or 0
+        return {
+            { ox, py, ccx, r },          -- top corner: disc centre at local y=r
+            { ox, py + h - r, ccx, 0 },  -- bottom corner: disc centre at local y=0
+        }
+    end
+end
+
 -- The image is allowed to reach the panel border, so a zoomed image would
--- paint square corners over the rounded right ones. Right after the panel
+-- paint square corners over the rounded ones. Right after the panel
 -- is painted (page in the notches, border arc, white interior), the two
 -- corner squares are copied aside with per-pixel alpha = "outside the
 -- interior" (notch + border ring + an image_padding-wide white ring
@@ -2286,7 +2424,6 @@ end
 -- have painted — the image's corners end up rounded, with the same white
 -- gap against the border as along the straight edges.
 function GlimpseViewer:_saveCorners(bb, x, py)
-    local w, h = self._panel_w, self._panel_h
     local r, bw = self.panel_radius, self.panel_border
     if not self._corner_bbs then
         self._corner_bbs = {
@@ -2294,19 +2431,13 @@ function GlimpseViewer:_saveCorners(bb, x, py)
             Blitbuffer.new(r, r, Blitbuffer.TYPE_BBRGB32),
         }
     end
-    -- rounded corners on the inner edge: right (x+w-r) for a left drawer, left
-    -- (x) for a right drawer
-    local corner_x = self._on_right and x or (x + w - r)
-    self._corner_bbs[1]:blitFrom(bb, 0, 0, corner_x, py, r, r)
-    self._corner_bbs[2]:blitFrom(bb, 0, 0, corner_x, py + h - r, r, r)
+    local geo = self:_cornerGeom(x, py)
+    local keep_r = r - bw - self.image_padding
     for k = 1, 2 do
+        local g = geo[k]
         local cbb = self._corner_bbs[k]
-        -- circle centre in corner-local coords: x is the INTERIOR side of the
-        -- square (local 0 for a left drawer, local r for a right drawer); y is
-        -- r for the top corner, 0 for the bottom one
-        local ccx = self._on_right and r or 0
-        local ccy = k == 1 and r or 0
-        local keep_r = r - bw - self.image_padding
+        cbb:blitFrom(bb, 0, 0, g[1], g[2], r, r)
+        local ccx, ccy = g[3], g[4]
         for pyy = 0, r - 1 do
             for pxx = 0, r - 1 do
                 local d = math.sqrt((pxx + 0.5 - ccx) ^ 2 + (pyy + 0.5 - ccy) ^ 2)
@@ -2323,12 +2454,32 @@ end
 
 function GlimpseViewer:_restoreCorners(bb, x, y)
     if not self._corner_bbs then return end
-    local w, h = self._panel_w, self._panel_h
-    local py = y + self.panel_vgap
     local r = self.panel_radius
-    local corner_x = self._on_right and x or (x + w - r)
-    bb:alphablitFrom(self._corner_bbs[1], corner_x, py, 0, 0, r, r)
-    bb:alphablitFrom(self._corner_bbs[2], corner_x, py + h - r, 0, 0, r, r)
+    local py = y + self.panel_vgap
+    local geo = self:_cornerGeom(x, py)
+    bb:alphablitFrom(self._corner_bbs[1], geo[1][1], geo[1][2], 0, 0, r, r)
+    bb:alphablitFrom(self._corner_bbs[2], geo[2][1], geo[2][2], 0, 0, r, r)
+end
+
+-- Grow a refresh Geom to cover the gradient shadow, which casts from the inner
+-- edge onto the page (toward the far edge for a right panel / bottom band). No-op
+-- when the shadow is disabled — then the region stays hugging the drawer so a
+-- promoted flash never reaches the untouched page. Mutates and returns d.
+function GlimpseViewer:_growForShadow(d)
+    if G_reader_settings:isTrue(SHADOW_KEY) then return d end
+    local extra = 2 * self.shadow_width - self.shadow_overlap + 1
+    if self._place == "right" then
+        local nx = math.max(0, d.x - extra)
+        d.w = d.w + (d.x - nx); d.x = nx
+    elseif self._place == "top" then
+        d.h = math.min(Screen:getHeight() - d.y, d.h + extra)
+    elseif self._place == "bottom" then
+        local ny = math.max(0, d.y - extra)
+        d.h = d.h + (d.y - ny); d.y = ny
+    else -- left
+        d.w = math.min(Screen:getWidth() - d.x, d.w + extra)
+    end
+    return d
 end
 
 -- The G-sensor's SetRotationMode event is delivered to the topmost widget
@@ -2427,21 +2578,10 @@ function GlimpseViewer:onCloseWidget()
         -- Same teardown-race guard as update(): if the frame is already gone
         -- by the time this deferred callback runs, drop the refresh.
         if not self.main_frame.dimen then return end
-        local d = self.main_frame.dimen:copy()
         -- cover the shadow at its widest (night mode = 2× shadow_width) — but
         -- only when the shadow is on. With it off, keep the region to the
         -- drawer so a promoted/flash refresh never reaches the book page.
-        if not G_reader_settings:isTrue(SHADOW_KEY) then
-            local extra = 2 * self.shadow_width - self.shadow_overlap + 1
-            if self._on_right then
-                -- shadow casts leftwards: grow the region toward the left edge
-                local nx = math.max(0, d.x - extra)
-                d.w = d.w + (d.x - nx)
-                d.x = nx
-            else
-                d.w = math.min(Screen:getWidth() - d.x, d.w + extra)
-            end
-        end
+        local d = self:_growForShadow(self.main_frame.dimen:copy())
         -- "full": a GC16 clearing refresh over the drawer (and its shadow)
         -- area on every close — the ghosting the drawer/shadow leaves on
         -- e-ink, worst at night, is scrubbed as it lifts away. This is the
@@ -2790,10 +2930,12 @@ end
 -- Drawer-content origin: gallery cell/tab rects are recorded relative to it.
 function GlimpseViewer:_contentOrigin()
     local mf = self.main_frame.dimen
-    -- content is inset from mf.x by the inner-edge border padding: 0 on the left
-    -- for a left drawer, panel_border on the left for a right drawer
-    local left_pad = self._on_right and self.panel_border or 0
-    return mf.x + left_pad, mf.y + self.panel_vgap + self.panel_border
+    -- content is inset from the frame by the border padding on each non-flush
+    -- edge; the flush (outer) edge — named by self._place — has zero padding
+    local b = self.panel_border
+    local left_pad = self._place == "left" and 0 or b
+    local top_pad = self._place == "top" and 0 or b
+    return mf.x + left_pad, mf.y + self.panel_vgap + top_pad
 end
 
 -- The gallery cell {x,y,w,h,idx} at pos (drawer-content space), or nil.
@@ -5458,16 +5600,6 @@ function Glimpse:showViewer(whole_book_once)
     -- still paints it before us, so the blend stays accumulation-free.
     -- false, not nil: nil falls back to the class alpha via the metatable.
     viewer.alpha = false
-    -- one dithered refresh covering the drawer (plus its gradient shadow when
-    -- the shadow is on — it falls onto the page). With the shadow OFF, refresh
-    -- ONLY the drawer, so the book area to its right is never in the region:
-    -- otherwise KOReader's periodic promotion of this refresh to a flashing
-    -- full flashes the page black even though nothing there changed.
-    local open_w = viewer._panel_w + 2
-    if not G_reader_settings:isTrue(SHADOW_KEY) then
-        open_w = viewer._panel_w
-            + 2 * viewer.shadow_width - viewer.shadow_overlap + 1
-    end
     -- Refresh isolation: Glimpse lives in its own refresh world. Snapshot the
     -- reader's ghost-clear counter and reset it to 0 for the session, so the
     -- reader's accumulated count can't promote a Glimpse refresh into a
@@ -5475,17 +5607,25 @@ function Glimpse:showViewer(whole_book_once)
     -- toward its periodic flash. The count is restored on close (onCloseWidget).
     viewer._reader_refresh_count = UIManager.refresh_count
     UIManager.refresh_count = 0
-    -- the region hugs the drawer's screen edge: left for a left drawer, right
-    -- for a right drawer (where the panel + its leftward shadow sit against the
-    -- right edge)
-    local open_rw = math.min(Screen:getWidth(), open_w)
-    local open_rx = viewer._on_right and (Screen:getWidth() - open_rw) or 0
+    -- one dithered refresh covering the drawer (plus its gradient shadow when
+    -- the shadow is on — it falls onto the page). With the shadow OFF, the region
+    -- hugs the drawer only, so the untouched book area is never in it (otherwise
+    -- KOReader's periodic promotion to a flashing full flashes the page black).
+    -- The region hugs the drawer's flush screen edge and grows toward the page by
+    -- the shadow: left/right for a side panel, top/bottom for a band.
+    local SW, SH = Screen:getWidth(), Screen:getHeight()
+    local open_region
+    if viewer._horizontal then
+        local rh = math.min(SH, viewer._panel_h + 2)
+        local ry = viewer._place == "bottom" and (SH - rh) or 0
+        open_region = Geom:new{ x = 0, y = ry, w = SW, h = rh }
+    else
+        local rw = math.min(SW, viewer._panel_w + 2)
+        local rx = viewer._on_right and (SW - rw) or 0
+        open_region = Geom:new{ x = rx, y = 0, w = rw, h = SH }
+    end
     UIManager:show(viewer, Device:hasKaleidoWfm() and "partial" or "ui",
-        Geom:new{
-            x = open_rx, y = 0,
-            w = open_rw,
-            h = Screen:getHeight(),
-        }, nil, nil, true)
+        viewer:_growForShadow(open_region), nil, nil, true)
     viewer.alpha = nil -- back to the class default for later paths
 end
 
@@ -5894,34 +6034,155 @@ function Glimpse:_gestureLabel()
     return T(_("Gesture to open: %1"), table.concat(found, ", "))
 end
 
--- Layout chooser (Settings → Layout, and the ⋯ Quick Action): pick which
--- screen edge the drawer opens on. Applying reopens the drawer on the chosen
--- side when it's currently open; from the plugin menu it just saves for next time.
+-- Layout chooser dialog: two independent radio groups — Portrait Position
+-- (Side/Bottom/Top) and Preferred Alignment (Left/Right). Modelled on
+-- RadioButtonWidget, but that widget is single-group, so we compose two
+-- RadioButtonTables in one frame. on_apply(pos, align) fires on Apply.
+local GlimpseLayoutDialog = FocusManager:extend{
+    pos = nil,      -- "side"/"bottom"/"top"
+    align = nil,    -- "left"/"right"
+    on_apply = nil, -- function(pos, align)
+}
+
+function GlimpseLayoutDialog:init()
+    -- FocusManager has no init and leaves self.layout nil ("mandatory"); the
+    -- focus/scroll code does #self.layout, so seed it before mergeLayoutInVertical
+    self.layout = {}
+    self.screen_width = Screen:getWidth()
+    self.screen_height = Screen:getHeight()
+    self.width = math.floor(math.min(self.screen_width, self.screen_height) * 0.9)
+    if Device:hasKeys() then
+        self.key_events.Close = { { Device.input.group.Back } }
+    end
+    self.ges_events.TapClose = {
+        GestureRange:new{ ges = "tap",
+            range = Geom:new{ w = self.screen_width, h = self.screen_height } },
+    }
+    local inner_w = math.floor(self.width * 0.9)
+
+    self.pos_table = RadioButtonTable:new{
+        radio_buttons = { {
+            { text = _("Side"),   provider = "side",   checked = self.pos == "side" },
+            { text = _("Bottom"), provider = "bottom", checked = self.pos == "bottom" },
+            { text = _("Top"),    provider = "top",    checked = self.pos == "top" },
+        } },
+        width = inner_w, scroll = false, parent = self,
+    }
+    self:mergeLayoutInVertical(self.pos_table)
+    self.align_table = RadioButtonTable:new{
+        radio_buttons = { {
+            { text = _("Left"),  provider = "left",  checked = self.align == "left" },
+            { text = _("Right"), provider = "right", checked = self.align == "right" },
+        } },
+        width = inner_w, scroll = false, parent = self,
+    }
+    self:mergeLayoutInVertical(self.align_table)
+
+    local title_bar = TitleBar:new{
+        width = self.width, align = "left", with_bottom_line = true,
+        title = _("Layout"), title_shrink_font_to_fit = true,
+        info_text = _("Where Glimpse opens. In landscape it always uses the preferred side."),
+        show_parent = self,
+    }
+    local function section(text)
+        return FrameContainer:new{
+            bordersize = 0, margin = 0, padding = 0,
+            padding_left = Size.padding.large,
+            padding_top = Size.padding.large,
+            TextWidget:new{ text = text, bold = true,
+                face = Font:getFace("cfont", 18) },
+        }
+    end
+    local function centred(tbl)
+        return CenterContainer:new{
+            dimen = Geom:new{ w = self.width, h = tbl:getSize().h },
+            HorizontalGroup:new{ align = "center", tbl },
+        }
+    end
+
+    local buttons = ButtonTable:new{
+        width = self.width - 2 * Size.padding.default,
+        buttons = { {
+            { text = _("Close"), callback = function() self:onClose() end },
+            { text = _("Apply"), callback = function()
+                local p = self.pos_table.checked_button.provider
+                local a = self.align_table.checked_button.provider
+                self:onClose()
+                if self.on_apply then self.on_apply(p, a) end
+            end },
+        } },
+        zero_sep = true, show_parent = self,
+    }
+    self:mergeLayoutInVertical(buttons)
+
+    local vgroup = VerticalGroup:new{ align = "left", title_bar }
+    table.insert(vgroup, section(_("Portrait Position")))
+    table.insert(vgroup, centred(self.pos_table))
+    table.insert(vgroup, section(_("Preferred Alignment")))
+    table.insert(vgroup, centred(self.align_table))
+    table.insert(vgroup, VerticalSpan:new{ width = Size.padding.large })
+    table.insert(vgroup, CenterContainer:new{
+        dimen = Geom:new{ w = self.width, h = buttons:getSize().h }, buttons })
+
+    self.widget_frame = FrameContainer:new{
+        radius = Size.radius.window, padding = 0, margin = 0,
+        background = Blitbuffer.COLOR_WHITE, vgroup,
+    }
+    self.movable = MovableContainer:new{ self.widget_frame }
+    self[1] = WidgetContainer:new{
+        align = "center",
+        dimen = Geom:new{ x = 0, y = 0,
+            w = self.screen_width, h = self.screen_height },
+        self.movable,
+    }
+    UIManager:setDirty(self, function() return "ui", self.widget_frame.dimen end)
+end
+
+function GlimpseLayoutDialog:onShow()
+    UIManager:setDirty(self, function() return "ui", self.widget_frame.dimen end)
+    return true
+end
+function GlimpseLayoutDialog:onCloseWidget()
+    UIManager:setDirty(nil, function() return "ui", self.widget_frame.dimen end)
+end
+function GlimpseLayoutDialog:onTapClose(arg, ges_ev)
+    if ges_ev.pos:notIntersectWith(self.widget_frame.dimen) then self:onClose() end
+    return true
+end
+function GlimpseLayoutDialog:onClose()
+    UIManager:close(self)
+    return true
+end
+
+-- Layout chooser (Settings → Layout, and the ⋯ Quick Action): pick the portrait
+-- position and the preferred (landscape/side) alignment. Applying re-lays-out the
+-- open drawer in place; from the plugin menu it just saves for next time.
 function Glimpse:_showLayoutDialog()
-    local RadioButtonWidget = require("ui/widget/radiobuttonwidget")
-    local on_right = G_reader_settings:isTrue(LAYOUT_RIGHT_KEY)
-    UIManager:show(RadioButtonWidget:new{
-        title_text = _("Layout"),
-        info_text = _("Which side of the screen should Glimpse open on?"),
-        width_factor = 0.9,
-        radio_buttons = {
-            { { text = _("Left"),  provider = "left",  checked = not on_right } },
-            { { text = _("Right"), provider = "right", checked = on_right } },
-        },
-        callback = function(w)
-            local want_right = w.provider == "right"
-            if want_right == on_right then return end
-            -- store nil for the default (left) so it reads as unset
-            G_reader_settings:saveSetting(LAYOUT_RIGHT_KEY, want_right or nil)
-            -- Re-lay-out the open drawer IN PLACE on the new side rather than
-            -- closing + reopening: update() reads the setting and rebuilds on
-            -- the new edge, and the full-band refresh spans the combined old+new
-            -- drawer region (the whole width on a side flip), so the old side is
-            -- cleared and the new one drawn without the panel ever disappearing.
-            if self._viewer then
-                self._viewer._full_band_refresh = true
-                self._viewer:update()
-            end
+    UIManager:show(GlimpseLayoutDialog:new{
+        pos = _portraitPos(),
+        align = _prefAlign(),
+        on_apply = function(pos, align)
+            -- effective placement BEFORE the change (reads the old settings)
+            local old_place = _resolvePlacement()
+            -- store nil for the "side" default so it reads as unset; keep the
+            -- legacy LAYOUT_RIGHT_KEY in sync so a downgrade still honors the side
+            G_reader_settings:saveSetting(PORTRAIT_POS_KEY,
+                pos ~= "side" and pos or nil)
+            G_reader_settings:saveSetting(PREF_ALIGN_KEY, align)
+            G_reader_settings:saveSetting(LAYOUT_RIGHT_KEY,
+                align == "right" or nil)
+            if not self._viewer then return end
+            -- Only redraw if the drawer's VISIBLE placement actually changes (e.g.
+            -- changing the portrait position while in landscape is a no-op now).
+            if _resolvePlacement() == old_place then return end
+            -- Close + reopen rather than an in-place relayout: closing the drawer
+            -- first repaints the reader over the OLD footprint, clearing it, then
+            -- it reopens on the new placement. An in-place refresh leaves the strip
+            -- the old drawer vacated (e.g. a left panel → right panel) uncleared.
+            -- Zoom/pan/image are remembered, so it reopens on the same image (same
+            -- as the rotation reopen).
+            self._viewer:onClose()
+            self:showViewer()
         end,
     })
 end
@@ -6083,11 +6344,15 @@ function Glimpse:_menuItems()
                 },
                 {
                     text_func = function()
-                        return T(_("Layout: %1"),
-                            G_reader_settings:isTrue(LAYOUT_RIGHT_KEY)
-                                and _("Right") or _("Left"))
+                        local pos = _portraitPos()
+                        local pos_label = pos == "bottom" and _("Bottom")
+                            or pos == "top" and _("Top") or _("Side")
+                        local align_label = _prefAlign() == "right"
+                            and _("Right") or _("Left")
+                        -- e.g. "Layout: Side · Left"
+                        return T(_("Layout: %1 · %2"), pos_label, align_label)
                     end,
-                    help_text = _("Choose which side of the screen Glimpse opens on, left or right."),
+                    help_text = _("Where Glimpse opens: a side panel (left or right) or, in portrait, a band across the top or bottom. In landscape it always uses the preferred side."),
                     keep_menu_open = true,
                     callback = function() self:_showLayoutDialog() end,
                 },

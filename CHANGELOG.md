@@ -5,8 +5,9 @@
 Everything below has shipped only in pre-release builds so far. Fold it into
 the notes of the next public release.
 
-**↔️ Choose which side Glimpse opens on**
-- **New Layout setting (Settings → Layout).** Pick whether the panel slides in from the left or the right edge of the screen, whichever suits the hand you hold your device in. The whole drawer mirrors, including its rounded edge, shadow, and the ‹/› arrows (which keep pointing the right way). Also available as a Quick Action in the ⋯ menu.
+**↔️ Choose where Glimpse opens (Settings → Layout)**
+- **Pick a side, or a top/bottom band.** The Layout modal now has two settings: *Portrait Position* (Side · Bottom · Top) and *Preferred Alignment* (Left · Right). In portrait you can have the panel slide in from the left or right edge, or open as a band across the top or bottom half of the screen. In landscape it always uses your preferred side, so a rotate never leaves it stuck top or bottom.
+- The whole drawer adapts to wherever it opens – its rounded edge, gradient shadow, border and the ‹/› arrows all sit on the right sides for that placement. Also available as a Quick Action in the ⋯ menu.
 
 **✅ Toggle several settings without the menu closing**
 - The checkbox rows in the ⋯ menu (Nav Buttons, Zoom Controls, Image Captions, Invert in Night Mode) now apply instantly and keep the menu open, so you can flip several in one go. Action rows still close the menu as before.
