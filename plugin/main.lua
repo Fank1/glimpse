@@ -1319,6 +1319,10 @@ function GlimpsePopupMenu:init()
                 icon_size = self.icon_size, pad_left = self.pad_left,
             }
             row._callback = it.callback
+            -- toggle rows (a checkbox that flips a setting live) carry a getter
+            -- so onTap can refresh the glyph in place and keep the menu open
+            row._check_get = it.check_get
+            row._lead_wg = lead_wg
             self._rows[#self._rows + 1] = row
             table.insert(vg, row)
             if i < #list then
@@ -1392,6 +1396,21 @@ end
 function GlimpsePopupMenu:onTap(_, ges)
     for _, row in ipairs(self._rows) do
         if row.dimen and ges.pos:intersectWith(row.dimen) then
+            if row._check_get then
+                -- a live toggle (checkbox): apply the change immediately (the
+                -- callback flips the setting and re-lays-out the drawer beneath
+                -- us) but KEEP THE MENU OPEN, and refresh the checkbox glyph in
+                -- place so its new state shows. Lets the user flip several
+                -- settings in one visit instead of reopening the menu each time.
+                if row._callback then row._callback() end
+                if row._lead_wg and row._lead_wg.setText then
+                    row._lead_wg:setText(row._check_get() and "☑" or "☐")
+                end
+                -- repaint the menu on top of the just-updated drawer
+                UIManager:setDirty(self, "ui", self:refreshRegion())
+                return true
+            end
+            -- an action row: dismiss, then run it
             local cb = row._callback
             self:dismiss()
             if cb then cb() end
@@ -3306,6 +3325,7 @@ function GlimpseViewer:_showMoreMenu()
         items[#items + 1] = {
             text = _("Nav Buttons"),
             check = G_reader_settings:isTrue(NAV_BUTTONS_KEY),
+            check_get = function() return G_reader_settings:isTrue(NAV_BUTTONS_KEY) end,
             callback = function() self:_togglePrevNext() end,
         }
     end
@@ -3313,6 +3333,7 @@ function GlimpseViewer:_showMoreMenu()
         items[#items + 1] = {
             text = _("Zoom Controls"),
             check = G_reader_settings:isTrue(ZOOMCTL_KEY),
+            check_get = function() return G_reader_settings:isTrue(ZOOMCTL_KEY) end,
             callback = function() self:_toggleZoomControl() end,
         }
     end
@@ -3320,6 +3341,7 @@ function GlimpseViewer:_showMoreMenu()
         items[#items + 1] = {
             text = _("Image Captions"),
             check = G_reader_settings:nilOrTrue(CAPTIONS_KEY),
+            check_get = function() return G_reader_settings:nilOrTrue(CAPTIONS_KEY) end,
             callback = function() self:_toggleCaptions() end,
         }
     end
@@ -3338,6 +3360,7 @@ function GlimpseViewer:_showMoreMenu()
             -- so it lines up with the icons above it
             text = _("Invert in Night Mode"),
             check = G_reader_settings:isTrue(INVERT_KEY),
+            check_get = function() return G_reader_settings:isTrue(INVERT_KEY) end,
             callback = function() self:_toggleInvert() end,
         }
     end
