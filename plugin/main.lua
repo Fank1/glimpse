@@ -5024,12 +5024,13 @@ function Glimpse:showViewer(whole_book_once)
         if self:getScope() == "read_so_far" and not whole_book_once
                 and scope_hidden > 0 then
             local msg = scope_hidden == 1
-                and _("No images up to here yet — 1 further in the book.")
-                or T(_("No images up to here yet — %1 further in the book."),
+                and _("No images up to here yet – 1 further in the book.")
+                or T(_("No images up to here yet – %1 further in the book."),
                     scope_hidden)
             UIManager:show(ConfirmBox:new{
                 text = msg,
                 ok_text = _("Show whole book"),
+                cancel_text = _("Close"),
                 ok_callback = function()
                     self:showViewer(true)
                 end,
@@ -5038,8 +5039,8 @@ function Glimpse:showViewer(whole_book_once)
             -- everything in scope was filtered out (the #4 case): let the
             -- user review and re-add from the Gallery's Ignored tab
             local msg = #ignored_metas == 1
-                and _("No images to show — 1 was filtered out as irrelevant.")
-                or T(_("No images to show — %1 were filtered out as irrelevant."),
+                and _("No images to show – 1 was filtered out as irrelevant.")
+                or T(_("No images to show – %1 were filtered out as irrelevant."),
                     #ignored_metas)
             UIManager:show(ConfirmBox:new{
                 text = msg,
@@ -5914,7 +5915,7 @@ function Glimpse:_menuItems()
             -- (and Open Glimpse) inert, so the user can silence Glimpse
             -- without hunting through the gesture manager to unbind it
             text = _("Enable Glimpse"),
-            help_text = _("Master switch. When off, the bound gesture and the Open Glimpse entry do nothing — a quick way to silence Glimpse without unbinding its gesture."),
+            help_text = _("Master switch. When off, the bound gesture and the Open Glimpse entry do nothing – a quick way to silence Glimpse without unbinding its gesture."),
             checked_func = function()
                 return G_reader_settings:nilOrTrue(ENABLED_KEY)
             end,
@@ -5979,7 +5980,7 @@ function Glimpse:_menuItems()
             -- sits directly under Mode: it also shapes what the Gallery holds.
             -- Renamed from "Include bookmarked pages"; also a Quick Action.
             text = _("Include Bookmarks in Gallery"),
-            help_text = _("Also show the pages you've bookmarked (the dogear bookmark) in the Gallery, rendered as page thumbnails and marked with a bookmark badge, in reading order alongside the images — a quick way to keep a reference page a swipe away. Off by default. Also available from the viewer's ⋯ menu (see Quick Actions)."),
+            help_text = _("Also show the pages you've bookmarked (the dogear bookmark) in the Gallery, rendered as page thumbnails and marked with a bookmark badge, in reading order alongside the images – a quick way to keep a reference page a swipe away. Off by default. Also available from the viewer's ⋯ menu (see Quick Actions)."),
             checked_func = function()
                 return G_reader_settings:isTrue(BOOKMARKS_KEY)
             end,
@@ -6172,7 +6173,7 @@ function Glimpse:_menuItems()
                 },
                 {
                     text = _("Disable shadows"),
-                    help_text = _("Remove the drawer's drop shadow. The shadow is a dithered gradient — the main cause of e-ink ghosting behind the drawer — so turn it off if a ghost lingers after closing Glimpse. No visible effect on LCD screens."),
+                    help_text = _("Remove the drawer's drop shadow. The shadow is a dithered gradient – the main cause of e-ink ghosting behind the drawer – so turn it off if a ghost lingers after closing Glimpse. No visible effect on LCD screens."),
                     checked_func = function()
                         return G_reader_settings:isTrue(SHADOW_KEY)
                     end,
@@ -6183,7 +6184,7 @@ function Glimpse:_menuItems()
                 },
                 {
                     text = _("Fast image switching"),
-                    help_text = _("Switch between images with a quick, flashless refresh instead of a full clear. On by default: faster and no flash. Turn it off if the previous image ghosts through the next one — most noticeable on detailed maps and on slower e-ink panels. No visible effect on LCD screens."),
+                    help_text = _("Switch between images with a quick, flashless refresh instead of a full clear. On by default: faster and no flash. Turn it off if the previous image ghosts through the next one – most noticeable on detailed maps and on slower e-ink panels. No visible effect on LCD screens."),
                     checked_func = function()
                         return G_reader_settings:nilOrTrue(FAST_SWITCH_KEY)
                     end,
@@ -6227,7 +6228,7 @@ function Glimpse:_menuItems()
                 },
                 {
                     text = _("Include pre-release versions"),
-                    help_text = _("Also offer releases marked as pre-release on GitHub — test builds published before a proper release. Normal update checks never see those."),
+                    help_text = _("Also offer releases marked as pre-release on GitHub – test builds published before a proper release. Normal update checks never see those."),
                     checked_func = function()
                         return G_reader_settings:isTrue(PRERELEASE_KEY)
                     end,
