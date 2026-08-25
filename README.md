@@ -194,3 +194,19 @@ KOReader that is crengine's `getDocumentFileContent` (with a libarchive
 fallback), in tests it reads the extracted fixture. Image dimensions are
 sniffed from file headers; no image decoding happens during a scan, and a
 full decode only happens for the image currently on screen.
+
+## License
+
+Glimpse is free software, licensed under the **GNU Affero General Public
+License v3.0 or later** (AGPL-3.0-or-later). The full text is in
+[LICENSE](LICENSE).
+
+Copyright (C) 2026 Erik Fanki
+
+The plugin runs inside KOReader's own Lua process and uses its internals, and
+[KOReader is AGPL-3.0](https://github.com/koreader/koreader), so Glimpse
+matches it. In practice: use it, fork it, modify it freely; if you distribute a
+modified version, ship its source under the same terms.
+
+Community translations contributed through Crowdin are under the same licence,
+so they can be shipped as part of the plugin.
