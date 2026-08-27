@@ -20,3 +20,6 @@ figma-*.png
 
 # Local research/data archives — never belongs in the repo (e.g. reddit-dump.zip)
 *.zip
+
+# Compiled translation catalogues — rebuilt from .po at release time
+plugin/l10n/*/*.mo

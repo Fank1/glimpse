@@ -1,0 +1,416 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Erik Fanki
+# This file is distributed under the same license as the Glimpse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Glimpse\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"PO-Revision-Date: 2026-08-25 00:00+0000\n"
+"Last-Translator: AI seed <noreply@glimpse>\n"
+"Language-Team: es\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Ignore Image"
+msgstr "Ignorar imagen"
+
+msgid "Mode switch"
+msgstr "Cambiar de modo"
+
+msgid "Rotate image"
+msgstr "Girar imagen"
+
+msgid "Show in Book"
+msgstr "Mostrar en el libro"
+
+msgid "Nav Buttons Toggle"
+msgstr "Alternar botones de navegación"
+
+msgid "Zoom Controls Toggle"
+msgstr "Alternar controles de zoom"
+
+msgid "Mini Map Toggle"
+msgstr ""
+
+msgid "Image Captions Toggle"
+msgstr "Alternar leyendas de imagen"
+
+msgid "Include Bookmarks Toggle"
+msgstr "Alternar inclusión de marcadores"
+
+msgid "Invert in Night Mode Toggle"
+msgstr "Alternar inversión en modo nocturno"
+
+msgid "Layout"
+msgstr "Disposición"
+
+msgid "Page %1 (%2)"
+msgstr "Página %1 (%2)"
+
+msgid "Page %1"
+msgstr "Página %1"
+
+msgid "Gallery"
+msgstr "Galería"
+
+msgid "Ignored"
+msgstr "Ignoradas"
+
+msgid "Reset"
+msgstr "Restablecer"
+
+msgid "Remove bookmark"
+msgstr "Quitar marcador"
+
+msgid "Add back to Gallery"
+msgstr "Devolver a la galería"
+
+msgid "Ignore this image"
+msgstr "Ignorar esta imagen"
+
+msgid "Page %1 of %2"
+msgstr "Página %1 de %2"
+
+msgid "1 image"
+msgstr "1 imagen"
+
+msgid "%1 images"
+msgstr "%1 imágenes"
+
+msgid "1 bookmark"
+msgstr "1 marcador"
+
+msgid "%1 bookmarks"
+msgstr "%1 marcadores"
+
+msgid "Mode: All images"
+msgstr "Modo: todas las imágenes"
+
+msgid "Mode: Spoiler-free"
+msgstr "Modo: sin spoilers"
+
+msgid "Reset Rotation"
+msgstr "Restablecer rotación"
+
+msgid "Nav Buttons"
+msgstr "Botones de navegación"
+
+msgid "Zoom Controls"
+msgstr "Controles de zoom"
+
+msgid "Mini Map"
+msgstr ""
+
+msgid "Image Captions"
+msgstr "Leyendas de imagen"
+
+msgid "Include Bookmarks"
+msgstr "Incluir marcadores"
+
+msgid "Invert in Night Mode"
+msgstr "Invertir en modo nocturno"
+
+msgid "Image ignored."
+msgstr "Imagen ignorada."
+
+msgid "Bookmark removed."
+msgstr "Marcador eliminado."
+
+msgid "Open Glimpse"
+msgstr "Abrir Glimpse"
+
+msgid "No book is open."
+msgstr "No hay ningún libro abierto."
+
+msgid "Glimpse failed to load its scanner module. Try reinstalling the plugin."
+msgstr ""
+"Glimpse no pudo cargar su módulo de análisis. Prueba a reinstalar la "
+"extensión."
+
+msgid ""
+"Glimpse works with EPUB books only (this document format is not supported)."
+msgstr ""
+"Glimpse solo funciona con libros EPUB (este formato de documento no es "
+"compatible)."
+
+msgid "Scanning book for images…"
+msgstr "Analizando imágenes del libro…"
+
+msgid "Glimpse works with EPUB books only."
+msgstr "Glimpse solo funciona con libros EPUB."
+
+msgid "Could not scan this book for images."
+msgstr "No se pudieron analizar las imágenes de este libro."
+
+msgid "No images up to here yet – 1 further in the book."
+msgstr "Aún no hay imágenes hasta aquí – 1 más adelante en el libro."
+
+msgid "No images up to here yet – %1 further in the book."
+msgstr "Aún no hay imágenes hasta aquí – %1 más adelante en el libro."
+
+msgid "Show whole book"
+msgstr "Mostrar todo el libro"
+
+msgid "Close"
+msgstr "Cerrar"
+
+msgid "No images to show – 1 was filtered out as irrelevant."
+msgstr "No hay imágenes que mostrar – 1 se filtró por irrelevante."
+
+msgid "No images to show – %1 were filtered out as irrelevant."
+msgstr "No hay imágenes que mostrar – %1 se filtraron por irrelevantes."
+
+msgid "Review filtered-out"
+msgstr "Revisar las filtradas"
+
+msgid "No images to show."
+msgstr "No hay imágenes que mostrar."
+
+msgid "Mode: Images up to here"
+msgstr "Modo: imágenes hasta aquí"
+
+msgid "Bookmarked pages hidden"
+msgstr "Páginas marcadas ocultas"
+
+msgid "Bookmarked pages shown"
+msgstr "Páginas marcadas mostradas"
+
+msgid "Moved to Ignored"
+msgstr "Movida a Ignoradas"
+
+msgid "Added to Gallery"
+msgstr "Añadida a la galería"
+
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgid "Checking for updates…"
+msgstr "Buscando actualizaciones…"
+
+msgid "Update check failed:"
+msgstr "Error al buscar actualizaciones:"
+
+msgid "Could not read the latest release info."
+msgstr "No se pudo leer la información de la última versión."
+
+msgid "You're up to date (v%1)."
+msgstr "Estás al día (v%1)."
+
+msgid "No downloadable release package found."
+msgstr "No se encontró ningún paquete de versión descargable."
+
+msgid ""
+"Update available: %1\n"
+"(installed: v%2)\n"
+"\n"
+"Download and install now?"
+msgstr ""
+"Actualización disponible: %1\n"
+"(instalada: v%2)\n"
+"\n"
+"¿Descargar e instalar ahora?"
+
+msgid "Update"
+msgstr "Actualizar"
+
+msgid "Updating to %1…"
+msgstr "Actualizando a %1…"
+
+msgid ""
+"Updated to %1.\n"
+"Restart KOReader now to load it?"
+msgstr ""
+"Actualizado a %1.\n"
+"¿Reiniciar KOReader ahora para cargarlo?"
+
+msgid "Restart"
+msgstr "Reiniciar"
+
+msgid "Later"
+msgstr "Más tarde"
+
+msgid "Update failed."
+msgstr "Error en la actualización."
+
+msgid "Glimpse"
+msgstr "Glimpse"
+
+msgid "Gesture to open: none set"
+msgstr "Gesto para abrir: ninguno definido"
+
+msgid "Gesture to open: %1"
+msgstr "Gesto para abrir: %1"
+
+msgid "PORTRAIT"
+msgstr "VERTICAL"
+
+msgid "LANDSCAPE"
+msgstr "HORIZONTAL"
+
+msgid "Left"
+msgstr "Izquierda"
+
+msgid "Right"
+msgstr "Derecha"
+
+msgid "Side"
+msgstr "Lateral"
+
+msgid "Bottom"
+msgstr "Abajo"
+
+msgid "Top"
+msgstr "Arriba"
+
+msgid "Apply"
+msgstr "Aplicar"
+
+msgid "Preferred Alignment"
+msgstr "Alineación preferida"
+
+msgid "Portrait Position"
+msgstr "Posición en vertical"
+
+msgid "Enable Glimpse"
+msgstr "Activar Glimpse"
+
+msgid ""
+"Tip: open Glimpse instantly with a gesture.\n"
+"\n"
+"Set one under Settings → Taps and gestures → Gesture manager → pick a "
+"gesture → Reader → 'Open Glimpse'.\n"
+"\n"
+"(This tip is shown only once.)"
+msgstr ""
+"Consejo: abre Glimpse al instante con un gesto.\n"
+"\n"
+"Define uno en Ajustes → Toques y gestos → Gestor de gestos → elige un gesto "
+"→ Lector → 'Abrir Glimpse'.\n"
+"\n"
+"(Este consejo se muestra solo una vez.)"
+
+msgid "Mode: Show all images"
+msgstr "Modo: mostrar todas las imágenes"
+
+msgid "Mode: Show images up to current chapter"
+msgstr "Modo: mostrar imágenes hasta el capítulo actual"
+
+msgid "Show images up to current chapter"
+msgstr "Mostrar imágenes hasta el capítulo actual"
+
+msgid ""
+"Images that appear beyond your current position stay hidden, so you can't "
+"spoil yourself. Granularity is per chapter: images in the chapter you are "
+"currently reading are shown."
+msgstr ""
+"Las imágenes que aparecen más allá de tu posición actual permanecen ocultas, "
+"para no arruinarte la lectura. La granularidad es por capítulo: se muestran "
+"las imágenes del capítulo que estás leyendo."
+
+msgid "Show all images"
+msgstr "Mostrar todas las imágenes"
+
+msgid ""
+"Show reference images from anywhere in the book, including parts you haven't "
+"reached yet."
+msgstr ""
+"Mostrar imágenes de referencia de cualquier parte del libro, incluidas las "
+"que aún no has alcanzado."
+
+msgid "Include Bookmarks in Gallery"
+msgstr "Incluir marcadores en la galería"
+
+msgid "Quick Actions"
+msgstr "Acciones rápidas"
+
+msgid "Settings"
+msgstr "Ajustes"
+
+msgid "Gestures"
+msgstr "Gestos"
+
+msgid "Double-tap for maximum zoom"
+msgstr "Doble toque para el zoom máximo"
+
+msgid "Swipe left/right to navigate"
+msgstr "Desliza a izquierda/derecha para navegar"
+
+msgid "Pinch to zoom in/out"
+msgstr "Pellizca para acercar/alejar"
+
+msgid "Layout: %1 · %2"
+msgstr "Disposición: %1 · %2"
+
+msgid "Show Nav Buttons"
+msgstr "Mostrar botones de navegación"
+
+msgid "Navigation Loops Around"
+msgstr ""
+
+msgid "Show Zoom Controls"
+msgstr "Mostrar controles de zoom"
+
+#, fuzzy
+msgid "Show Mini Map"
+msgstr "Mostrar en el libro"
+
+msgid "Invert Images in Night Mode"
+msgstr "Invertir imágenes en modo nocturno"
+
+msgid "Show image captions"
+msgstr "Mostrar leyendas de imagen"
+
+msgid "Show bookmark label in corner"
+msgstr ""
+
+msgid "Maximum zoom: %1%"
+msgstr "Zoom máximo: %1 %"
+
+msgid "%1% (recommended)"
+msgstr "%1 % (recomendado)"
+
+msgid "%1%"
+msgstr "%1 %"
+
+msgid "Enable top menu tap zone"
+msgstr "Activar zona de toque del menú superior"
+
+msgid "Advanced"
+msgstr "Avanzado"
+
+msgid "Disable irrelevant image filtering"
+msgstr "Desactivar el filtrado de imágenes irrelevantes"
+
+msgid "Suppress \"format not supported\" notice"
+msgstr "Ocultar el aviso «formato no compatible»"
+
+msgid "Disable shadows"
+msgstr "Desactivar sombras"
+
+msgid "Fast image switching"
+msgstr "Cambio rápido de imagen"
+
+msgid "Rescan this book"
+msgstr "Volver a analizar este libro"
+
+msgid "Found %1 image(s)."
+msgstr "Se encontraron %1 imagen(es)."
+
+msgid "Scan failed."
+msgstr "Error en el análisis."
+
+msgid "Updates"
+msgstr "Actualizaciones"
+
+msgid "Check for updates (v%1)"
+msgstr "Buscar actualizaciones (v%1)"
+
+msgid "Include pre-release versions"
+msgstr "Incluir versiones preliminares"

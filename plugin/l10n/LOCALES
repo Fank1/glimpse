@@ -1,0 +1,75 @@
+# Locale directory names Footcream accepts under l10n/.
+#
+# These are KOReader's OWN codes, because the runtime loads
+#   l10n/<gettext current_lang>/foot-cream.mo
+# and current_lang is whatever KOReader set. A directory named anything else
+# builds and ships a .mo that is never loaded — no error, just an untranslated
+# UI. So this list is enforced by builder/build_l10n.sh rather than trusted.
+#
+# Note the mix: mostly bare language codes, but eleven carry a region
+# (af_ZA, bg_BG, en_GB, it_IT, ko_KR, lt_LT, nb_NO, nl_NL, pt_BR, pt_PT,
+# ro_MD). Any translation platform must be told this mapping explicitly —
+# its default "locale with underscore" would give de_DE where we need de.
+#
+# Source: the locale directories KOReader ships in its own l10n/.
+af_ZA
+ar
+be
+bg_BG
+bn
+ca
+cs
+cy
+da
+de
+el
+en_GB
+eo
+es
+et
+eu
+fa
+fi
+fr
+ga
+gl
+he
+hi
+hr
+hu
+ia
+id
+ie
+it_IT
+ja
+ka
+kab
+kn
+ko_KR
+lt_LT
+lv
+mk
+ms
+nb_NO
+nl_NL
+nn
+or
+pl
+pt_BR
+pt_PT
+ro
+ro_MD
+ru
+si
+sk
+sl
+sr
+sv
+th
+tr
+uk
+ur
+uz
+vi
+zh_CN
+zh_TW

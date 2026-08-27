@@ -1,0 +1,413 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Erik Fanki
+# This file is distributed under the same license as the Glimpse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Glimpse\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"PO-Revision-Date: 2026-08-25 00:00+0000\n"
+"Last-Translator: AI seed <noreply@glimpse>\n"
+"Language-Team: ja\n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Ignore Image"
+msgstr "画像を無視"
+
+msgid "Mode switch"
+msgstr "モード切り替え"
+
+msgid "Rotate image"
+msgstr "画像を回転"
+
+msgid "Show in Book"
+msgstr "本の中で表示"
+
+msgid "Nav Buttons Toggle"
+msgstr "ナビゲーションボタンを切り替え"
+
+msgid "Zoom Controls Toggle"
+msgstr "ズームコントロールを切り替え"
+
+msgid "Mini Map Toggle"
+msgstr ""
+
+msgid "Image Captions Toggle"
+msgstr "画像キャプションを切り替え"
+
+msgid "Include Bookmarks Toggle"
+msgstr "ブックマークの表示を切り替え"
+
+msgid "Invert in Night Mode Toggle"
+msgstr "ナイトモードでの反転を切り替え"
+
+msgid "Layout"
+msgstr "レイアウト"
+
+msgid "Page %1 (%2)"
+msgstr "%1 ページ（%2）"
+
+msgid "Page %1"
+msgstr "%1 ページ"
+
+msgid "Gallery"
+msgstr "ギャラリー"
+
+msgid "Ignored"
+msgstr "無視済み"
+
+msgid "Reset"
+msgstr "リセット"
+
+msgid "Remove bookmark"
+msgstr "ブックマークを削除"
+
+msgid "Add back to Gallery"
+msgstr "ギャラリーに戻す"
+
+msgid "Ignore this image"
+msgstr "この画像を無視"
+
+msgid "Page %1 of %2"
+msgstr "%1 / %2 ページ"
+
+msgid "1 image"
+msgstr "画像 1 枚"
+
+msgid "%1 images"
+msgstr "画像 %1 枚"
+
+msgid "1 bookmark"
+msgstr "ブックマーク 1 件"
+
+msgid "%1 bookmarks"
+msgstr "ブックマーク %1 件"
+
+msgid "Mode: All images"
+msgstr "モード：すべての画像"
+
+msgid "Mode: Spoiler-free"
+msgstr "モード：ネタバレなし"
+
+msgid "Reset Rotation"
+msgstr "回転をリセット"
+
+msgid "Nav Buttons"
+msgstr "ナビゲーションボタン"
+
+msgid "Zoom Controls"
+msgstr "ズームコントロール"
+
+msgid "Mini Map"
+msgstr ""
+
+msgid "Image Captions"
+msgstr "画像キャプション"
+
+msgid "Include Bookmarks"
+msgstr "ブックマークを含める"
+
+msgid "Invert in Night Mode"
+msgstr "ナイトモードで反転"
+
+msgid "Image ignored."
+msgstr "画像を無視しました。"
+
+msgid "Bookmark removed."
+msgstr "ブックマークを削除しました。"
+
+msgid "Open Glimpse"
+msgstr "Glimpse を開く"
+
+msgid "No book is open."
+msgstr "本が開かれていません。"
+
+msgid "Glimpse failed to load its scanner module. Try reinstalling the plugin."
+msgstr ""
+"Glimpse はスキャナーモジュールを読み込めませんでした。プラグインを再インス"
+"トールしてみてください。"
+
+msgid ""
+"Glimpse works with EPUB books only (this document format is not supported)."
+msgstr ""
+"Glimpse は EPUB の本のみに対応しています（この文書形式はサポートされていませ"
+"ん）。"
+
+msgid "Scanning book for images…"
+msgstr "本の中の画像をスキャンしています…"
+
+msgid "Glimpse works with EPUB books only."
+msgstr "Glimpse は EPUB の本のみに対応しています。"
+
+msgid "Could not scan this book for images."
+msgstr "この本の画像をスキャンできませんでした。"
+
+msgid "No images up to here yet – 1 further in the book."
+msgstr "ここまでにまだ画像はありません – 本の先に 1 枚あります。"
+
+msgid "No images up to here yet – %1 further in the book."
+msgstr "ここまでにまだ画像はありません – 本の先に %1 枚あります。"
+
+msgid "Show whole book"
+msgstr "本全体を表示"
+
+msgid "Close"
+msgstr "閉じる"
+
+msgid "No images to show – 1 was filtered out as irrelevant."
+msgstr "表示できる画像がありません – 1 枚が無関係として除外されました。"
+
+msgid "No images to show – %1 were filtered out as irrelevant."
+msgstr "表示できる画像がありません – %1 枚が無関係として除外されました。"
+
+msgid "Review filtered-out"
+msgstr "除外されたものを確認"
+
+msgid "No images to show."
+msgstr "表示できる画像がありません。"
+
+msgid "Mode: Images up to here"
+msgstr "モード：ここまでの画像"
+
+msgid "Bookmarked pages hidden"
+msgstr "ブックマークしたページを非表示"
+
+msgid "Bookmarked pages shown"
+msgstr "ブックマークしたページを表示"
+
+msgid "Moved to Ignored"
+msgstr "「無視済み」に移動しました"
+
+msgid "Added to Gallery"
+msgstr "ギャラリーに追加しました"
+
+msgid "Cancel"
+msgstr "キャンセル"
+
+msgid "Checking for updates…"
+msgstr "更新を確認しています…"
+
+msgid "Update check failed:"
+msgstr "更新の確認に失敗しました："
+
+msgid "Could not read the latest release info."
+msgstr "最新リリース情報を読み込めませんでした。"
+
+msgid "You're up to date (v%1)."
+msgstr "最新の状態です（v%1）。"
+
+msgid "No downloadable release package found."
+msgstr "ダウンロード可能なリリースパッケージが見つかりませんでした。"
+
+msgid ""
+"Update available: %1\n"
+"(installed: v%2)\n"
+"\n"
+"Download and install now?"
+msgstr ""
+"更新があります：%1\n"
+"（インストール済み：v%2）\n"
+"\n"
+"今すぐダウンロードしてインストールしますか？"
+
+msgid "Update"
+msgstr "更新"
+
+msgid "Updating to %1…"
+msgstr "%1 に更新しています…"
+
+msgid ""
+"Updated to %1.\n"
+"Restart KOReader now to load it?"
+msgstr ""
+"%1 に更新しました。\n"
+"読み込むために今すぐ KOReader を再起動しますか？"
+
+msgid "Restart"
+msgstr "再起動"
+
+msgid "Later"
+msgstr "後で"
+
+msgid "Update failed."
+msgstr "更新に失敗しました。"
+
+msgid "Glimpse"
+msgstr "Glimpse"
+
+msgid "Gesture to open: none set"
+msgstr "開くジェスチャー：未設定"
+
+msgid "Gesture to open: %1"
+msgstr "開くジェスチャー：%1"
+
+msgid "PORTRAIT"
+msgstr "縦向き"
+
+msgid "LANDSCAPE"
+msgstr "横向き"
+
+msgid "Left"
+msgstr "左"
+
+msgid "Right"
+msgstr "右"
+
+msgid "Side"
+msgstr "サイド"
+
+msgid "Bottom"
+msgstr "下"
+
+msgid "Top"
+msgstr "上"
+
+msgid "Apply"
+msgstr "適用"
+
+msgid "Preferred Alignment"
+msgstr "優先する配置"
+
+msgid "Portrait Position"
+msgstr "縦向きの位置"
+
+msgid "Enable Glimpse"
+msgstr "Glimpse を有効にする"
+
+msgid ""
+"Tip: open Glimpse instantly with a gesture.\n"
+"\n"
+"Set one under Settings → Taps and gestures → Gesture manager → pick a "
+"gesture → Reader → 'Open Glimpse'.\n"
+"\n"
+"(This tip is shown only once.)"
+msgstr ""
+"ヒント：ジェスチャーで Glimpse をすぐに開けます。\n"
+"\n"
+"「設定 → タップとジェスチャー → ジェスチャーマネージャー → ジェスチャーを選"
+"択 → リーダー →『Glimpse を開く』」で設定してください。\n"
+"\n"
+"（このヒントは一度だけ表示されます。）"
+
+msgid "Mode: Show all images"
+msgstr "モード：すべての画像を表示"
+
+msgid "Mode: Show images up to current chapter"
+msgstr "モード：現在の章までの画像を表示"
+
+msgid "Show images up to current chapter"
+msgstr "現在の章までの画像を表示"
+
+msgid ""
+"Images that appear beyond your current position stay hidden, so you can't "
+"spoil yourself. Granularity is per chapter: images in the chapter you are "
+"currently reading are shown."
+msgstr ""
+"現在位置より先に現れる画像は非表示のままになり、ネタバレを防ぎます。粒度は章"
+"単位で、現在読んでいる章の画像が表示されます。"
+
+msgid "Show all images"
+msgstr "すべての画像を表示"
+
+msgid ""
+"Show reference images from anywhere in the book, including parts you haven't "
+"reached yet."
+msgstr "まだ読んでいない部分も含め、本のどこからでも参考画像を表示します。"
+
+msgid "Include Bookmarks in Gallery"
+msgstr "ギャラリーにブックマークを含める"
+
+msgid "Quick Actions"
+msgstr "クイック操作"
+
+msgid "Settings"
+msgstr "設定"
+
+msgid "Gestures"
+msgstr "ジェスチャー"
+
+msgid "Double-tap for maximum zoom"
+msgstr "ダブルタップで最大ズーム"
+
+msgid "Swipe left/right to navigate"
+msgstr "左右にスワイプして移動"
+
+msgid "Pinch to zoom in/out"
+msgstr "ピンチで拡大／縮小"
+
+msgid "Layout: %1 · %2"
+msgstr "レイアウト：%1 · %2"
+
+msgid "Show Nav Buttons"
+msgstr "ナビゲーションボタンを表示"
+
+msgid "Navigation Loops Around"
+msgstr ""
+
+msgid "Show Zoom Controls"
+msgstr "ズームコントロールを表示"
+
+#, fuzzy
+msgid "Show Mini Map"
+msgstr "本の中で表示"
+
+msgid "Invert Images in Night Mode"
+msgstr "ナイトモードで画像を反転"
+
+msgid "Show image captions"
+msgstr "画像キャプションを表示"
+
+msgid "Show bookmark label in corner"
+msgstr ""
+
+msgid "Maximum zoom: %1%"
+msgstr "最大ズーム：%1%"
+
+msgid "%1% (recommended)"
+msgstr "%1%（推奨）"
+
+msgid "%1%"
+msgstr "%1%"
+
+msgid "Enable top menu tap zone"
+msgstr "トップメニューのタップ領域を有効にする"
+
+msgid "Advanced"
+msgstr "詳細設定"
+
+msgid "Disable irrelevant image filtering"
+msgstr "無関係な画像のフィルタリングを無効にする"
+
+msgid "Suppress \"format not supported\" notice"
+msgstr "「サポートされていない形式」の通知を非表示にする"
+
+msgid "Disable shadows"
+msgstr "影を無効にする"
+
+msgid "Fast image switching"
+msgstr "高速な画像切り替え"
+
+msgid "Rescan this book"
+msgstr "この本を再スキャン"
+
+msgid "Found %1 image(s)."
+msgstr "%1 枚の画像が見つかりました。"
+
+msgid "Scan failed."
+msgstr "スキャンに失敗しました。"
+
+msgid "Updates"
+msgstr "更新"
+
+msgid "Check for updates (v%1)"
+msgstr "更新を確認（v%1）"
+
+msgid "Include pre-release versions"
+msgstr "プレリリース版を含める"

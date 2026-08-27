@@ -1,0 +1,63 @@
+<svg width="288" height="365" viewBox="0 0 288 365" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="288" height="365" fill="#1F1F1F"/>
+<g id="resources">
+<rect width="1088" height="1664" transform="translate(-117 -486)" fill="white"/>
+<g id="Frame 10">
+<g id="portrait_bottom">
+<rect id="Rectangle 6" x="1.5" y="1.5" width="285" height="362" stroke="#A6A6A6" stroke-width="3"/>
+<g id="page-text">
+<rect x="14" y="12" width="260" height="3" fill="#B4B4B4"/>
+<rect x="14" y="24" width="260" height="3" fill="#B4B4B4"/>
+<rect x="14" y="36" width="260" height="3" fill="#B4B4B4"/>
+<rect x="14" y="48" width="260" height="3" fill="#B4B4B4"/>
+<rect x="14" y="60" width="260" height="3" fill="#B4B4B4"/>
+<rect x="14" y="72" width="260" height="3" fill="#B4B4B4"/>
+<rect x="14" y="84" width="260" height="3" fill="#B4B4B4"/>
+<rect x="14" y="96" width="260" height="3" fill="#B4B4B4"/>
+<rect x="14" y="108" width="260" height="3" fill="#B4B4B4"/>
+<rect x="14" y="120" width="260" height="3" fill="#B4B4B4"/>
+<rect x="14" y="132" width="260" height="3" fill="#B4B4B4"/>
+<rect x="14" y="144" width="260" height="3" fill="#B4B4B4"/>
+<rect x="14" y="156" width="260" height="3" fill="#B4B4B4"/>
+<rect x="14" y="168" width="260" height="3" fill="#B4B4B4"/>
+<rect x="14" y="180" width="260" height="3" fill="#B4B4B4"/>
+<rect x="14" y="192" width="260" height="3" fill="#B4B4B4"/>
+<rect x="14" y="204" width="260" height="3" fill="#B4B4B4"/>
+<rect x="14" y="216" width="260" height="3" fill="#B4B4B4"/>
+<rect x="14" y="228" width="260" height="3" fill="#B4B4B4"/>
+<rect x="14" y="240" width="260" height="3" fill="#B4B4B4"/>
+<rect x="14" y="252" width="260" height="3" fill="#B4B4B4"/>
+<rect x="14" y="264" width="260" height="3" fill="#B4B4B4"/>
+<rect x="14" y="276" width="260" height="3" fill="#B4B4B4"/>
+<rect x="14" y="288" width="260" height="3" fill="#B4B4B4"/>
+<rect x="14" y="300" width="260" height="3" fill="#B4B4B4"/>
+<rect x="14" y="312" width="260" height="3" fill="#B4B4B4"/>
+<rect x="14" y="324" width="260" height="3" fill="#B4B4B4"/>
+<rect x="14" y="336" width="260" height="3" fill="#B4B4B4"/>
+<rect x="14" y="348" width="260" height="3" fill="#B4B4B4"/>
+</g>
+<path id="Rectangle 5" opacity="0.2" d="M3 181C3 174.373 8.37258 169 15 169H273C279.627 169 285 174.373 285 181V355H3V181Z" fill="black"/>
+<g id="Group 2">
+<g id="Overlay Container">
+<path d="M12 183.5H276C281.799 183.5 286.5 188.201 286.5 194V363.5H1.5V194C1.5 188.201 6.20101 183.5 12 183.5Z" fill="#DEDEDE"/>
+<path d="M12 183.5H276C281.799 183.5 286.5 188.201 286.5 194V363.5H1.5V194C1.5 188.201 6.20101 183.5 12 183.5Z" stroke="#454545" stroke-width="3"/>
+<g id="Dot Indicator">
+<rect x="112" y="337" width="31" height="11" rx="4" fill="#B4B4B4"/>
+</g>
+<g id="Prev">
+<path id="BG" d="M34 337C34 333.686 31.3137 331 28 331H16C12.6863 331 10 333.686 10 337V349C10 352.314 12.6863 355 16 355H28C31.3137 355 34 352.314 34 349V337Z" fill="#B4B4B4"/>
+</g>
+<g id="Group">
+<path id="Vector_1139" d="M132.748 247C137.718 247 141.748 242.971 141.748 238C141.748 233.029 137.718 229 132.748 229C127.777 229 123.748 233.029 123.748 238C123.748 242.971 127.777 247 132.748 247Z" fill="#919191"/>
+<path id="Vector_1140" d="M179.707 279.648L159.457 243.648C159.077 242.97 158.377 242.541 157.603 242.502C156.834 242.455 156.089 242.831 155.648 243.47L136.933 270.504L125.341 258.912C124.864 258.437 124.216 258.21 123.527 258.264C122.857 258.329 122.251 258.693 121.878 259.254L108.378 279.504C107.919 280.194 107.874 281.081 108.265 281.812C108.657 282.543 109.42 283 110.25 283H177.75C178.549 283 179.289 282.577 179.692 281.886C180.094 281.196 180.103 280.343 179.71 279.648H179.707Z" fill="#919191"/>
+</g>
+</g>
+<g id="Group 3">
+<path id="BG_2" d="M277 337C277 333.686 274.314 331 271 331H259C255.686 331 253 333.686 253 337V349C253 352.314 255.686 355 259 355H271C274.314 355 277 352.314 277 349V337Z" fill="#B4B4B4"/>
+<path id="BG_3" d="M245 337C245 333.686 242.314 331 239 331H227C223.686 331 221 333.686 221 337V349C221 352.314 223.686 355 227 355H239C242.314 355 245 352.314 245 349V337Z" fill="#B4B4B4"/>
+</g>
+</g>
+</g>
+</g>
+</g>
+</svg>

@@ -1,0 +1,416 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Erik Fanki
+# This file is distributed under the same license as the Glimpse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Glimpse\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"PO-Revision-Date: 2026-08-25 00:00+0000\n"
+"Last-Translator: AI seed <noreply@glimpse>\n"
+"Language-Team: cs\n"
+"Language: cs\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Ignore Image"
+msgstr "Ignorovat obrázek"
+
+msgid "Mode switch"
+msgstr "Přepnout režim"
+
+msgid "Rotate image"
+msgstr "Otočit obrázek"
+
+msgid "Show in Book"
+msgstr "Zobrazit v knize"
+
+msgid "Nav Buttons Toggle"
+msgstr "Přepnout navigační tlačítka"
+
+msgid "Zoom Controls Toggle"
+msgstr "Přepnout ovládání přiblížení"
+
+msgid "Mini Map Toggle"
+msgstr ""
+
+msgid "Image Captions Toggle"
+msgstr "Přepnout popisky obrázků"
+
+msgid "Include Bookmarks Toggle"
+msgstr "Přepnout zahrnutí záložek"
+
+msgid "Invert in Night Mode Toggle"
+msgstr "Přepnout inverzi v nočním režimu"
+
+msgid "Layout"
+msgstr "Rozvržení"
+
+msgid "Page %1 (%2)"
+msgstr "Strana %1 (%2)"
+
+msgid "Page %1"
+msgstr "Strana %1"
+
+msgid "Gallery"
+msgstr "Galerie"
+
+msgid "Ignored"
+msgstr "Ignorované"
+
+msgid "Reset"
+msgstr "Obnovit"
+
+msgid "Remove bookmark"
+msgstr "Odebrat záložku"
+
+msgid "Add back to Gallery"
+msgstr "Vrátit do galerie"
+
+msgid "Ignore this image"
+msgstr "Ignorovat tento obrázek"
+
+msgid "Page %1 of %2"
+msgstr "Strana %1 z %2"
+
+msgid "1 image"
+msgstr "1 obrázek"
+
+msgid "%1 images"
+msgstr "Obrázky: %1"
+
+msgid "1 bookmark"
+msgstr "1 záložka"
+
+msgid "%1 bookmarks"
+msgstr "Záložky: %1"
+
+msgid "Mode: All images"
+msgstr "Režim: všechny obrázky"
+
+msgid "Mode: Spoiler-free"
+msgstr "Režim: bez spoilerů"
+
+msgid "Reset Rotation"
+msgstr "Obnovit otočení"
+
+msgid "Nav Buttons"
+msgstr "Navigační tlačítka"
+
+msgid "Zoom Controls"
+msgstr "Ovládání přiblížení"
+
+msgid "Mini Map"
+msgstr ""
+
+msgid "Image Captions"
+msgstr "Popisky obrázků"
+
+msgid "Include Bookmarks"
+msgstr "Zahrnout záložky"
+
+msgid "Invert in Night Mode"
+msgstr "Invertovat v nočním režimu"
+
+msgid "Image ignored."
+msgstr "Obrázek ignorován."
+
+msgid "Bookmark removed."
+msgstr "Záložka odebrána."
+
+msgid "Open Glimpse"
+msgstr "Otevřít Glimpse"
+
+msgid "No book is open."
+msgstr "Není otevřena žádná kniha."
+
+msgid "Glimpse failed to load its scanner module. Try reinstalling the plugin."
+msgstr ""
+"Glimpse nedokázal načíst svůj modul skeneru. Zkuste zásuvný modul "
+"přeinstalovat."
+
+msgid ""
+"Glimpse works with EPUB books only (this document format is not supported)."
+msgstr ""
+"Glimpse funguje pouze s knihami EPUB (tento formát dokumentu není "
+"podporován)."
+
+msgid "Scanning book for images…"
+msgstr "Prohledávání knihy na obrázky…"
+
+msgid "Glimpse works with EPUB books only."
+msgstr "Glimpse funguje pouze s knihami EPUB."
+
+msgid "Could not scan this book for images."
+msgstr "Tuto knihu se nepodařilo prohledat na obrázky."
+
+msgid "No images up to here yet – 1 further in the book."
+msgstr "Zatím žádné obrázky až sem – 1 dále v knize."
+
+msgid "No images up to here yet – %1 further in the book."
+msgstr "Zatím žádné obrázky až sem – dále v knize: %1."
+
+msgid "Show whole book"
+msgstr "Zobrazit celou knihu"
+
+msgid "Close"
+msgstr "Zavřít"
+
+msgid "No images to show – 1 was filtered out as irrelevant."
+msgstr "Žádné obrázky k zobrazení – 1 byl odfiltrován jako nepodstatný."
+
+msgid "No images to show – %1 were filtered out as irrelevant."
+msgstr "Žádné obrázky k zobrazení – jako nepodstatné odfiltrováno: %1."
+
+msgid "Review filtered-out"
+msgstr "Zkontrolovat odfiltrované"
+
+msgid "No images to show."
+msgstr "Žádné obrázky k zobrazení."
+
+msgid "Mode: Images up to here"
+msgstr "Režim: obrázky až sem"
+
+msgid "Bookmarked pages hidden"
+msgstr "Stránky se záložkou skryté"
+
+msgid "Bookmarked pages shown"
+msgstr "Stránky se záložkou zobrazené"
+
+msgid "Moved to Ignored"
+msgstr "Přesunuto do Ignorovaných"
+
+msgid "Added to Gallery"
+msgstr "Přidáno do galerie"
+
+msgid "Cancel"
+msgstr "Zrušit"
+
+msgid "Checking for updates…"
+msgstr "Kontrola aktualizací…"
+
+msgid "Update check failed:"
+msgstr "Kontrola aktualizací selhala:"
+
+msgid "Could not read the latest release info."
+msgstr "Nepodařilo se načíst informace o nejnovější verzi."
+
+msgid "You're up to date (v%1)."
+msgstr "Máte nejnovější verzi (v%1)."
+
+msgid "No downloadable release package found."
+msgstr "Nebyl nalezen žádný stažitelný balíček vydání."
+
+msgid ""
+"Update available: %1\n"
+"(installed: v%2)\n"
+"\n"
+"Download and install now?"
+msgstr ""
+"Dostupná aktualizace: %1\n"
+"(nainstalováno: v%2)\n"
+"\n"
+"Stáhnout a nainstalovat nyní?"
+
+msgid "Update"
+msgstr "Aktualizovat"
+
+msgid "Updating to %1…"
+msgstr "Aktualizace na %1…"
+
+msgid ""
+"Updated to %1.\n"
+"Restart KOReader now to load it?"
+msgstr ""
+"Aktualizováno na %1.\n"
+"Restartovat KOReader nyní pro načtení?"
+
+msgid "Restart"
+msgstr "Restartovat"
+
+msgid "Later"
+msgstr "Později"
+
+msgid "Update failed."
+msgstr "Aktualizace selhala."
+
+msgid "Glimpse"
+msgstr "Glimpse"
+
+msgid "Gesture to open: none set"
+msgstr "Gesto pro otevření: žádné nenastaveno"
+
+msgid "Gesture to open: %1"
+msgstr "Gesto pro otevření: %1"
+
+msgid "PORTRAIT"
+msgstr "NA VÝŠKU"
+
+msgid "LANDSCAPE"
+msgstr "NA ŠÍŘKU"
+
+msgid "Left"
+msgstr "Vlevo"
+
+msgid "Right"
+msgstr "Vpravo"
+
+msgid "Side"
+msgstr "Strana"
+
+msgid "Bottom"
+msgstr "Dole"
+
+msgid "Top"
+msgstr "Nahoře"
+
+msgid "Apply"
+msgstr "Použít"
+
+msgid "Preferred Alignment"
+msgstr "Upřednostňované zarovnání"
+
+msgid "Portrait Position"
+msgstr "Poloha na výšku"
+
+msgid "Enable Glimpse"
+msgstr "Povolit Glimpse"
+
+msgid ""
+"Tip: open Glimpse instantly with a gesture.\n"
+"\n"
+"Set one under Settings → Taps and gestures → Gesture manager → pick a "
+"gesture → Reader → 'Open Glimpse'.\n"
+"\n"
+"(This tip is shown only once.)"
+msgstr ""
+"Tip: otevírejte Glimpse okamžitě gestem.\n"
+"\n"
+"Nastavte jej v Nastavení → Klepnutí a gesta → Správce gest → vyberte gesto → "
+"Čtečka → 'Otevřít Glimpse'.\n"
+"\n"
+"(Tento tip se zobrazí pouze jednou.)"
+
+msgid "Mode: Show all images"
+msgstr "Režim: zobrazit všechny obrázky"
+
+msgid "Mode: Show images up to current chapter"
+msgstr "Režim: zobrazit obrázky po aktuální kapitolu"
+
+msgid "Show images up to current chapter"
+msgstr "Zobrazit obrázky po aktuální kapitolu"
+
+msgid ""
+"Images that appear beyond your current position stay hidden, so you can't "
+"spoil yourself. Granularity is per chapter: images in the chapter you are "
+"currently reading are shown."
+msgstr ""
+"Obrázky, které se objevují za vaší aktuální pozicí, zůstávají skryté, abyste "
+"si nezkazili zážitek. Podrobnost je po kapitolách: obrázky v kapitole, "
+"kterou právě čtete, se zobrazují."
+
+msgid "Show all images"
+msgstr "Zobrazit všechny obrázky"
+
+msgid ""
+"Show reference images from anywhere in the book, including parts you haven't "
+"reached yet."
+msgstr ""
+"Zobrazit referenční obrázky odkudkoli z knihy, včetně částí, ke kterým jste "
+"ještě nedošli."
+
+msgid "Include Bookmarks in Gallery"
+msgstr "Zahrnout záložky do galerie"
+
+msgid "Quick Actions"
+msgstr "Rychlé akce"
+
+msgid "Settings"
+msgstr "Nastavení"
+
+msgid "Gestures"
+msgstr "Gesta"
+
+msgid "Double-tap for maximum zoom"
+msgstr "Dvojitým klepnutím na maximální přiblížení"
+
+msgid "Swipe left/right to navigate"
+msgstr "Přejetím doleva/doprava navigujte"
+
+msgid "Pinch to zoom in/out"
+msgstr "Sevřením přibližte/oddalte"
+
+msgid "Layout: %1 · %2"
+msgstr "Rozvržení: %1 · %2"
+
+msgid "Show Nav Buttons"
+msgstr "Zobrazit navigační tlačítka"
+
+msgid "Navigation Loops Around"
+msgstr ""
+
+msgid "Show Zoom Controls"
+msgstr "Zobrazit ovládání přiblížení"
+
+#, fuzzy
+msgid "Show Mini Map"
+msgstr "Zobrazit v knize"
+
+msgid "Invert Images in Night Mode"
+msgstr "Invertovat obrázky v nočním režimu"
+
+msgid "Show image captions"
+msgstr "Zobrazit popisky obrázků"
+
+msgid "Show bookmark label in corner"
+msgstr ""
+
+msgid "Maximum zoom: %1%"
+msgstr "Maximální přiblížení: %1 %"
+
+msgid "%1% (recommended)"
+msgstr "%1 % (doporučeno)"
+
+msgid "%1%"
+msgstr "%1 %"
+
+msgid "Enable top menu tap zone"
+msgstr "Povolit zónu klepnutí horní nabídky"
+
+msgid "Advanced"
+msgstr "Pokročilé"
+
+msgid "Disable irrelevant image filtering"
+msgstr "Zakázat filtrování nepodstatných obrázků"
+
+msgid "Suppress \"format not supported\" notice"
+msgstr "Skrýt oznámení „formát není podporován“"
+
+msgid "Disable shadows"
+msgstr "Zakázat stíny"
+
+msgid "Fast image switching"
+msgstr "Rychlé přepínání obrázků"
+
+msgid "Rescan this book"
+msgstr "Znovu prohledat tuto knihu"
+
+msgid "Found %1 image(s)."
+msgstr "Nalezené obrázky: %1."
+
+msgid "Scan failed."
+msgstr "Prohledávání selhalo."
+
+msgid "Updates"
+msgstr "Aktualizace"
+
+msgid "Check for updates (v%1)"
+msgstr "Zkontrolovat aktualizace (v%1)"
+
+msgid "Include pre-release versions"
+msgstr "Zahrnout předběžné verze"

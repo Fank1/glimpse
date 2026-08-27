@@ -1,0 +1,62 @@
+<svg width="366" height="288" viewBox="0 0 366 288" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="366" height="288" fill="#1F1F1F"/>
+<g id="resources">
+<rect width="1088" height="1664" transform="translate(-511 -930)" fill="white"/>
+<g id="landscape_right">
+<g id="Group 12">
+<g id="Group 6">
+<rect id="Rectangle 6" x="363.5" y="1.5" width="285" height="362" transform="rotate(90 363.5 1.5)" stroke="#A6A6A6" stroke-width="3"/>
+<g id="page-text">
+<rect x="14" y="12" width="337" height="3" fill="#B4B4B4"/>
+<rect x="14" y="24" width="337" height="3" fill="#B4B4B4"/>
+<rect x="14" y="36" width="337" height="3" fill="#B4B4B4"/>
+<rect x="14" y="48" width="337" height="3" fill="#B4B4B4"/>
+<rect x="14" y="60" width="337" height="3" fill="#B4B4B4"/>
+<rect x="14" y="72" width="337" height="3" fill="#B4B4B4"/>
+<rect x="14" y="84" width="337" height="3" fill="#B4B4B4"/>
+<rect x="14" y="96" width="337" height="3" fill="#B4B4B4"/>
+<rect x="14" y="108" width="337" height="3" fill="#B4B4B4"/>
+<rect x="14" y="120" width="337" height="3" fill="#B4B4B4"/>
+<rect x="14" y="132" width="337" height="3" fill="#B4B4B4"/>
+<rect x="14" y="144" width="337" height="3" fill="#B4B4B4"/>
+<rect x="14" y="156" width="337" height="3" fill="#B4B4B4"/>
+<rect x="14" y="168" width="337" height="3" fill="#B4B4B4"/>
+<rect x="14" y="180" width="337" height="3" fill="#B4B4B4"/>
+<rect x="14" y="192" width="337" height="3" fill="#B4B4B4"/>
+<rect x="14" y="204" width="337" height="3" fill="#B4B4B4"/>
+<rect x="14" y="216" width="337" height="3" fill="#B4B4B4"/>
+<rect x="14" y="228" width="337" height="3" fill="#B4B4B4"/>
+<rect x="14" y="240" width="337" height="3" fill="#B4B4B4"/>
+<rect x="14" y="252" width="337" height="3" fill="#B4B4B4"/>
+<rect x="14" y="264" width="337" height="3" fill="#B4B4B4"/>
+</g>
+<path id="Rectangle 5" opacity="0.2" d="M134 273C134 279.627 139.373 285 146 285L178 285L178 3L146 3C139.373 3 134 8.37259 134 15L134 273Z" fill="black"/>
+<g id="Group 2">
+<g id="Overlay Container">
+<path d="M174 1.5H364.5V286.5H174C168.201 286.5 163.5 281.799 163.5 276V12C163.5 6.20101 168.201 1.5 174 1.5Z" fill="#DEDEDE"/>
+<path d="M174 1.5H364.5V286.5H174C168.201 286.5 163.5 281.799 163.5 276V12C163.5 6.20101 168.201 1.5 174 1.5Z" stroke="#454545" stroke-width="3"/>
+<g id="Group">
+<path id="Vector_872" d="M248.997 112C255.624 112 260.997 106.627 260.997 100C260.997 93.3726 255.624 88 248.997 88C242.37 88 236.997 93.3726 236.997 100C236.997 106.627 242.37 112 248.997 112Z" fill="#B6B6B6"/>
+<path id="Vector_873" d="M311.61 155.53L284.61 107.53C284.103 106.627 283.17 106.054 282.138 106.003C281.112 105.94 280.119 106.441 279.531 107.293L254.577 143.338L239.121 127.882C238.485 127.249 237.621 126.946 236.703 127.018C235.809 127.105 235.002 127.591 234.504 128.338L216.504 155.338C215.892 156.259 215.832 157.441 216.354 158.416C216.876 159.391 217.893 160 219 160H309C310.065 160 311.052 159.436 311.589 158.515C312.126 157.594 312.138 156.457 311.613 155.53H311.61Z" fill="#B6B6B6"/>
+</g>
+</g>
+<g id="Group 15">
+<g id="Dot Indicator">
+<rect x="230" y="260" width="31" height="11" rx="4" fill="#B4B4B4"/>
+</g>
+<g id="Group 14">
+<g id="Prev">
+<path id="BG" d="M196 260C196 256.686 193.314 254 190 254H178C174.686 254 172 256.686 172 260V272C172 275.314 174.686 278 178 278H190C193.314 278 196 275.314 196 272V260Z" fill="#B4B4B4"/>
+</g>
+<g id="Group 3">
+<path id="BG_2" d="M355.5 260C355.5 256.686 352.814 254 349.5 254H337.5C334.186 254 331.5 256.686 331.5 260V272C331.5 275.314 334.186 278 337.5 278H349.5C352.814 278 355.5 275.314 355.5 272V260Z" fill="#B4B4B4"/>
+<path id="BG_3" d="M323.5 260C323.5 256.686 320.814 254 317.5 254H305.5C302.186 254 299.5 256.686 299.5 260V272C299.5 275.314 302.186 278 305.5 278H317.5C320.814 278 323.5 275.314 323.5 272V260Z" fill="#B4B4B4"/>
+</g>
+</g>
+</g>
+</g>
+</g>
+</g>
+</g>
+</g>
+</svg>

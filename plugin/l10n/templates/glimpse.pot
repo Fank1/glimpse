@@ -1,0 +1,673 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Erik Fanki
+# This file is distributed under the same license as the Glimpse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Glimpse\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: main.lua:186 main.lua:3789
+msgid "Ignore Image"
+msgstr ""
+
+#: main.lua:187
+msgid "Mode switch"
+msgstr ""
+
+#: main.lua:188 main.lua:3811
+msgid "Rotate image"
+msgstr ""
+
+#: main.lua:189 main.lua:3826
+msgid "Show in Book"
+msgstr ""
+
+#: main.lua:190
+msgid "Nav Buttons Toggle"
+msgstr ""
+
+#: main.lua:191
+msgid "Zoom Controls Toggle"
+msgstr ""
+
+#: main.lua:192
+msgid "Mini Map Toggle"
+msgstr ""
+
+#: main.lua:193
+msgid "Image Captions Toggle"
+msgstr ""
+
+#: main.lua:194
+msgid "Include Bookmarks Toggle"
+msgstr ""
+
+#: main.lua:195
+msgid "Invert in Night Mode Toggle"
+msgstr ""
+
+#: main.lua:196 main.lua:3886
+msgid "Layout"
+msgstr ""
+
+#: main.lua:2208
+msgid "Page %1 (%2)"
+msgstr ""
+
+#: main.lua:2210
+msgid "Page %1"
+msgstr ""
+
+#: main.lua:3094 main.lua:3630 main.lua:3897
+msgid "Gallery"
+msgstr ""
+
+#: main.lua:3095 main.lua:3630
+msgid "Ignored"
+msgstr ""
+
+#: main.lua:3108
+msgid "Reset"
+msgstr ""
+
+#: main.lua:3320 main.lua:3783
+msgid "Remove bookmark"
+msgstr ""
+
+#: main.lua:3328
+msgid "Add back to Gallery"
+msgstr ""
+
+#: main.lua:3335
+msgid "Ignore this image"
+msgstr ""
+
+#: main.lua:3640
+msgid "Page %1 of %2"
+msgstr ""
+
+#: main.lua:3665
+msgid "1 image"
+msgstr ""
+
+#: main.lua:3666
+msgid "%1 images"
+msgstr ""
+
+#: main.lua:3669
+msgid "1 bookmark"
+msgstr ""
+
+#: main.lua:3670
+msgid "%1 bookmarks"
+msgstr ""
+
+#: main.lua:3799 main.lua:6052
+msgid "Mode: All images"
+msgstr ""
+
+#: main.lua:3800
+msgid "Mode: Spoiler-free"
+msgstr ""
+
+#: main.lua:3818
+msgid "Reset Rotation"
+msgstr ""
+
+#: main.lua:3833
+msgid "Nav Buttons"
+msgstr ""
+
+#: main.lua:3841
+msgid "Zoom Controls"
+msgstr ""
+
+#: main.lua:3849
+msgid "Mini Map"
+msgstr ""
+
+#: main.lua:3857
+msgid "Image Captions"
+msgstr ""
+
+#: main.lua:3867
+msgid "Include Bookmarks"
+msgstr ""
+
+#: main.lua:3876
+msgid "Invert in Night Mode"
+msgstr ""
+
+#: main.lua:4937 main.lua:4955
+msgid "Image ignored."
+msgstr ""
+
+#: main.lua:4983 main.lua:4999 main.lua:6113
+msgid "Bookmark removed."
+msgstr ""
+
+#: main.lua:5023 main.lua:6971
+msgid "Open Glimpse"
+msgstr ""
+
+#: main.lua:5459
+msgid "No book is open."
+msgstr ""
+
+#: main.lua:5462
+msgid "Glimpse failed to load its scanner module. Try reinstalling the plugin."
+msgstr ""
+
+#: main.lua:5467
+msgid ""
+"Glimpse works with EPUB books only (this document format is not supported)."
+msgstr ""
+
+#: main.lua:5669 main.lua:7276
+msgid "Scanning book for images…"
+msgstr ""
+
+#: main.lua:5682
+msgid "Glimpse works with EPUB books only."
+msgstr ""
+
+#: main.lua:5684
+msgid "Could not scan this book for images."
+msgstr ""
+
+#: main.lua:5784
+msgid "No images up to here yet – 1 further in the book."
+msgstr ""
+
+#: main.lua:5785
+msgid "No images up to here yet – %1 further in the book."
+msgstr ""
+
+#: main.lua:5789
+msgid "Show whole book"
+msgstr ""
+
+#: main.lua:5790 main.lua:6830
+msgid "Close"
+msgstr ""
+
+#: main.lua:5799
+msgid "No images to show – 1 was filtered out as irrelevant."
+msgstr ""
+
+#: main.lua:5800
+msgid "No images to show – %1 were filtered out as irrelevant."
+msgstr ""
+
+#: main.lua:5804
+msgid "Review filtered-out"
+msgstr ""
+
+#: main.lua:5811
+msgid "No images to show."
+msgstr ""
+
+#: main.lua:6053
+msgid "Mode: Images up to here"
+msgstr ""
+
+#: main.lua:6065
+msgid "Bookmarked pages hidden"
+msgstr ""
+
+#: main.lua:6066
+msgid "Bookmarked pages shown"
+msgstr ""
+
+#: main.lua:6086
+msgid "Moved to Ignored"
+msgstr ""
+
+#: main.lua:6099
+msgid "Added to Gallery"
+msgstr ""
+
+#: main.lua:6369
+msgid "Cancel"
+msgstr ""
+
+#: main.lua:6432
+msgid "Checking for updates…"
+msgstr ""
+
+#: main.lua:6436
+msgid "Update check failed:"
+msgstr ""
+
+#: main.lua:6457
+msgid "Could not read the latest release info."
+msgstr ""
+
+#: main.lua:6463
+msgid "You're up to date (v%1)."
+msgstr ""
+
+#: main.lua:6485
+msgid "No downloadable release package found."
+msgstr ""
+
+#: main.lua:6490
+msgid ""
+"Update available: %1\n"
+"(installed: v%2)\n"
+"\n"
+"Download and install now?"
+msgstr ""
+
+#: main.lua:6492
+msgid "Update"
+msgstr ""
+
+#: main.lua:6528
+msgid "Updating to %1…"
+msgstr ""
+
+#: main.lua:6542
+msgid ""
+"Updated to %1.\n"
+"Restart KOReader now to load it?"
+msgstr ""
+
+#: main.lua:6543
+msgid "Restart"
+msgstr ""
+
+#: main.lua:6544
+msgid "Later"
+msgstr ""
+
+#: main.lua:6548
+msgid "Update failed."
+msgstr ""
+
+#: main.lua:6556
+msgid "Glimpse"
+msgstr ""
+
+#: main.lua:6615
+msgid "Gesture to open: none set"
+msgstr ""
+
+#: main.lua:6620
+msgid "Gesture to open: %1"
+msgstr ""
+
+#: main.lua:6703
+msgid "PORTRAIT"
+msgstr ""
+
+#: main.lua:6710
+msgid "LANDSCAPE"
+msgstr ""
+
+#: main.lua:6799 main.lua:7097
+msgid "Left"
+msgstr ""
+
+#: main.lua:6800 main.lua:7097
+msgid "Right"
+msgstr ""
+
+#: main.lua:6803 main.lua:7095
+msgid "Side"
+msgstr ""
+
+#: main.lua:6804 main.lua:7094
+msgid "Bottom"
+msgstr ""
+
+#: main.lua:6805 main.lua:7095
+msgid "Top"
+msgstr ""
+
+#: main.lua:6831
+msgid "Apply"
+msgstr ""
+
+#: main.lua:6865
+msgid "Preferred Alignment"
+msgstr ""
+
+#: main.lua:6867
+msgid "Portrait Position"
+msgstr ""
+
+#: main.lua:6953
+msgid "Enable Glimpse"
+msgstr ""
+
+#: main.lua:6954
+msgid ""
+"Master switch. When off, the bound gesture and the Open Glimpse entry do "
+"nothing – a quick way to silence Glimpse without unbinding its gesture."
+msgstr ""
+
+#: main.lua:6968
+msgid ""
+"Assign or change it under Taps and gestures → Gesture manager → (pick a "
+"gesture) → Reader → 'Open Glimpse'."
+msgstr ""
+
+#: main.lua:6972
+msgid ""
+"Browse the maps, family trees and other reference images found in this book, "
+"without losing your reading position. Tip: bind the gesture action 'Open "
+"Glimpse' for one-touch access."
+msgstr ""
+
+#: main.lua:6994
+msgid ""
+"Tip: open Glimpse instantly with a gesture.\n"
+"\n"
+"Set one under Settings → Taps and gestures → Gesture manager → pick a "
+"gesture → Reader → 'Open Glimpse'.\n"
+"\n"
+"(This tip is shown only once.)"
+msgstr ""
+
+#: main.lua:7005
+msgid "Mode: Show all images"
+msgstr ""
+
+#: main.lua:7006
+msgid "Mode: Show images up to current chapter"
+msgstr ""
+
+#: main.lua:7009
+msgid "Show images up to current chapter"
+msgstr ""
+
+#: main.lua:7010
+msgid ""
+"Images that appear beyond your current position stay hidden, so you can't "
+"spoil yourself. Granularity is per chapter: images in the chapter you are "
+"currently reading are shown."
+msgstr ""
+
+#: main.lua:7011
+msgid "Show all images"
+msgstr ""
+
+#: main.lua:7012
+msgid ""
+"Show reference images from anywhere in the book, including parts you haven't "
+"reached yet."
+msgstr ""
+
+#: main.lua:7018
+msgid "Include Bookmarks in Gallery"
+msgstr ""
+
+#: main.lua:7019
+msgid ""
+"Also show the pages you've bookmarked (the dogear bookmark) in the Gallery, "
+"rendered as page thumbnails and marked with a bookmark badge, in reading "
+"order alongside the images – a quick way to keep a reference page a swipe "
+"away. Off by default. Also available from the viewer's ⋯ menu (see Quick "
+"Actions)."
+msgstr ""
+
+#: main.lua:7030
+msgid "Quick Actions"
+msgstr ""
+
+#: main.lua:7031
+msgid ""
+"Choose which actions appear in the viewer's ⋯ menu. Reset Rotation is "
+"automatic (shown while an image is rotated)."
+msgstr ""
+
+#: main.lua:7053
+msgid "Settings"
+msgstr ""
+
+#: main.lua:7056
+msgid "Gestures"
+msgstr ""
+
+#: main.lua:7059
+msgid "Double-tap for maximum zoom"
+msgstr ""
+
+#: main.lua:7060
+msgid ""
+"Double-tap the image to jump to the maximum zoom (centered on the tap), and "
+"again to return to the fitted view. On by default."
+msgstr ""
+
+#: main.lua:7069
+msgid "Swipe left/right to navigate"
+msgstr ""
+
+#: main.lua:7070
+msgid ""
+"Swipe left or right across the image to move to the next or previous image. "
+"On by default. (The Gallery's swipe-to-page is unaffected.)"
+msgstr ""
+
+#: main.lua:7079
+msgid "Pinch to zoom in/out"
+msgstr ""
+
+#: main.lua:7080
+msgid ""
+"Pinch or spread two fingers on the image to zoom out or in. On by default."
+msgstr ""
+
+#: main.lua:7099
+msgid "Layout: %1 · %2"
+msgstr ""
+
+#: main.lua:7101
+msgid ""
+"Where Glimpse opens: a side panel (left or right) or, in portrait, a band "
+"across the top or bottom. In landscape it always uses the preferred side."
+msgstr ""
+
+#: main.lua:7106
+msgid "Show Nav Buttons"
+msgstr ""
+
+#: main.lua:7107
+msgid ""
+"Show ‹ and › buttons in the viewer for switching between images, as an "
+"alternative to swiping. A button is grayed out when there is no image on its "
+"side."
+msgstr ""
+
+#: main.lua:7117
+msgid "Navigation Loops Around"
+msgstr ""
+
+#: main.lua:7118
+msgid ""
+"Let the ‹ › buttons and swipes wrap around at the ends: Next on the last "
+"image goes to the first, and Previous on the first goes to the last. The "
+"Gallery pages wrap the same way."
+msgstr ""
+
+#: main.lua:7128
+msgid "Show Zoom Controls"
+msgstr ""
+
+#: main.lua:7129
+msgid ""
+"Show a vertical −/fit/+ control in the viewer for zooming in and out, as an "
+"alternative to double-tap and pinch. The middle button returns to the fitted "
+"view."
+msgstr ""
+
+#: main.lua:7139
+msgid "Show Mini Map"
+msgstr ""
+
+#: main.lua:7140
+msgid ""
+"While zoomed in, show a small overview of the image with a rectangle marking "
+"the visible area. Tap the map to jump there. It docks to the zoom controls "
+"when those are on, and is hidden at the fitted view."
+msgstr ""
+
+#: main.lua:7150
+msgid "Invert Images in Night Mode"
+msgstr ""
+
+#: main.lua:7151
+msgid ""
+"While KOReader's night mode is on, show images inverted (light lines on a "
+"dark background). Also toggleable from the viewer's ⋯ menu."
+msgstr ""
+
+#: main.lua:7161
+msgid "Show image captions"
+msgstr ""
+
+#: main.lua:7162
+msgid ""
+"Show the image's caption from the book, overlaid in the viewer's top-left "
+"corner."
+msgstr ""
+
+#: main.lua:7171
+msgid "Show bookmark label in corner"
+msgstr ""
+
+#: main.lua:7172
+msgid ""
+"On a bookmarked page, show a label with the page number and chapter in the "
+"viewer's top-left corner. Turn off to hide it."
+msgstr ""
+
+#: main.lua:7182
+msgid "Maximum zoom: %1%"
+msgstr ""
+
+#: main.lua:7185
+msgid ""
+"How far you can zoom in, as a percentage of the image's own resolution. "
+"Double-tap jumps to this level and pinch stops here. Higher reveals more on "
+"detailed maps, but past 100% it is upscaling, so very high can look soft."
+msgstr ""
+
+#: main.lua:7192
+msgid "%1% (recommended)"
+msgstr ""
+
+#: main.lua:7193
+msgid "%1%"
+msgstr ""
+
+#: main.lua:7207
+msgid "Enable top menu tap zone"
+msgstr ""
+
+#: main.lua:7208
+msgid ""
+"While the viewer is open, a tap along the top edge of the screen opens "
+"KOReader's top menu (only the top menu, never the bottom one) over the "
+"drawer, instead of doing nothing. Turn off to keep the top edge inert."
+msgstr ""
+
+#: main.lua:7219
+msgid "Advanced"
+msgstr ""
+
+#: main.lua:7224
+msgid "Disable irrelevant image filtering"
+msgstr ""
+
+#: main.lua:7225
+msgid ""
+"By default Glimpse sets aside covers, publisher logos, ornaments and other "
+"non-reference imagery, keeping maps, family trees, diagrams and "
+"illustrations. Enable this to switch that off and see every image in the "
+"book. (Individual wrongly-kept images can instead be ignored from the "
+"viewer's ⋯ menu; wrongly set-aside ones added back from the Gallery's "
+"Ignored tab.)"
+msgstr ""
+
+#: main.lua:7236
+msgid "Suppress \"format not supported\" notice"
+msgstr ""
+
+#: main.lua:7237
+msgid ""
+"Silence the message shown when Glimpse is opened on a book format it doesn't "
+"support (PDF, comics, manga…). Handy if a reading gesture sometimes triggers "
+"Glimpse on non-EPUB files. Off by default."
+msgstr ""
+
+#: main.lua:7247
+msgid "Disable shadows"
+msgstr ""
+
+#: main.lua:7248
+msgid ""
+"Remove the drawer's drop shadow. The shadow is a dithered gradient – the "
+"main cause of e-ink ghosting behind the drawer – so turn it off if a ghost "
+"lingers after closing Glimpse. No visible effect on LCD screens."
+msgstr ""
+
+#: main.lua:7258
+msgid "Fast image switching"
+msgstr ""
+
+#: main.lua:7259
+msgid ""
+"Switch between images with a quick, flashless refresh instead of a full "
+"clear. On by default: faster and no flash. Turn it off if the previous image "
+"ghosts through the next one – most noticeable on detailed maps and on slower "
+"e-ink panels. No visible effect on LCD screens."
+msgstr ""
+
+#: main.lua:7269
+msgid "Rescan this book"
+msgstr ""
+
+#: main.lua:7270
+msgid ""
+"Glimpse caches its scan of the book. Use this if the book file was replaced "
+"or images seem out of date."
+msgstr ""
+
+#: main.lua:7283
+msgid "Found %1 image(s)."
+msgstr ""
+
+#: main.lua:7286
+msgid "Scan failed."
+msgstr ""
+
+#: main.lua:7293
+msgid "Updates"
+msgstr ""
+
+#: main.lua:7297
+msgid "Check for updates (v%1)"
+msgstr ""
+
+#: main.lua:7302
+msgid "Include pre-release versions"
+msgstr ""
+
+#: main.lua:7303
+msgid ""
+"Also offer releases marked as pre-release on GitHub – test builds published "
+"before a proper release. Normal update checks never see those."
+msgstr ""

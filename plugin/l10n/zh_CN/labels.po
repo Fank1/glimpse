@@ -1,0 +1,409 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Erik Fanki
+# This file is distributed under the same license as the Glimpse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Glimpse\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"PO-Revision-Date: 2026-08-25 00:00+0000\n"
+"Last-Translator: AI seed <noreply@glimpse>\n"
+"Language-Team: zh_CN\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Ignore Image"
+msgstr "忽略图片"
+
+msgid "Mode switch"
+msgstr "切换模式"
+
+msgid "Rotate image"
+msgstr "旋转图片"
+
+msgid "Show in Book"
+msgstr "在书中显示"
+
+msgid "Nav Buttons Toggle"
+msgstr "切换导航按钮"
+
+msgid "Zoom Controls Toggle"
+msgstr "切换缩放控件"
+
+msgid "Mini Map Toggle"
+msgstr ""
+
+msgid "Image Captions Toggle"
+msgstr "切换图片说明"
+
+msgid "Include Bookmarks Toggle"
+msgstr "切换包含书签"
+
+msgid "Invert in Night Mode Toggle"
+msgstr "切换夜间模式反色"
+
+msgid "Layout"
+msgstr "布局"
+
+msgid "Page %1 (%2)"
+msgstr "第 %1 页（%2）"
+
+msgid "Page %1"
+msgstr "第 %1 页"
+
+msgid "Gallery"
+msgstr "图库"
+
+msgid "Ignored"
+msgstr "已忽略"
+
+msgid "Reset"
+msgstr "重置"
+
+msgid "Remove bookmark"
+msgstr "移除书签"
+
+msgid "Add back to Gallery"
+msgstr "重新加入图库"
+
+msgid "Ignore this image"
+msgstr "忽略此图片"
+
+msgid "Page %1 of %2"
+msgstr "第 %1 页，共 %2 页"
+
+msgid "1 image"
+msgstr "1 张图片"
+
+msgid "%1 images"
+msgstr "%1 张图片"
+
+msgid "1 bookmark"
+msgstr "1 个书签"
+
+msgid "%1 bookmarks"
+msgstr "%1 个书签"
+
+msgid "Mode: All images"
+msgstr "模式：全部图片"
+
+msgid "Mode: Spoiler-free"
+msgstr "模式：无剧透"
+
+msgid "Reset Rotation"
+msgstr "重置旋转"
+
+msgid "Nav Buttons"
+msgstr "导航按钮"
+
+msgid "Zoom Controls"
+msgstr "缩放控件"
+
+msgid "Mini Map"
+msgstr ""
+
+msgid "Image Captions"
+msgstr "图片说明"
+
+msgid "Include Bookmarks"
+msgstr "包含书签"
+
+msgid "Invert in Night Mode"
+msgstr "夜间模式反色"
+
+msgid "Image ignored."
+msgstr "已忽略图片。"
+
+msgid "Bookmark removed."
+msgstr "已移除书签。"
+
+msgid "Open Glimpse"
+msgstr "打开 Glimpse"
+
+msgid "No book is open."
+msgstr "未打开任何书籍。"
+
+msgid "Glimpse failed to load its scanner module. Try reinstalling the plugin."
+msgstr "Glimpse 无法加载其扫描模块。请尝试重新安装此插件。"
+
+msgid ""
+"Glimpse works with EPUB books only (this document format is not supported)."
+msgstr "Glimpse 仅支持 EPUB 书籍（不支持此文档格式）。"
+
+msgid "Scanning book for images…"
+msgstr "正在扫描书中的图片…"
+
+msgid "Glimpse works with EPUB books only."
+msgstr "Glimpse 仅支持 EPUB 书籍。"
+
+msgid "Could not scan this book for images."
+msgstr "无法扫描此书中的图片。"
+
+msgid "No images up to here yet – 1 further in the book."
+msgstr "到此为止还没有图片 – 书中后面还有 1 张。"
+
+msgid "No images up to here yet – %1 further in the book."
+msgstr "到此为止还没有图片 – 书中后面还有 %1 张。"
+
+msgid "Show whole book"
+msgstr "显示整本书"
+
+msgid "Close"
+msgstr "关闭"
+
+msgid "No images to show – 1 was filtered out as irrelevant."
+msgstr "没有可显示的图片 – 1 张因不相关被过滤。"
+
+msgid "No images to show – %1 were filtered out as irrelevant."
+msgstr "没有可显示的图片 – %1 张因不相关被过滤。"
+
+msgid "Review filtered-out"
+msgstr "查看被过滤的"
+
+msgid "No images to show."
+msgstr "没有可显示的图片。"
+
+msgid "Mode: Images up to here"
+msgstr "模式：到此为止的图片"
+
+msgid "Bookmarked pages hidden"
+msgstr "已隐藏带书签的页面"
+
+msgid "Bookmarked pages shown"
+msgstr "已显示带书签的页面"
+
+msgid "Moved to Ignored"
+msgstr "已移至“已忽略”"
+
+msgid "Added to Gallery"
+msgstr "已加入图库"
+
+msgid "Cancel"
+msgstr "取消"
+
+msgid "Checking for updates…"
+msgstr "正在检查更新…"
+
+msgid "Update check failed:"
+msgstr "检查更新失败："
+
+msgid "Could not read the latest release info."
+msgstr "无法读取最新发布信息。"
+
+msgid "You're up to date (v%1)."
+msgstr "你已是最新版本（v%1）。"
+
+msgid "No downloadable release package found."
+msgstr "未找到可下载的发布包。"
+
+msgid ""
+"Update available: %1\n"
+"(installed: v%2)\n"
+"\n"
+"Download and install now?"
+msgstr ""
+"有可用更新：%1\n"
+"（已安装：v%2）\n"
+"\n"
+"现在下载并安装吗？"
+
+msgid "Update"
+msgstr "更新"
+
+msgid "Updating to %1…"
+msgstr "正在更新到 %1…"
+
+msgid ""
+"Updated to %1.\n"
+"Restart KOReader now to load it?"
+msgstr ""
+"已更新到 %1。\n"
+"现在重启 KOReader 以加载吗？"
+
+msgid "Restart"
+msgstr "重启"
+
+msgid "Later"
+msgstr "稍后"
+
+msgid "Update failed."
+msgstr "更新失败。"
+
+msgid "Glimpse"
+msgstr "Glimpse"
+
+msgid "Gesture to open: none set"
+msgstr "打开手势：未设置"
+
+msgid "Gesture to open: %1"
+msgstr "打开手势：%1"
+
+msgid "PORTRAIT"
+msgstr "竖屏"
+
+msgid "LANDSCAPE"
+msgstr "横屏"
+
+msgid "Left"
+msgstr "左"
+
+msgid "Right"
+msgstr "右"
+
+msgid "Side"
+msgstr "侧边"
+
+msgid "Bottom"
+msgstr "底部"
+
+msgid "Top"
+msgstr "顶部"
+
+msgid "Apply"
+msgstr "应用"
+
+msgid "Preferred Alignment"
+msgstr "首选对齐方式"
+
+msgid "Portrait Position"
+msgstr "竖屏位置"
+
+msgid "Enable Glimpse"
+msgstr "启用 Glimpse"
+
+msgid ""
+"Tip: open Glimpse instantly with a gesture.\n"
+"\n"
+"Set one under Settings → Taps and gestures → Gesture manager → pick a "
+"gesture → Reader → 'Open Glimpse'.\n"
+"\n"
+"(This tip is shown only once.)"
+msgstr ""
+"提示：用手势即可立即打开 Glimpse。\n"
+"\n"
+"在“设置 → 点击与手势 → 手势管理器 → 选择一个手势 → 阅读器 → ‘打开 Glimpse’”中"
+"设置一个。\n"
+"\n"
+"（此提示只显示一次。）"
+
+msgid "Mode: Show all images"
+msgstr "模式：显示全部图片"
+
+msgid "Mode: Show images up to current chapter"
+msgstr "模式：显示到当前章节为止的图片"
+
+msgid "Show images up to current chapter"
+msgstr "显示到当前章节为止的图片"
+
+msgid ""
+"Images that appear beyond your current position stay hidden, so you can't "
+"spoil yourself. Granularity is per chapter: images in the chapter you are "
+"currently reading are shown."
+msgstr ""
+"出现在当前位置之后的图片保持隐藏，以免剧透。粒度按章节划分：会显示你当前正在"
+"阅读章节中的图片。"
+
+msgid "Show all images"
+msgstr "显示全部图片"
+
+msgid ""
+"Show reference images from anywhere in the book, including parts you haven't "
+"reached yet."
+msgstr "显示书中任意位置的参考图片，包括你尚未读到的部分。"
+
+msgid "Include Bookmarks in Gallery"
+msgstr "在图库中包含书签"
+
+msgid "Quick Actions"
+msgstr "快捷操作"
+
+msgid "Settings"
+msgstr "设置"
+
+msgid "Gestures"
+msgstr "手势"
+
+msgid "Double-tap for maximum zoom"
+msgstr "双击以最大缩放"
+
+msgid "Swipe left/right to navigate"
+msgstr "左右滑动以导航"
+
+msgid "Pinch to zoom in/out"
+msgstr "捏合以放大/缩小"
+
+msgid "Layout: %1 · %2"
+msgstr "布局：%1 · %2"
+
+msgid "Show Nav Buttons"
+msgstr "显示导航按钮"
+
+msgid "Navigation Loops Around"
+msgstr ""
+
+msgid "Show Zoom Controls"
+msgstr "显示缩放控件"
+
+#, fuzzy
+msgid "Show Mini Map"
+msgstr "在书中显示"
+
+msgid "Invert Images in Night Mode"
+msgstr "夜间模式下反色显示图片"
+
+msgid "Show image captions"
+msgstr "显示图片说明"
+
+msgid "Show bookmark label in corner"
+msgstr ""
+
+msgid "Maximum zoom: %1%"
+msgstr "最大缩放：%1%"
+
+msgid "%1% (recommended)"
+msgstr "%1%（推荐）"
+
+msgid "%1%"
+msgstr "%1%"
+
+msgid "Enable top menu tap zone"
+msgstr "启用顶部菜单点击区"
+
+msgid "Advanced"
+msgstr "高级"
+
+msgid "Disable irrelevant image filtering"
+msgstr "禁用无关图片过滤"
+
+msgid "Suppress \"format not supported\" notice"
+msgstr "隐藏“不支持的格式”提示"
+
+msgid "Disable shadows"
+msgstr "禁用阴影"
+
+msgid "Fast image switching"
+msgstr "快速切换图片"
+
+msgid "Rescan this book"
+msgstr "重新扫描此书"
+
+msgid "Found %1 image(s)."
+msgstr "找到 %1 张图片。"
+
+msgid "Scan failed."
+msgstr "扫描失败。"
+
+msgid "Updates"
+msgstr "更新"
+
+msgid "Check for updates (v%1)"
+msgstr "检查更新（v%1）"
+
+msgid "Include pre-release versions"
+msgstr "包含预发布版本"

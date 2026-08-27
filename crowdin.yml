@@ -1,0 +1,163 @@
+# Crowdin configuration for Glimpse.
+#
+# Read by BOTH the crowdin CLI and the GitHub integration (the integration
+# looks for it in the root of each configured branch).
+#
+# Paths are relative to the REPO root, and the repo root is this directory:
+# Fank1/glimpse is the glimpse repo; the plugin lives under plugin/.
+#
+# NO CREDENTIALS HERE. project_id and api_token come from the environment
+# (CROWDIN_PROJECT_ID / CROWDIN_PERSONAL_TOKEN) so this file stays safe to
+# commit to a public repo.
+#
+# ── THE LANGUAGE MAPPING IS THE DANGEROUS PART ────────────────────────────────
+# At runtime the plugin loads:
+#     l10n/<KOReader's gettext current_lang>/glimpse.mo
+# so the directory has to carry KOReader's code. Crowdin's default
+# %locale_with_underscore% emits de_DE where KOReader wants plain de — and a
+# .mo in the wrong directory is built, shipped, and silently never loaded. No
+# error, no warning, just an untranslated UI.
+#
+# KEYS ARE CROWDIN LANGUAGE IDS (`de`, `es-ES`, `pt-BR`), NOT the emitted
+# %locale_with_underscore% value. Getting that backwards is exactly how the
+# first sync produced 22 wrong directories on 2026-08-10: keys read `de_DE`,
+# Crowdin looked up `de`, found nothing, and used its default.
+#
+# Generated from Crowdin's live language list
+# (GET https://api.crowdin.com/api/v2/languages, public, no auth) cross-checked
+# against plugin/l10n/LOCALES. Regenerate rather than hand-edit; verify with
+# builder/check_crowdin_map.py. Human-readable table: l10n/CROWDIN-LANGUAGES.txt
+#
+# No YAML anchors/aliases here on purpose — they aren't in Crowdin's documented
+# config schema, so the mapping is written out twice rather than shared.
+"preserve_hierarchy": true
+
+files:
+  # Required set — menus, buttons, dialogs, notifications (139 strings).
+  - source: /plugin/l10n/templates/glimpse-labels.pot
+    translation: /plugin/l10n/%locale_with_underscore%/labels.po
+    languages_mapping:
+      locale_with_underscore:
+        af: af_ZA
+        ar: ar
+        be: be
+        bg: bg_BG
+        bn: bn
+        ca: ca
+        cs: cs
+        cy: cy
+        da: da
+        de: de
+        el: el
+        en-GB: en_GB
+        eo: eo
+        es-ES: es
+        et: et
+        eu: eu
+        fa: fa
+        fi: fi
+        fr: fr
+        ga-IE: ga
+        gl: gl
+        he: he
+        hi: hi
+        hr: hr
+        hu: hu
+        id: id
+        it: it_IT
+        ja: ja
+        ka: ka
+        kab: kab
+        kn: kn
+        ko: ko_KR
+        lt: lt_LT
+        lv: lv
+        mk: mk
+        ms: ms
+        nb: nb_NO
+        nl: nl_NL
+        nn-NO: nn
+        or: or
+        pl: pl
+        pt-BR: pt_BR
+        pt-PT: pt_PT
+        ro: ro
+        ru: ru
+        si-LK: si
+        sk: sk
+        sl: sl
+        sr: sr
+        sv-SE: sv
+        th: th
+        tr: tr
+        uk: uk
+        ur-IN: ur
+        uz: uz
+        vi: vi
+        zh-CN: zh_CN
+        zh-TW: zh_TW
+
+  # Optional set — the long-press explainers (27 strings, over half the words).
+  # A language ships on Labels alone; these fall back to English per string.
+  - source: /plugin/l10n/templates/glimpse-help.pot
+    translation: /plugin/l10n/%locale_with_underscore%/help.po
+    languages_mapping:
+      locale_with_underscore:
+        af: af_ZA
+        ar: ar
+        be: be
+        bg: bg_BG
+        bn: bn
+        ca: ca
+        cs: cs
+        cy: cy
+        da: da
+        de: de
+        el: el
+        en-GB: en_GB
+        eo: eo
+        es-ES: es
+        et: et
+        eu: eu
+        fa: fa
+        fi: fi
+        fr: fr
+        ga-IE: ga
+        gl: gl
+        he: he
+        hi: hi
+        hr: hr
+        hu: hu
+        id: id
+        it: it_IT
+        ja: ja
+        ka: ka
+        kab: kab
+        kn: kn
+        ko: ko_KR
+        lt: lt_LT
+        lv: lv
+        mk: mk
+        ms: ms
+        nb: nb_NO
+        nl: nl_NL
+        nn-NO: nn
+        or: or
+        pl: pl
+        pt-BR: pt_BR
+        pt-PT: pt_PT
+        ro: ro
+        ru: ru
+        si-LK: si
+        sk: sk
+        sl: sl
+        sr: sr
+        sv-SE: sv
+        th: th
+        tr: tr
+        uk: uk
+        ur-IN: ur
+        uz: uz
+        vi: vi
+        zh-CN: zh_CN
+        zh-TW: zh_TW

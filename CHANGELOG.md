@@ -8,12 +8,33 @@ the notes of the next public release.
 **↔️ Choose where Glimpse opens (Settings → Layout)**
 - **Pick a side, or a top/bottom band.** The Layout modal now has two settings: *Portrait Position* (Side · Bottom · Top) and *Preferred Alignment* (Left · Right). In portrait you can have the panel slide in from the left or right edge, or open as a band across the top or bottom half of the screen. In landscape it always uses your preferred side, so a rotate never leaves it stuck top or bottom.
 - The whole drawer adapts to wherever it opens – its rounded edge, gradient shadow, border and the ‹/› arrows all sit on the right sides for that placement. Also available as a Quick Action in the ⋯ menu.
+- **A live preview in the Layout dialog** shows a portrait and a landscape mockup that update as you change the settings, so you can see where the panel lands before you apply.
+
+**🗺️ Mini map (Settings → Show Mini Map)**
+- While zoomed in, a small overview of the image appears in the corner with a rectangle marking the part you are viewing. The rectangle shrinks as you zoom further. Tap anywhere on the map to jump straight there, an alternative to panning.
+- It docks to the zoom controls when those are on, and stands on its own (all corners rounded) when they are off. Its shape follows the image area, so a top/bottom band gets a wide map and a side panel a tall one. Hidden at the fitted view. Off by default; also available as a Quick Action in the ⋯ menu.
+
+**🔁 Looping navigation (Settings → Navigation Loops Around)**
+- Turn it on and the ‹ › buttons and swipes wrap around: Next on the last image jumps back to the first, and Previous on the first goes to the last, so the arrows never grey out at the ends. The Gallery pages wrap the same way. Off by default.
+
+**✨ Small polish**
+- Bookmarked items in the dots indicator now show a tiny bookmark glyph instead of a plain dot, so you can tell a bookmarked page from an image at a glance.
+- The image caption now matches the bookmark pill: a floating white rounded pill with a soft grey border, keeping its small text.
+- Fixed: on a top band the ⋯/nav row now has the same bottom margin as the side margins, and the bookmark pill stays left-aligned on a right-side panel.
+- Fixed: on a top band the bottom row of controls now clears the drawer's rounded corners, and the ⋯ menu opens centred on screen instead of running off the panel and over the page.
+- Fixed: on a page that is both bookmarked and captioned, the caption now sits just below the bookmark label instead of being hidden behind it.
+- Fixed: toggling a checkbox in the ⋯ menu could leave the ⋯ button stuck in its dark pressed state after the menu closed, when the toggle shifted the button's position.
+
+**🌍 Glimpse now speaks your language**
+- The whole interface can be translated. This release ships an initial machine translation for 22 languages (German, French, Spanish, Italian, Portuguese, Dutch, Swedish, Danish, Norwegian, Finnish, Polish, Czech, Romanian, Russian, Ukrainian, Greek, Turkish, Chinese, Japanese, Korean), loaded automatically to match KOReader's language. Untranslated text falls back to English.
+- Translations are managed on Crowdin, so anyone can help improve them or add a language.
 
 **✅ Toggle several settings without the menu closing**
 - The checkbox rows in the ⋯ menu (Nav Buttons, Zoom Controls, Image Captions, Invert in Night Mode) now apply instantly and keep the menu open, so you can flip several in one go. Action rows still close the menu as before.
 
 **⚡ Snappier zoom & switching**
 - Zooming — pinch, the +/− buttons, and double-tap — is quicker: a zoom step now redraws just the image instead of rebuilding the whole viewer each step.
+- Panning a zoomed image with the mini map on is much smoother: the map's dimmed overview is now prepared once and reused on each pan instead of being redrawn pixel-by-pixel, so a pan redraws in well under a millisecond instead of tens of milliseconds.
 - Fixed: the viewer's rounded corners no longer square off after a zoom step.
 - Flipping to the next or previous image with the arrows or a swipe is quicker: the neighbouring images are decoded ahead of time in the background, so a switch shows the already-prepared image instead of decoding it on the spot, and the switch now redraws just the image area instead of the whole viewer. *(Part of "Fast image switching" — turn it off for the slower, extra-clean redraw.)*
 

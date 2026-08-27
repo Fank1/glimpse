@@ -17,12 +17,14 @@ local DocSettings = require("docsettings")
 local Device = require("device")
 local Dispatcher = require("dispatcher")
 local Event = require("ui/event")
+local CheckButton = require("ui/widget/checkbutton")
 local FocusManager = require("ui/widget/focusmanager")
 local Font = require("ui/font")
 local FrameContainer = require("ui/widget/container/framecontainer")
 local Geom = require("ui/geometry")
 local GestureRange = require("ui/gesturerange")
 local HorizontalGroup = require("ui/widget/horizontalgroup")
+local HorizontalSpan = require("ui/widget/horizontalspan")
 local ImageViewer = require("ui/widget/imageviewer")
 local ImageWidget = require("ui/widget/imagewidget")
 local InfoMessage = require("ui/widget/infomessage")
@@ -55,6 +57,22 @@ local Screen = Device.screen
 -- Plugin-local module (package.path for plugins is not guaranteed while our
 -- own plugin is being loaded, and "scanner" would be a collision-prone name).
 local _PLUGIN_DIR = (debug.getinfo(1, "S").source or ""):match("@?(.*)/[^/]*$") or "."
+
+-- Out-of-tree plugins are not part of KOReader's own l10n project (the core
+-- gettext textdomain is hardcoded to "koreader", one .mo per language), so
+-- Glimpse ships its own compiled translations and merges them into the SAME
+-- lookup table gettext() reads from. loadMO() only ADDS entries, it does not
+-- clear what is already loaded (only changeLang() does that), so this is safe
+-- to run after core's own translations are in place. It must happen before any
+-- module-level table literal below calls _(), so it runs here rather than in
+-- Glimpse:init() (which only runs once a book is opened). The .mo is absent
+-- until the Crowdin round trip produces translations, so a missing file is not
+-- an error — see l10n/README.md.
+do
+    local mo = _PLUGIN_DIR .. "/l10n/" .. tostring(_.current_lang) .. "/glimpse.mo"
+    pcall(function() _.loadMO(mo) end)
+end
+
 local scanner
 do
     local ok, mod = pcall(dofile, _PLUGIN_DIR .. "/glimpse_scanner.lua")
@@ -71,8 +89,11 @@ local FILTER_KEY = "glimpse_filter"
 local ENABLED_KEY = "glimpse_enabled"          -- master on/off for the gesture + Open Glimpse, ON by default (nilOrTrue)
 local INVERT_KEY = "glimpse_invert_night"
 local NAV_BUTTONS_KEY = "glimpse_nav_buttons" -- prev/next buttons, off by default
+local NAV_LOOP_KEY = "glimpse_nav_loop"        -- prev/next (and gallery pages) wrap around at the ends, off by default
 local ZOOMCTL_KEY = "glimpse_zoom_control"     -- overlay −/fit/+ zoom pill, off by default
+local MINIMAP_KEY = "glimpse_minimap"          -- overview map, shown only while zoomed; off by default
 local CAPTIONS_KEY = "glimpse_captions"        -- caption overlay, ON by default (nilOrTrue)
+local BOOKMARK_LABEL_KEY = "glimpse_bookmark_label" -- top-left "Page N" pill on bookmarked pages, ON by default (nilOrTrue)
 local TOP_MENU_KEY = "glimpse_top_menu_zone"   -- tap top strip → KOReader top menu, ON by default (nilOrTrue)
 local SHADOW_KEY = "glimpse_disable_shadow"    -- drop the drawer's gradient shadow, OFF by default (e-ink ghost source)
 local FAST_SWITCH_KEY = "glimpse_fast_image_switch" -- image switch uses a flashless partial refresh (may ghost); ON by default (nilOrTrue)
@@ -137,6 +158,7 @@ local QUICK_ACTIONS = {
     { key = "showinbook", default = true  },
     { key = "prevnext",   default = false },
     { key = "zoomctl",    default = false },
+    { key = "minimap",    default = false },
     { key = "captions",   default = false },
     { key = "bookmarks",  default = false },
     { key = "invert",     default = true  },
@@ -167,6 +189,7 @@ local function _quick_label(key)
         showinbook = _("Show in Book"),
         prevnext   = _("Nav Buttons Toggle"),
         zoomctl    = _("Zoom Controls Toggle"),
+        minimap    = _("Mini Map Toggle"),
         captions   = _("Image Captions Toggle"),
         bookmarks  = _("Include Bookmarks Toggle"),
         invert     = _("Invert in Night Mode Toggle"),
@@ -211,14 +234,51 @@ local function paint_dot(bb, cx, cy, r, fg, bg)
     end
 end
 
+-- A bookmark item shows a tiny bookmark glyph (assets/dot-bookmark.svg) in
+-- place of its dot. The SVG is a black fill on transparent; we render it once
+-- per (size, gray) and re-tint it to the dot's gray so it reads on the black
+-- pill exactly like a dot (current = white, others = dimmed). Cached; nil on a
+-- render failure so the caller falls back to a plain dot.
+local _bm_dot_cache = {}
+local function bookmark_dot_stencil(box_w, box_h, v)
+    local key = box_w .. "x" .. box_h .. ":" .. v
+    local st = _bm_dot_cache[key]
+    if st ~= nil then return st or nil end
+    local ok, src = pcall(RenderImage.renderSVGImageFile, RenderImage,
+        _PLUGIN_DIR .. "/assets/dot-bookmark.svg", box_w, box_h)
+    if not (ok and src) then
+        _bm_dot_cache[key] = false
+        return nil
+    end
+    local w, h = src:getWidth(), src:getHeight()
+    local dst = Blitbuffer.new(w, h, Blitbuffer.TYPE_BBRGB32)
+    -- Shift the ink down half a pixel: a true half-pixel blit is impossible at
+    -- integer coordinates, so anti-alias it instead — each output row's alpha is
+    -- the mean of the source row and the one above it, a 0.5px downward filter.
+    -- The glyph's foot is empty, so the discarded bottom half-row loses nothing.
+    for yy = 0, h - 1 do
+        for xx = 0, w - 1 do
+            local a = src:getPixel(xx, yy):getAlpha()
+            local a_above = yy > 0 and src:getPixel(xx, yy - 1):getAlpha() or 0
+            a = math.floor((a + a_above) / 2 + 0.5)
+            dst:setPixel(xx, yy, Blitbuffer.ColorRGB32(v, v, v, a))
+        end
+    end
+    src:free()
+    _bm_dot_cache[key] = dst
+    return dst
+end
+
 -- One dot per image, drawn on the pill's black background: current one
 -- white, the others 40% white (per the design SVG — same size, dimmed).
+-- A bookmark item (is_bookmark[i]) shows the bookmark glyph instead.
 -- `pitch` is set by the caller from the space actually available between
 -- the chrome buttons (so more images stay dots before the "n / N"
 -- fallback kicks in).
 local GlimpseDots = Widget:extend{
     nb = 1,
     cur = 1,
+    is_bookmark = nil,     -- optional { [i] = true } for bookmark positions
     dot_r = Screen:scaleBySize(3),
     pitch = Screen:scaleBySize(11),
     height = Screen:scaleBySize(10),
@@ -235,9 +295,24 @@ function GlimpseDots:paintTo(bb, x, y)
     self.dimen = Geom:new{ x = x, y = y, w = self:getSize().w, h = self.height }
     local cy = y + math.floor(self.height / 2)
     local x0 = x + self.dot_r
+    -- bookmark glyph box: dot-width wide, taller by the icon's 7:6 aspect
+    local box_w = 2 * self.dot_r
+    local box_h = math.ceil(box_w * 7 / 6)
     for i = 1, self.nb do
         local cx = x0 + (i - 1) * self.pitch
-        paint_dot(bb, cx, cy, self.dot_r, i == self.cur and 0xFF or 0x66, 0x00)
+        local v = i == self.cur and 0xFF or 0x66
+        local glyph = self.is_bookmark and self.is_bookmark[i]
+            and bookmark_dot_stencil(box_w, box_h, v)
+        if glyph then
+            local gw, gh = glyph:getWidth(), glyph:getHeight()
+            -- the glyph's ink sits high (the notched foot is empty space), so
+            -- nudge it down a touch to sit on the dots' centre line
+            local nudge = Screen:scaleBySize(1) - 1
+            bb:alphablitFrom(glyph, cx - math.floor(gw / 2),
+                cy - math.floor(gh / 2) + nudge, 0, 0, gw, gh)
+        else
+            paint_dot(bb, cx, cy, self.dot_r, v, 0x00)
+        end
     end
 end
 
@@ -311,6 +386,61 @@ local function make_rounded_stencil(w, h, r, stroke, fill, outline)
             for px = iR, w - 1 do emit(px, py) end
         else                                            -- full rows (top/bottom)
             for px = 0, w - 1 do emit(px, py) end
+        end
+    end
+    return bb
+end
+
+-- A rounded-rectangle alpha stencil where only SELECTED corners are rounded.
+-- fill nil → a border-only ring (like make_rounded_stencil); otherwise the
+-- interior is filled and the edge carries a `stroke`-wide `outline` band. A
+-- square corner runs the edges straight into it (no arc). Used by the mini map
+-- and by the zoom control when a mini map docks to it (squared seam corners).
+local function make_corner_stencil(w, h, r, corners, stroke, fill, outline)
+    local bb = Blitbuffer.new(w, h, Blitbuffer.TYPE_BBRGB32)
+    local no_fill = fill == nil
+    -- nearest rounded-corner arc centre for (px,py), or nil when the pixel is
+    -- not inside any rounded corner's quadrant (so it belongs to a straight
+    -- edge and is treated as fully covered up to the border).
+    local function arc_center(px, py)
+        local cx, cy, on
+        if px < r and py < r then cx, cy, on = r, r, corners.tl
+        elseif px >= w - r and py < r then cx, cy, on = w - r, r, corners.tr
+        elseif px < r and py >= h - r then cx, cy, on = r, h - r, corners.bl
+        elseif px >= w - r and py >= h - r then cx, cy, on = w - r, h - r, corners.br
+        end
+        if on then return cx, cy end
+    end
+    for py = 0, h - 1 do
+        for px = 0, w - 1 do
+            local cov, dist_edge
+            local ccx, ccy = arc_center(px, py)
+            if ccx then
+                local dx, dy = px + 0.5 - ccx, py + 0.5 - ccy
+                local d = math.sqrt(dx * dx + dy * dy)
+                cov = math.min(math.max(r - d + 0.5, 0), 1)
+                dist_edge = r - d           -- distance inward from the outer edge
+            else
+                cov = 1
+                -- straight edge: inward distance = min gap to any of the 4 sides
+                dist_edge = math.min(px + 0.5, w - 0.5 - px,
+                    py + 0.5, h - 0.5 - py)
+            end
+            if cov > 0 then
+                local t_in = math.min(math.max(dist_edge - stroke + 0.5, 0), 1)
+                if no_fill then
+                    local a = cov * (1 - t_in)
+                    if a > 0 then
+                        bb:setPixel(px, py, Blitbuffer.ColorRGB32(
+                            outline, outline, outline,
+                            math.floor(a * 255 + 0.5)))
+                    end
+                else
+                    local g = math.floor(outline + t_in * (fill - outline) + 0.5)
+                    bb:setPixel(px, py, Blitbuffer.ColorRGB32(
+                        g, g, g, math.floor(cov * 255 + 0.5)))
+                end
+            end
         end
     end
     return bb
@@ -675,6 +805,10 @@ local GlimpseZoomControl = Widget:extend{
     minus_disabled = false,               -- at fit / minimum zoom
     plus_disabled = false,                -- at maximum zoom
     inverted_zone = nil,                  -- 0/1/2: zone flashed while pressed
+    square_side = nil,                    -- "left"/"right": squared corners where
+                                          -- a mini map docks (so the pair merges)
+    group_shadow = nil,                   -- {x_off,w,h}: when a map is docked, one
+                                          -- shadow for the whole group instead
 }
 
 function GlimpseZoomControl:getSize()
@@ -716,13 +850,29 @@ end
 function GlimpseZoomControl:paintTo(bb, x, y)
     local w, h = self.width, self.height
     self.dimen = Geom:new{ x = x, y = y, w = w, h = h }
+    -- Rebuild the background when the docked side changes: a docked mini map
+    -- squares the two corners on the seam so the pair reads as one merged group.
+    if self._bg_side ~= self.square_side then
+        if self._bg_bb then self._bg_bb:free() end
+        self._bg_bb = nil
+        self._bg_side = self.square_side
+    end
     if not self._bg_bb then
-        self._bg_bb = make_rounded_stencil(w, h, self.radius, self.stroke,
+        local c = { tl = true, tr = true, bl = true, br = true }
+        if self.square_side == "left" then c.tl, c.bl = false, false
+        elseif self.square_side == "right" then c.tr, c.br = false, false end
+        self._bg_bb = make_corner_stencil(w, h, self.radius, c, self.stroke,
             0xFF, 0x00)
     end
-    -- active control: same soft drop shadow as the buttons
-    paint_drop_shadow(bb, x, y, w, h, self.radius,
-        Screen:scaleBySize(2), Screen:scaleBySize(2), 0.3, 0.5)
+    -- active control: same soft drop shadow as the buttons. When a mini map is
+    -- docked, paint ONE shadow for the merged group's outer box instead of two.
+    local s2 = Screen:scaleBySize(2)
+    if self.group_shadow then
+        local g = self.group_shadow
+        paint_drop_shadow(bb, x + g.x_off, y, g.w, g.h, self.radius, s2, s2, 0.3, 0.5)
+    else
+        paint_drop_shadow(bb, x, y, w, h, self.radius, s2, s2, 0.3, 0.5)
+    end
     bb:alphablitFrom(self._bg_bb, x, y, 0, 0, w, h)
     -- two hairline dividers at the zone boundaries (h/3, 2h/3)
     local third = h / 3
@@ -773,30 +923,212 @@ function GlimpseZoomControl:free()
     self._icons_done = nil
 end
 
--- Caption overlay: the image's caption tucked into the top-left corner of
--- the drawer as a solid tab — white fill, black text, ONLY the bottom-right
--- corner rounded (the other three sit flush in the screen corner). Painted
--- in DAY polarity, so night mode's framebuffer inversion flips it to a black
--- tab with white text automatically — the wanted look holds both ways with
--- no per-mode branching. Truncates to max_width.
+-- ── mini map ────────────────────────────────────────────────────────────────
+-- A small overview of the current image, shown only while zoomed in. The whole
+-- image is fitted (letterboxed) inside a box whose aspect matches the drawer's
+-- image area (portrait in a side panel, landscape in a top/bottom band). The
+-- rest of the image is dimmed; a "current position" rectangle marks the visible
+-- viewport and shrinks as you zoom. Tapping the map recenters there (an
+-- alternative to panning). When the zoom control is on, the map docks to it
+-- (their touching corners are square); on its own, all corners are rounded.
+
+-- Rotate a BBRGB32 by a multiple of 90° (clockwise on screen), returning a new
+-- buffer the caller owns. deg 0 returns a copy. Small (thumbnail-sized) inputs.
+local function rotate_bb_quadrant(src, deg)
+    deg = deg % 360
+    if deg == 0 then return src:copy() end
+    local w, h = src:getWidth(), src:getHeight()
+    local dst
+    if deg == 180 then
+        dst = Blitbuffer.new(w, h, Blitbuffer.TYPE_BBRGB32)
+        for y = 0, h - 1 do
+            for x = 0, w - 1 do
+                dst:setPixel(w - 1 - x, h - 1 - y, src:getPixel(x, y))
+            end
+        end
+    else -- 90 or 270
+        dst = Blitbuffer.new(h, w, Blitbuffer.TYPE_BBRGB32)
+        for y = 0, h - 1 do
+            for x = 0, w - 1 do
+                if deg == 90 then
+                    dst:setPixel(h - 1 - y, x, src:getPixel(x, y))
+                else -- 270
+                    dst:setPixel(y, w - 1 - x, src:getPixel(x, y))
+                end
+            end
+        end
+    end
+    return dst
+end
+
+local GlimpseMiniMap = Widget:extend{
+    radius = Screen:scaleBySize(8),       -- match the buttons' corner radius
+    border = Screen:scaleBySize(2),
+    rect_border = Screen:scaleBySize(2),
+    fade = 0.68,                          -- how far the non-visible area dims
+    -- set by the viewer each build:
+    box_w = nil, box_h = nil,
+    corners = nil,                        -- {tl,tr,bl,br} booleans (rounded?)
+    thumb = nil,                          -- image thumbnail (display-oriented)
+    off_x = nil, off_y = nil,             -- letterbox origin of thumb in the box
+    disp_w = nil, disp_h = nil,           -- drawn thumbnail size
+    viewer = nil,                         -- for the live viewport rectangle
+    no_shadow = false,                    -- docked: the zoom control paints one
+                                          -- shadow for the merged group instead
+}
+
+function GlimpseMiniMap:getSize()
+    return Geom:new{ w = self.box_w, h = self.box_h }
+end
+
+-- The current-position rectangle in box-local coordinates (over the thumbnail),
+-- recomputed live so it tracks panning without a full rebuild. nil if unknown.
+function GlimpseMiniMap:_viewportRect()
+    local v = self.viewer
+    local wg = v and v._image_wg
+    if not (wg and wg._bb_w and wg._bb_h and wg.width and wg.height) then return end
+    local fx = math.min(1, wg.width / wg._bb_w)
+    local fy = math.min(1, wg.height / wg._bb_h)
+    local cx = wg.center_x_ratio or v._center_x_ratio or 0.5
+    local cy = wg.center_y_ratio or v._center_y_ratio or 0.5
+    local rw = fx * self.disp_w
+    local rh = fy * self.disp_h
+    local rx = self.off_x + cx * self.disp_w - rw / 2
+    local ry = self.off_y + cy * self.disp_h - rh / 2
+    rx = math.min(math.max(rx, self.off_x), self.off_x + self.disp_w - rw)
+    ry = math.min(math.max(ry, self.off_y), self.off_y + self.disp_h - rh)
+    return math.floor(rx + 0.5), math.floor(ry + 0.5),
+        math.floor(rw + 0.5), math.floor(rh + 0.5)
+end
+
+function GlimpseMiniMap:paintTo(bb, x, y)
+    local w, h = self.box_w, self.box_h
+    self.dimen = Geom:new{ x = x, y = y, w = w, h = h }
+    -- Painted in day polarity like the zoom control: KOReader's night mode does
+    -- its own compositing, and the thumbnail is already night-baked, so the
+    -- widget does not flip its own colours.
+    local paper = 0xFF
+    local ink = 0x00
+    -- cached stencils (base paper fill + border ring), keyed by shape
+    local skey = w .. "x" .. h .. ":" ..
+        (self.corners.tl and "1" or "0") .. (self.corners.tr and "1" or "0") ..
+        (self.corners.bl and "1" or "0") .. (self.corners.br and "1" or "0")
+    if self._skey ~= skey then
+        if self._base then self._base:free() end
+        if self._ring then self._ring:free() end
+        if self._ibright then self._ibright:free() end
+        if self._idim then self._idim:free() end
+        self._base = make_corner_stencil(w, h, self.radius, self.corners,
+            self.border, paper, paper)
+        self._ring = make_corner_stencil(w, h, self.radius, self.corners,
+            self.border, nil, ink)
+        -- Two cached interiors, built once per thumbnail/shape: a BRIGHT one
+        -- (paper base + thumbnail) and a fully DIMMED one (bright washed toward
+        -- paper by `fade`). Each paint copies the dim interior and blits the
+        -- bright viewport-rect region back, so the two per-pixel Lua loops run
+        -- only here (on a zoom step that rebuilds the map), NOT on every pan
+        -- repaint. Both keep the base's rounded-corner alpha.
+        local bright = self._base:copy()
+        if self.thumb then
+            bright:blitFrom(self.thumb, self.off_x, self.off_y,
+                0, 0, self.disp_w, self.disp_h)
+        end
+        local dim = bright:copy()
+        local fade = self.fade
+        for py = 0, h - 1 do
+            for px = 0, w - 1 do
+                local ba = self._base:getPixel(px, py):getColorRGB32().alpha
+                if ba < 0xFF then
+                    -- rounded corner: restore the base's (partial) alpha on both
+                    local cb = bright:getPixel(px, py):getColorRGB32()
+                    bright:setPixel(px, py,
+                        Blitbuffer.ColorRGB32(cb.r, cb.g, cb.b, ba))
+                    local cd = dim:getPixel(px, py):getColorRGB32()
+                    dim:setPixel(px, py,
+                        Blitbuffer.ColorRGB32(cd.r, cd.g, cd.b, ba))
+                elseif fade > 0 then
+                    -- opaque interior: wash toward paper by `fade`
+                    local c = dim:getPixel(px, py):getColorRGB32()
+                    dim:setPixel(px, py, Blitbuffer.ColorRGB32(
+                        math.floor(c.r * (1 - fade) + paper * fade + 0.5),
+                        math.floor(c.g * (1 - fade) + paper * fade + 0.5),
+                        math.floor(c.b * (1 - fade) + paper * fade + 0.5),
+                        c.alpha))
+                end
+            end
+        end
+        self._ibright = bright
+        self._idim = dim
+        self._skey = skey
+    end
+    -- soft drop shadow, same as the zoom control / buttons — but when docked the
+    -- zoom control paints one shadow for the whole merged group, so skip ours
+    if not self.no_shadow then
+        paint_drop_shadow(bb, x, y, w, h, self.radius,
+            Screen:scaleBySize(2), Screen:scaleBySize(2), 0.3, 0.5)
+    end
+    -- Per paint: copy the cached dimmed interior, then blit the bright thumbnail
+    -- back inside the current viewport rectangle. The dim wash and corner-alpha
+    -- fix-up are already baked into the cached buffers (built above), so this
+    -- path is all C-side copies/blits — no per-pixel Lua loop.
+    local temp = self._idim:copy()
+    local rx, ry, rw, rh = self:_viewportRect()
+    if rx then
+        -- clip the rect to the interior so the blit stays in bounds
+        local cx, cy = math.max(0, rx), math.max(0, ry)
+        local cw = math.min(rx + rw, w) - cx
+        local ch = math.min(ry + rh, h) - cy
+        if cw > 0 and ch > 0 then
+            temp:blitFrom(self._ibright, cx, cy, cx, cy, cw, ch)
+        end
+        -- viewport rectangle border (drawn on the un-dimmed region)
+        local t = self.rect_border
+        local rcol = Blitbuffer.ColorRGB32(ink, ink, ink, 0xFF)
+        temp:paintRect(rx, ry, rw, t, rcol)
+        temp:paintRect(rx, ry + rh - t, rw, t, rcol)
+        temp:paintRect(rx, ry, t, rh, rcol)
+        temp:paintRect(rx + rw - t, ry, t, rh, rcol)
+    end
+    bb:alphablitFrom(temp, x, y, 0, 0, w, h)
+    temp:free()
+    bb:alphablitFrom(self._ring, x, y, 0, 0, w, h)
+end
+
+function GlimpseMiniMap:free()
+    for _, k in ipairs({ "_base", "_ring", "_ibright", "_idim", "thumb" }) do
+        if self[k] and self[k].free then self[k]:free() end
+        self[k] = nil
+    end
+    self._skey = nil
+end
+
+-- Caption overlay: the image's caption shown as a floating pill in the same
+-- style as the bookmark identity pill — white fill, 2px #cbcbcb border, all
+-- four corners rounded — but with the caption's small wrapping text. Painted
+-- in DAY polarity, so night mode's framebuffer inversion flips it to a dark
+-- pill with light text automatically, with no per-mode branching. Wraps to
+-- max_width and grows downward.
 local GlimpseCaption = Widget:extend{
     text = "",
     max_width = 0,
-    pad_left = Screen:scaleBySize(6),  -- left text inset (tight to the corner)
-    pad_right = Screen:scaleBySize(8), -- right text inset
-    pad_top = 0,                       -- top text inset (flush)
-    pad_bottom = Screen:scaleBySize(2),-- bottom text inset
-    radius = Screen:scaleBySize(10),   -- bottom-right corner only
+    radius = Screen:scaleBySize(8),
+    stroke = Screen:scaleBySize(2),
+    pad_h = Screen:scaleBySize(8),     -- horizontal text inset inside the pill
+    pad_v = Screen:scaleBySize(4),     -- vertical text inset inside the pill
+    border_gray = 0xCB,                -- #cbcbcb (matches the bookmark pill)
 }
 
 function GlimpseCaption:init()
     local face = Font:getFace("cfont", 12)
     -- Measure the caption's natural single-line width so a short caption keeps
-    -- a snug tab, and only wrap (grow downward) when it would exceed max_width.
+    -- a snug pill, and only wrap (grow downward) when it would exceed the
+    -- text budget (max_width minus the border padding on both sides).
+    local text_cap = self.max_width - 2 * self.pad_h
+    if text_cap < 1 then text_cap = 1 end
     local probe = TextWidget:new{ text = self.text, face = face, bold = true }
     local natural = probe:getSize().w
     probe:free()
-    local box_w = math.min(natural + Screen:scaleBySize(1), self.max_width)
+    local box_w = math.min(natural + Screen:scaleBySize(1), text_cap)
     if box_w < 1 then box_w = 1 end
     self._text = TextBoxWidget:new{
         text = self.text,
@@ -812,39 +1144,19 @@ end
 function GlimpseCaption:getSize()
     local s = self._text:getSize()
     return Geom:new{
-        w = s.w + self.pad_left + self.pad_right,
-        h = s.h + self.pad_top + self.pad_bottom,
+        w = s.w + 2 * self.pad_h,
+        h = s.h + 2 * self.pad_v,
     }
 end
 
--- Solid white tab with the caption text baked in, only the bottom-right corner
--- rounded (anti-aliased). TextBoxWidget:paintTo blits an opaque rectangle, so
--- the text is composited FIRST and the corner is carved LAST — otherwise the
--- opaque text box would refill the rounded corner. Opaque everywhere except
--- the carved corner, so it reads as a clean-edged tab over the image and
--- inverts to solid black at night.
+-- White rounded pill with a 2px #cbcbcb border and the caption text baked in.
+-- The bordered rounded stencil is built first, then the wrapped text is
+-- composited inside the padding (well clear of the corner radius). Inverts to
+-- a dark pill with light text at night via the framebuffer flip.
 function GlimpseCaption:_buildBg(w, h)
-    self._bg_bb = Blitbuffer.new(w, h, Blitbuffer.TYPE_BBRGB32)
-    self._bg_bb:fill(Blitbuffer.ColorRGB32(255, 255, 255, 255))
-    -- Bake the wrapped text onto the white tab.
-    self._text:paintTo(self._bg_bb, self.pad_left, self.pad_top)
-    -- Carve the anti-aliased bottom-right corner on the finished composite.
-    local r = self.radius
-    if r > 0 then
-        local cx, cy = w - r, h - r  -- arc centre of the bottom-right corner
-        for py = math.floor(cy), h - 1 do
-            for px = math.floor(cx), w - 1 do
-                local dx, dy = px + 0.5 - cx, py + 0.5 - cy
-                local cov = r - math.sqrt(dx * dx + dy * dy) + 0.5
-                local a
-                if cov <= 0 then a = 0
-                elseif cov < 1 then a = math.floor(cov * 255 + 0.5) end
-                if a then
-                    self._bg_bb:setPixel(px, py, Blitbuffer.ColorRGB32(255, 255, 255, a))
-                end
-            end
-        end
-    end
+    self._bg_bb = make_rounded_stencil(w, h, self.radius, self.stroke,
+        0xFF, self.border_gray)
+    self._text:paintTo(self._bg_bb, self.pad_h, self.pad_v)
 end
 
 function GlimpseCaption:paintTo(bb, x, y)
@@ -1420,8 +1732,12 @@ end
 
 function GlimpsePopupMenu:dismiss()
     local region = self:refreshRegion()
-    if region and self._restore_region then
-        region = region:combine(self._restore_region)
+    -- _restore_region may be a Geom or a getter resolved now (a live toggle can
+    -- move the anchored button after the menu opened, see _showMoreMenu).
+    local restore = self._restore_region
+    if type(restore) == "function" then restore = restore() end
+    if region and restore then
+        region = region:combine(restore)
     end
     UIManager:close(self, "ui", region)
 end
@@ -1677,15 +1993,12 @@ function GlimpseViewer:update()
     -- that keeps it clear of the rounded right edge), like the design
     local image_area_w = self.width - self.image_right_gap
     -- 14, not 16: the bottom row sits 2px closer to the drawer's bottom
-    -- edge than before (the buttons also grew 2px, see GlimpseMoreButton)
-    local btn_inset = Screen:scaleBySize(14)
-    -- Top band: the inner (rounded) edge is the band's BOTTOM, so the bottom
-    -- chrome row would sit right on the corner arcs and _restoreCorners would
-    -- clip the buttons. Lift the whole row clear of the corner radius. (Bottom
-    -- band and side panels round a different edge, so they keep the tight inset.)
-    if self._place == "top" then
-        btn_inset = math.max(btn_inset, self.panel_radius)
-    end
+    -- edge than before (the buttons also grew 2px, see GlimpseMoreButton).
+    -- Top band: the rounded corners are on the BOTTOM (inner) edge, so lift the
+    -- whole bottom row by the corner radius to clear the corner arcs (every
+    -- bottom-row element keys off btn_inset, so they lift together).
+    local btn_inset = self._place == "top" and self.panel_radius
+        or Screen:scaleBySize(14)
     local btn_gap = Screen:scaleBySize(10)
     -- the −/fit/+ zoom control (Quick Action, off by default): only in the
     -- single-image view. When on it occupies the slot above the bottom-right
@@ -1718,10 +2031,13 @@ function GlimpseViewer:update()
         self._close_frame:free()
         self._close_frame = nil
     end
+    -- "Navigation loops around": with more than one item, the ends wrap, so
+    -- neither arrow is ever a dead end — keep both enabled.
+    local loop = G_reader_settings:isTrue(NAV_LOOP_KEY) and nb > 1
     if nav then
         self._nav_prev_frame = GlimpseMoreButton:new{
             icon = _PLUGIN_DIR .. "/assets/prev.svg",
-            disabled = cur <= 1 or nil,
+            disabled = (not loop) and cur <= 1 or nil,
         }
         self._nav_prev_frame.overlap_offset = {
             Screen:scaleBySize(16),
@@ -1730,7 +2046,7 @@ function GlimpseViewer:update()
         table.insert(overlay, self._nav_prev_frame)
         self._nav_next_frame = GlimpseMoreButton:new{
             icon = _PLUGIN_DIR .. "/assets/next.svg",
-            disabled = cur >= nb or nil,
+            disabled = (not loop) and cur >= nb or nil,
         }
         self._nav_next_frame.overlap_offset = {
             image_area_w - self._nav_next_frame.size,
@@ -1759,18 +2075,11 @@ function GlimpseViewer:update()
         local more_size = self._more_frame:getSize()
         local more_x, more_y
         if self._nav_next_frame then
-            if show_zc then
-                -- zoom control owns the slot above Next, so ⋯ sits to Next's
-                -- LEFT on the same bottom row (matches the Figma layout)
-                more_x = self._nav_next_frame.overlap_offset[1]
-                    - btn_gap - more_size.w
-                more_y = self._nav_next_frame.overlap_offset[2]
-            else
-                -- nav on: ⋯ stacks directly ABOVE Next (same right edge), with
-                -- the same gap it used to keep to Next's left now below it
-                more_x = self._nav_next_frame.overlap_offset[1]
-                more_y = self._nav_next_frame.overlap_offset[2] - btn_gap - more_size.h
-            end
+            -- ⋯ always sits to Next's LEFT on the same bottom row (never stacked
+            -- above it); the pill reserves this slot too (see _pillAvailWidth)
+            more_x = self._nav_next_frame.overlap_offset[1]
+                - btn_gap - more_size.w
+            more_y = self._nav_next_frame.overlap_offset[2]
         else
             -- nav off: ⋯ takes the bottom-right slot Next would have used
             more_x = image_area_w - more_size.w
@@ -1881,7 +2190,37 @@ function GlimpseViewer:update()
         zc.overlap_offset = { zx, zy }
         table.insert(overlay, zc)
     end
-    -- caption overlay, top-left on the image (toggleable, on by default)
+    -- bookmark identity pill, top-left, when the current item is a bookmark.
+    -- Built BEFORE the caption so the caption can sit below it (both otherwise
+    -- anchor top-left and the pill would fully cover the caption).
+    if self._bookmark_pill_wg then
+        self._bookmark_pill_wg:free()
+        self._bookmark_pill_wg = nil
+    end
+    local inset = Screen:scaleBySize(12)
+    if not self._gallery_mode then
+        local meta = self.image_metas
+            and self.image_metas[self._images_list_cur or 1]
+        if meta and meta.is_bookmark
+                and G_reader_settings:nilOrTrue(BOOKMARK_LABEL_KEY) then
+            local label
+            if meta.chapter and meta.chapter ~= "" then
+                label = T(_("Page %1 (%2)"), meta.page or "?", meta.chapter)
+            else
+                label = T(_("Page %1"), meta.page or "?")
+            end
+            self._bookmark_pill_wg = GlimpseBookmarkPill:new{
+                text = label,
+                icon = _PLUGIN_DIR .. "/assets/bookmark.svg",
+                max_width = image_area_w - 2 * inset,
+            }
+            self._bookmark_pill_wg.overlap_offset = { inset, inset }
+            table.insert(overlay, self._bookmark_pill_wg)
+        end
+    end
+    -- caption overlay, top-left on the image (toggleable, on by default). When a
+    -- bookmark pill is also shown, the caption sits just below it so the two do
+    -- not overlap (the mirror pass only flips x, so this stays below on any side).
     if self._caption_wg then
         self._caption_wg:free()
         self._caption_wg = nil
@@ -1893,38 +2232,15 @@ function GlimpseViewer:update()
         if caption and caption ~= "" then
             self._caption_wg = GlimpseCaption:new{
                 text = caption,
-                max_width = image_area_w - 2 * Screen:scaleBySize(16),
-            }
-            -- flush into the drawer's top-left corner: the tab's own three
-            -- square corners sit in the screen corner, only its bottom-right
-            -- is rounded (see GlimpseCaption)
-            self._caption_wg.overlap_offset = { 0, 0 }
-            table.insert(overlay, self._caption_wg)
-        end
-    end
-    -- bookmark identity pill, top-left, when the current item is a bookmark
-    if self._bookmark_pill_wg then
-        self._bookmark_pill_wg:free()
-        self._bookmark_pill_wg = nil
-    end
-    if not self._gallery_mode then
-        local meta = self.image_metas
-            and self.image_metas[self._images_list_cur or 1]
-        if meta and meta.is_bookmark then
-            local label
-            if meta.chapter and meta.chapter ~= "" then
-                label = T(_("Page %1 (%2)"), meta.page or "?", meta.chapter)
-            else
-                label = T(_("Page %1"), meta.page or "?")
-            end
-            local inset = Screen:scaleBySize(12)
-            self._bookmark_pill_wg = GlimpseBookmarkPill:new{
-                text = label,
-                icon = _PLUGIN_DIR .. "/assets/bookmark.svg",
                 max_width = image_area_w - 2 * inset,
             }
-            self._bookmark_pill_wg.overlap_offset = { inset, inset }
-            table.insert(overlay, self._bookmark_pill_wg)
+            local cap_y = inset
+            if self._bookmark_pill_wg then
+                cap_y = inset + self._bookmark_pill_wg:getSize().h
+                    + Screen:scaleBySize(6)
+            end
+            self._caption_wg.overlap_offset = { inset, cap_y }
+            table.insert(overlay, self._caption_wg)
         end
     end
     -- Right-side layout: the whole chrome is positioned above as if the drawer
@@ -1937,7 +2253,9 @@ function GlimpseViewer:update()
     if self._on_right then
         for _, wdg in ipairs(overlay) do
             local off = wdg.overlap_offset
-            if off then
+            -- The bookmark pill always sits at the top-left, on either side (like
+            -- the design), so it is NOT mirrored. Everything else mirrors.
+            if off and wdg ~= self._bookmark_pill_wg then
                 local ok, sz = pcall(wdg.getSize, wdg)
                 local ww = (ok and sz and sz.w) or 0
                 off[1] = self.width - off[1] - ww
@@ -1953,6 +2271,12 @@ function GlimpseViewer:update()
             pf.overlap_offset, nf.overlap_offset = nf.overlap_offset, pf.overlap_offset
         end
     end
+    -- mini map (Quick Action, off by default): built AFTER the right-side mirror
+    -- pass so it works in final coordinates — it docks against the zoom control's
+    -- resolved position and squares the shared corners (see _buildMiniMap). Also
+    -- refreshed on the zoom light path, since it appears and disappears as the
+    -- zoom crosses the fitted view.
+    self:_buildMiniMap()
     table.insert(self.frame_elements, overlay)
     self.frame_elements:resetLayout()
 
@@ -2522,6 +2846,7 @@ function GlimpseViewer:onCloseWidget()
     if self._nav_next_frame then self._nav_next_frame:free() end
     if self._close_frame then self._close_frame:free() end
     if self._zoomctl_frame then self._zoomctl_frame:free() end
+    if self._minimap_frame then self._minimap_frame:free() end
     if self._gallery_head_wgs then
         for _, w in ipairs(self._gallery_head_wgs) do w:free() end
         self._gallery_head_wgs = nil
@@ -2684,6 +3009,15 @@ function GlimpseViewer:_updateImageOnly()
         self._zooming = nil
         return self:update()
     end
+    -- The pill (dots ↔ "Reset") and the nav arrows depend on the over-fit state,
+    -- but only when the −/fit/+ zoom control is OFF (with it on the dots always
+    -- stay). The light path never rebuilds that chrome, so when a zoom step
+    -- crosses the fit boundary with the control off, fall back to a full update.
+    if not G_reader_settings:isTrue(ZOOMCTL_KEY)
+            and self:_isOverFit() ~= self._chrome_over_fit then
+        self._zooming = nil
+        return self:update()
+    end
     self:_clean_image_wg()
     self:_new_image_wg()
     -- swap the freshly-scaled image into the existing layer; FrameContainer
@@ -2697,6 +3031,9 @@ function GlimpseViewer:_updateImageOnly()
         zc.plus_disabled = self:_isAtMax()
         zc.inverted_zone = nil
     end
+    -- the map appears/disappears as zoom crosses the fitted view, so refresh it
+    -- on the light path too (the rest of the chrome is unchanged)
+    self:_buildMiniMap()
     self:_repaintOverlayFast("ui")
 end
 
@@ -2734,6 +3071,10 @@ end
 -- Pill: as many dots as fit between the chrome buttons, "n / N" beyond. Rebuilt on
 -- every update (position/count/text all change together).
 function GlimpseViewer:_buildPill()
+    -- remember the over-fit state this chrome is built for, so the light zoom
+    -- path (_updateImageOnly) can tell when a step crosses the fit boundary and
+    -- the pill / nav arrows need a full rebuild (see _updateImageOnly)
+    self._chrome_over_fit = self:_isOverFit()
     if self._pill_frame then
         self._pill_frame:free()
         self._pill_frame = nil
@@ -2786,10 +3127,22 @@ function GlimpseViewer:_buildPill()
         pitch = math.min(natural_pitch, (budget - 2 * dot_r) / (nb - 1))
     end
     if pitch >= min_pitch then
+        -- mark which dots stand for a bookmarked page (glyph instead of a dot)
+        local bm
+        if self.image_metas then
+            for i = 1, nb do
+                local m = self.image_metas[i]
+                if m and m.is_bookmark then
+                    bm = bm or {}
+                    bm[i] = true
+                end
+            end
+        end
         local inner = GlimpseDots:new{
             nb = nb,
             cur = self._images_list_cur or 1,
             pitch = math.floor(pitch),
+            is_bookmark = bm,
         }
         self._pill_dots = inner
         self._pill_frame = GlimpsePill:new{ inner = inner }
@@ -3138,8 +3491,14 @@ function GlimpseViewer:_galleryMetrics()
 end
 
 function GlimpseViewer:_galleryGo(delta)
-    local p = math.min(math.max((self._gallery_page or 1) + delta, 1),
-        self:_galleryPages())
+    local pages = self:_galleryPages()
+    local p = (self._gallery_page or 1) + delta
+    if G_reader_settings:isTrue(NAV_LOOP_KEY) and pages > 1 then
+        -- "Navigation loops around": paging past either end wraps.
+        p = (p - 1) % pages + 1
+    else
+        p = math.min(math.max(p, 1), pages)
+    end
     if p ~= self._gallery_page then
         self._gallery_page = p
         self:update()
@@ -3485,6 +3844,14 @@ function GlimpseViewer:_showMoreMenu()
             callback = function() self:_toggleZoomControl() end,
         }
     end
+    if _quick_enabled("minimap") then
+        items[#items + 1] = {
+            text = _("Mini Map"),
+            check = G_reader_settings:isTrue(MINIMAP_KEY),
+            check_get = function() return G_reader_settings:isTrue(MINIMAP_KEY) end,
+            callback = function() self:_toggleMiniMap() end,
+        }
+    end
     if _quick_enabled("captions") then
         items[#items + 1] = {
             text = _("Image Captions"),
@@ -3550,6 +3917,11 @@ function GlimpseViewer:_showMoreMenu()
         -- OUTSIDE the popup, between it and the button (an earlier attempt
         -- put padding INSIDE, under the last row, which was wrong).
         anchor = function()
+            -- Top band: the ⋯ button sits mid-screen and this menu is nearly a
+            -- full screen tall, so it cannot pop cleanly above or below the
+            -- button (it would clamp to span the whole screen). Centre it on
+            -- screen instead — a nil anchor makes MovableContainer centre it.
+            if self._place == "top" then return end
             local d = self._more_frame and self._more_frame.dimen
             if not d then return end
             local mov = menu.movable
@@ -3564,9 +3936,12 @@ function GlimpseViewer:_showMoreMenu()
         end,
     }
     -- when the menu closes, also repaint the ⋯ button so its pressed
-    -- (inverted) state clears
-    menu._restore_region = self._more_frame and self._more_frame.dimen
-        and self._more_frame.dimen:copy()
+    -- (inverted) state clears. A live toggle in the menu re-lays-out the drawer
+    -- and can MOVE the button, so resolve its rect at dismiss time rather than
+    -- copying it at open — otherwise the moved button is left painted dark.
+    menu._restore_region = function()
+        return self._more_frame and self._more_frame.dimen
+    end
     menu.on_dismiss = function()
         if self._more_frame then self._more_frame.inverted = nil end
     end
@@ -3645,6 +4020,12 @@ end
 function GlimpseViewer:_toggleZoomControl()
     G_reader_settings:saveSetting(ZOOMCTL_KEY,
         not G_reader_settings:isTrue(ZOOMCTL_KEY))
+    self:update()
+end
+
+function GlimpseViewer:_toggleMiniMap()
+    G_reader_settings:saveSetting(MINIMAP_KEY,
+        not G_reader_settings:isTrue(MINIMAP_KEY))
     self:update()
 end
 
@@ -3867,6 +4248,19 @@ function GlimpseViewer:onTap(_, ges)
         end
         return true
     end
+    -- mini map: tap anywhere on the thumbnail to recenter the view there
+    -- (an alternative to panning). Ignore taps in the letterbox margins.
+    if self._minimap_frame and self._minimap_frame.dimen
+       and ges.pos:intersectWith(self._minimap_frame.dimen) then
+        local mm = self._minimap_frame
+        local d = mm.dimen
+        local lx = ges.pos.x - (d.x + mm.off_x)
+        local ly = ges.pos.y - (d.y + mm.off_y)
+        if lx >= 0 and lx < mm.disp_w and ly >= 0 and ly < mm.disp_h then
+            self:_recenterTo(lx / mm.disp_w, ly / mm.disp_h)
+        end
+        return true
+    end
     if self._gallery_mode then
         -- the tab switcher: tap a segment to show that pool (tapping the
         -- already-active segment is a no-op)
@@ -3937,12 +4331,26 @@ function GlimpseViewer:onShowNextImage()
         self:_galleryGo(1)
         return true
     end
+    local nb = self._images_list_nb or 1
+    -- "Navigation loops around": Next on the last image goes to the first.
+    if G_reader_settings:isTrue(NAV_LOOP_KEY) and nb > 1
+            and (self._images_list_cur or 1) >= nb then
+        self:switchToImageNum(1)
+        return true
+    end
     return ImageViewer.onShowNextImage(self)
 end
 
 function GlimpseViewer:onShowPrevImage()
     if self._gallery_mode then
         self:_galleryGo(-1)
+        return true
+    end
+    local nb = self._images_list_nb or 1
+    -- "Navigation loops around": Previous on the first image goes to the last.
+    if G_reader_settings:isTrue(NAV_LOOP_KEY) and nb > 1
+            and (self._images_list_cur or 1) <= 1 then
+        self:switchToImageNum(nb)
         return true
     end
     return ImageViewer.onShowPrevImage(self)
@@ -4210,6 +4618,184 @@ function GlimpseViewer:_computeFitScaleFactor()
             (self.width - self.image_padding * 2) / iw,
             (self.img_container_h - self.image_padding * 2) / ih)
     end
+end
+
+-- The current image's displayed dimensions (native pixels, after rotation).
+-- Used for the mini map's aspect and letterbox math.
+function GlimpseViewer:_displayedImageSize()
+    local iw = self.image and self.image.getWidth and self.image:getWidth()
+    local ih = self.image and self.image.getHeight and self.image:getHeight()
+    if not (iw and ih and iw > 0 and ih > 0) then return end
+    if self._cur_rotation == 90 or self._cur_rotation == 270 then
+        iw, ih = ih, iw
+    end
+    return iw, ih
+end
+
+-- A mini-map thumbnail of the current image, drawn at disp_w x disp_h in the
+-- on-screen orientation (rotated to match _cur_rotation). Caller owns the
+-- returned buffer. Cached by size + image index + rotation + night.
+function GlimpseViewer:_minimapThumb(disp_w, disp_h)
+    disp_w, disp_h = math.floor(disp_w + 0.5), math.floor(disp_h + 0.5)
+    if disp_w < 1 or disp_h < 1 then return end
+    local deg = self._cur_rotation or 0
+    -- pre-rotation target size: swap for a quarter turn
+    local pre_w, pre_h = disp_w, disp_h
+    if deg == 90 or deg == 270 then pre_w, pre_h = disp_h, disp_w end
+    local src = self._images_list and self._images_list[self._images_list_cur or 1]
+    local own = false
+    if type(src) == "function" then src = src(); own = true end
+    if not src or not src.getWidth then return end
+    local sw, sh = src:getWidth(), src:getHeight()
+    local scaled = RenderImage:scaleBlitBuffer(src,
+        math.max(1, pre_w), math.max(1, pre_h), own)
+    -- scaleBlitBuffer frees `own` sources; a non-owned source stays untouched
+    local rotated = rotate_bb_quadrant(scaled, deg)
+    if rotated ~= scaled then scaled:free() end
+    return rotated
+end
+
+-- (Re)build the mini map into the current overlay. Removes any existing map
+-- first, then adds a fresh one when it should show (enabled, single-image,
+-- zoomed in past the fitted view). Called from both the full update() and the
+-- zoom light path, because the map appears/disappears as zoom crosses fit.
+-- Docks to the left of the zoom control when that is on (touching corners
+-- squared); otherwise stands alone in the control's slot, all corners rounded.
+-- Its box aspect follows the image area — landscape in a band, portrait in a
+-- side panel.
+function GlimpseViewer:_buildMiniMap()
+    local overlay = self._overlay
+    if not overlay then return end
+    -- drop any existing map from the overlay group and free it
+    if self._minimap_frame then
+        for i = #overlay, 1, -1 do
+            if overlay[i] == self._minimap_frame then
+                table.remove(overlay, i)
+                break
+            end
+        end
+        self._minimap_frame:free()
+        self._minimap_frame = nil
+    end
+    -- Revert the zoom control's squared seam corners and group shadow whenever no
+    -- map is docked (done BEFORE the early returns, so zooming back to fit rounds
+    -- it again and restores its own shadow).
+    if self._zoomctl_frame then
+        self._zoomctl_frame.square_side = nil
+        self._zoomctl_frame.group_shadow = nil
+    end
+    local show_mm = (not self._gallery_mode)
+        and G_reader_settings:isTrue(MINIMAP_KEY)
+        and self:_isOverFit()
+    if not show_mm then return end
+    local iw, ih = self:_displayedImageSize()
+    if not (iw and ih) then return end
+    local image_area_w = self.width - self.image_right_gap
+    local btn_gap = Screen:scaleBySize(10)
+    -- match the bottom-row lift used in update() (top band clears its rounded
+    -- bottom corners), so the standalone-fallback map anchors on the same line
+    local btn_inset = self._place == "top" and self.panel_radius
+        or Screen:scaleBySize(14)
+    local show_zc = (not self._gallery_mode)
+        and G_reader_settings:isTrue(ZOOMCTL_KEY)
+    local border = GlimpseMiniMap.border
+    local zc = self._zoomctl_frame
+    -- The map is EXACTLY as tall as the zoom control so the two merge into one
+    -- group; when docked they overlap by one border so their shared edge reads
+    -- as a single seam, and the four outer corners are the only rounded ones.
+    local box_h = (show_zc and zc and zc:getSize().h) or GlimpseZoomControl.height
+    -- Fit the WHOLE image to that height and wrap the box tightly around it (no
+    -- letterbox): the box width follows the image's aspect. If that would spill
+    -- across the image area, cap the width and shrink the image to fit, centring
+    -- it vertically so the box height (and the merge) stays put.
+    local inner_h = box_h - 2 * border
+    local disp_h = math.max(1, inner_h)
+    local disp_w = math.max(1, math.floor(disp_h * iw / ih + 0.5))
+    local max_inner = image_area_w - 2 * Screen:scaleBySize(14) - 2 * border
+    if show_zc and zc then max_inner = max_inner - zc:getSize().w - btn_gap + border end
+    if disp_w > max_inner and max_inner > 0 then
+        disp_w = max_inner
+        disp_h = math.max(1, math.floor(disp_w * ih / iw + 0.5))
+    end
+    local box_w = disp_w + 2 * border
+    box_h = math.floor(box_h + 0.5)
+    local inner_w = box_w - 2 * border
+    local off_x = border + math.floor((inner_w - disp_w) / 2 + 0.5)
+    local off_y = border + math.floor((inner_h - disp_h) / 2 + 0.5)
+    local mm = GlimpseMiniMap:new{
+        box_w = box_w, box_h = box_h,
+        off_x = off_x, off_y = off_y,
+        disp_w = disp_w, disp_h = disp_h,
+        thumb = self:_minimapThumb(disp_w, disp_h),
+        viewer = self,
+    }
+    local mx, my
+    if show_zc and zc and zc.overlap_offset then
+        -- dock against the control's RESOLVED position (post right-side mirror):
+        -- overlap the seam by one border, square the two touching corners on both
+        -- widgets, and keep the outer corners rounded.
+        local zoff = zc.overlap_offset
+        local zsz = zc:getSize()
+        my = zoff[2]                             -- same top; equal height
+        if self._on_right then
+            mx = zoff[1] + zsz.w - border        -- map to the RIGHT of the control
+            mm.corners = { tl = false, bl = false, tr = true, br = true }
+            zc.square_side = "right"
+        else
+            mx = zoff[1] - box_w + border        -- map to the LEFT of the control
+            mm.corners = { tl = true, bl = true, tr = false, br = false }
+            zc.square_side = "left"
+        end
+        -- one shadow for the merged group; the map skips its own
+        mm.no_shadow = true
+        zc.group_shadow = {
+            x_off = math.min(mx - zoff[1], 0),
+            w = zsz.w + box_w - border,
+            h = zsz.h,
+        }
+    else
+        mm.corners = { tl = true, tr = true, bl = true, br = true }
+        local anchor = self._nav_next_frame
+            or (self._more_frame and self._more_frame.overlap_offset
+                and self._more_frame)
+        if anchor and anchor.overlap_offset then
+            local asz = anchor:getSize()
+            mx = anchor.overlap_offset[1] + (asz.w - box_w)
+            my = anchor.overlap_offset[2] - btn_gap - box_h
+        else
+            mx = image_area_w - box_w
+            my = self.height - box_h - btn_inset
+        end
+    end
+    mm.overlap_offset = { mx, my }
+    self._minimap_frame = mm
+    table.insert(overlay, mm)
+end
+
+-- Recenter the zoomed image so (cx,cy) — image-normalized 0..1 — is centred in
+-- the viewport, clamped to the pannable range. Used by a tap on the mini map,
+-- as an alternative to panning. Mirrors panBy's tail (offset + refresh).
+function GlimpseViewer:_recenterTo(cx, cy)
+    local wg = self._image_wg
+    if not wg or not wg._bb then return end
+    cx = math.min(math.max(cx, 0.5 - wg._max_off_center_x_ratio),
+        0.5 + wg._max_off_center_x_ratio)
+    cy = math.min(math.max(cy, 0.5 - wg._max_off_center_y_ratio),
+        0.5 + wg._max_off_center_y_ratio)
+    local ox = math.floor(cx * wg._bb_w - wg.width / 2)
+    local oy = math.floor(cy * wg._bb_h - wg.height / 2)
+    if ox == wg._offset_x and oy == wg._offset_y then return end
+    wg._offset_x, wg._offset_y = ox, oy
+    wg.center_x_ratio, wg.center_y_ratio = cx, cy
+    self._center_x_ratio, self._center_y_ratio = cx, cy
+    self._skip_shadow_paint = true
+    self.dithered = false
+    local alpha = self.alpha
+    self.alpha = false
+    UIManager:setDirty(self, function()
+        return "ui", wg.dimen or self.main_frame.dimen, false
+    end)
+    self.alpha = alpha
 end
 
 function GlimpseViewer:_refreshScaleFactor()
@@ -6034,6 +6620,100 @@ function Glimpse:_gestureLabel()
     return T(_("Gesture to open: %1"), table.concat(found, ", "))
 end
 
+-- Layout preview: two labelled device mockups (Portrait + Landscape) that
+-- illustrate the current Portrait Position / Preferred Alignment choice, drawn
+-- from the exported Figma SVGs (assets/layout/*.svg). The images swap live as
+-- the radio buttons change. All portrait states are 288×365 and all landscape
+-- states 365×288, so the widget's size is constant across selections — a change
+-- only repaints, never relayouts. Rendered in day polarity; night mode's
+-- framebuffer inversion flips it like the rest of the dialog.
+local _LAYOUT_DIR = _PLUGIN_DIR .. "/assets/layout/"
+local _layout_img_cache = {}
+local function render_layout_svg(name, pane_h)
+    local key = name .. ":" .. pane_h
+    local cached = _layout_img_cache[key]
+    if cached ~= nil then return cached or nil end
+    -- native aspect: portrait_* are 288×365, landscape_* are 365×288
+    local nw, nh = 288, 365
+    if name:sub(1, 9) == "landscape" then nw, nh = 365, 288 end
+    -- pick the box width so height is the binding dimension (exact fit at pane_h)
+    local w = math.floor(pane_h * nw / nh + 0.5)
+    local ok, bb = pcall(RenderImage.renderSVGImageFile, RenderImage,
+        _LAYOUT_DIR .. name .. ".svg", w, pane_h)
+    if not (ok and bb) then
+        _layout_img_cache[key] = false
+        return nil
+    end
+    _layout_img_cache[key] = bb
+    return bb
+end
+
+local GlimpseLayoutPreview = Widget:extend{
+    pos = "side",                       -- "side"/"bottom"/"top"
+    align = "left",                     -- "left"/"right"
+    pane_h = Screen:scaleBySize(190),   -- rendered height of each device image
+    gap = Screen:scaleBySize(28),       -- space between the two panes
+    label_gap = Screen:scaleBySize(6),  -- label baseline -> image top
+}
+
+function GlimpseLayoutPreview:_portraitFile()
+    if self.pos == "bottom" then return "portrait_bottom" end
+    if self.pos == "top" then return "portrait_top" end
+    return self.align == "right" and "portrait_right" or "portrait_left"
+end
+
+function GlimpseLayoutPreview:_landscapeFile()
+    return self.align == "right" and "landscape_right" or "landscape_left"
+end
+
+function GlimpseLayoutPreview:_labelFace()
+    return Font:getFace("cfont", 12)
+end
+
+function GlimpseLayoutPreview:_labelHeight()
+    if not self._label_h then
+        local probe = TextWidget:new{ text = "PORTRAIT", face = self:_labelFace(),
+            bold = true }
+        self._label_h = probe:getSize().h
+        probe:free()
+    end
+    return self._label_h
+end
+
+function GlimpseLayoutPreview:getSize()
+    -- portrait pane is always 288×365, landscape always 365×288, so the two
+    -- widths never change with the selection
+    local pw = math.floor(self.pane_h * 288 / 365 + 0.5)
+    local lw = math.floor(self.pane_h * 365 / 288 + 0.5)
+    return Geom:new{
+        w = pw + self.gap + lw,
+        h = self:_labelHeight() + self.label_gap + self.pane_h,
+    }
+end
+
+function GlimpseLayoutPreview:paintTo(bb, x, y)
+    local sz = self:getSize()
+    self.dimen = Geom:new{ x = x, y = y, w = sz.w, h = sz.h }
+    local label_h = self:_labelHeight()
+    local img_y = y + label_h + self.label_gap
+    local pbb = render_layout_svg(self:_portraitFile(), self.pane_h)
+    local lbb = render_layout_svg(self:_landscapeFile(), self.pane_h)
+    local pw = pbb and pbb:getWidth() or math.floor(self.pane_h * 288 / 365 + 0.5)
+    -- PORTRAIT column
+    local pl = TextWidget:new{ text = _("PORTRAIT"), face = self:_labelFace(),
+        bold = true, fgcolor = Blitbuffer.COLOR_DARK_GRAY }
+    pl:paintTo(bb, x, y)
+    pl:free()
+    if pbb then bb:alphablitFrom(pbb, x, img_y, 0, 0, pbb:getWidth(), self.pane_h) end
+    -- LANDSCAPE column
+    local col2_x = x + pw + self.gap
+    local ll = TextWidget:new{ text = _("LANDSCAPE"), face = self:_labelFace(),
+        bold = true, fgcolor = Blitbuffer.COLOR_DARK_GRAY }
+    ll:paintTo(bb, col2_x, y)
+    ll:free()
+    if lbb then bb:alphablitFrom(lbb, col2_x, img_y, 0, 0, lbb:getWidth(), self.pane_h) end
+end
+
 -- Layout chooser dialog: two independent radio groups — Portrait Position
 -- (Side/Bottom/Top) and Preferred Alignment (Left/Right). Modelled on
 -- RadioButtonWidget, but that widget is single-group, so we compose two
@@ -6050,7 +6730,7 @@ function GlimpseLayoutDialog:init()
     self.layout = {}
     self.screen_width = Screen:getWidth()
     self.screen_height = Screen:getHeight()
-    self.width = math.floor(math.min(self.screen_width, self.screen_height) * 0.9)
+    self.width = math.floor(math.min(self.screen_width, self.screen_height) * 0.78)
     if Device:hasKeys() then
         self.key_events.Close = { { Device.input.group.Back } }
     end
@@ -6058,32 +6738,73 @@ function GlimpseLayoutDialog:init()
         GestureRange:new{ ges = "tap",
             range = Geom:new{ w = self.screen_width, h = self.screen_height } },
     }
-    local inner_w = math.floor(self.width * 0.9)
+    self.preview = GlimpseLayoutPreview:new{
+        pos = self.pos or "side", align = self.align or "left" }
+    -- repaint the preview panes when either radio group changes (the widget's
+    -- size is constant, so only its own region needs to refresh)
+    local function refresh_preview()
+        self.preview.pos = self.pos_table.checked_button.provider
+        self.preview.align = self.align_table.checked_button.provider
+        UIManager:setDirty(self, function() return "ui", self.preview.dimen end)
+    end
 
-    self.pos_table = RadioButtonTable:new{
-        radio_buttons = { {
-            { text = _("Side"),   provider = "side",   checked = self.pos == "side" },
-            { text = _("Bottom"), provider = "bottom", checked = self.pos == "bottom" },
-            { text = _("Top"),    provider = "top",    checked = self.pos == "top" },
-        } },
-        width = inner_w, scroll = false, parent = self,
-    }
-    self:mergeLayoutInVertical(self.pos_table)
-    self.align_table = RadioButtonTable:new{
-        radio_buttons = { {
-            { text = _("Left"),  provider = "left",  checked = self.align == "left" },
-            { text = _("Right"), provider = "right", checked = self.align == "right" },
-        } },
-        width = inner_w, scroll = false, parent = self,
-    }
-    self:mergeLayoutInVertical(self.align_table)
+    -- Each option is sized to its own content and separated by a fixed gap, so the
+    -- space between "Side"/"Bottom"/"Top" is even. (RadioButtonTable uses equal
+    -- columns, which left the long word "Bottom" flush against "Top".) radio_gap
+    -- is the margin between adjacent options. A radio CheckButton does not toggle
+    -- itself, so radio_group manages the mutual exclusion.
+    local radio_gap = Size.padding.large * 2
+    local radio_face = Font:getFace("cfont", 22)
+    local mark_w
+    do
+        local m = TextWidget:new{ text = "◉ ", face = Font:getFace("smallinfofont") }
+        mark_w = m:getSize().w
+        m:free()
+    end
+    local function radio_group(entries)
+        local row = HorizontalGroup:new{ align = "center" }
+        local buttons = {}
+        for i, e in ipairs(entries) do
+            local probe = TextWidget:new{ text = e.text, face = radio_face }
+            local text_w = probe:getSize().w
+            probe:free()
+            local btn = CheckButton:new{
+                text = e.text, radio = true, checked = e.checked,
+                provider = e.provider, single_line = true,
+                width = mark_w + text_w + Size.padding.small,
+                bordersize = 0, margin = 0, padding = 0,
+                face = radio_face, parent = self, show_parent = self,
+            }
+            btn.callback = function()
+                if btn.checked then return end
+                if row.checked_button and row.checked_button ~= btn then
+                    row.checked_button:toggleCheck()
+                end
+                btn:toggleCheck()
+                row.checked_button = btn
+                refresh_preview()
+            end
+            if e.checked then row.checked_button = btn end
+            buttons[#buttons + 1] = btn
+            table.insert(row, btn)
+            if i < #entries then
+                table.insert(row, HorizontalSpan:new{ width = radio_gap })
+            end
+        end
+        table.insert(self.layout, buttons) -- one focus row for key/D-pad devices
+        return row
+    end
 
-    local title_bar = TitleBar:new{
-        width = self.width, align = "left", with_bottom_line = true,
-        title = _("Layout"), title_shrink_font_to_fit = true,
-        info_text = _("Where Glimpse opens. In landscape it always uses the preferred side."),
-        show_parent = self,
+    self.align_table = radio_group{
+        { text = _("Left"),  provider = "left",  checked = self.align == "left" },
+        { text = _("Right"), provider = "right", checked = self.align == "right" },
     }
+    self.pos_table = radio_group{
+        { text = _("Side"),   provider = "side",   checked = self.pos == "side" },
+        { text = _("Bottom"), provider = "bottom", checked = self.pos == "bottom" },
+        { text = _("Top"),    provider = "top",    checked = self.pos == "top" },
+    }
+
     local function section(text)
         return FrameContainer:new{
             bordersize = 0, margin = 0, padding = 0,
@@ -6093,10 +6814,13 @@ function GlimpseLayoutDialog:init()
                 face = Font:getFace("cfont", 18) },
         }
     end
-    local function centred(tbl)
-        return CenterContainer:new{
-            dimen = Geom:new{ w = self.width, h = tbl:getSize().h },
-            HorizontalGroup:new{ align = "center", tbl },
+    -- left-align a radio table under the section labels (same left padding), so
+    -- the buttons no longer sit centred with a gap on the left
+    local function left_aligned(tbl)
+        return FrameContainer:new{
+            bordersize = 0, margin = 0, padding = 0,
+            padding_left = Size.padding.large,
+            tbl,
         }
     end
 
@@ -6115,11 +6839,33 @@ function GlimpseLayoutDialog:init()
     }
     self:mergeLayoutInVertical(buttons)
 
-    local vgroup = VerticalGroup:new{ align = "left", title_bar }
-    table.insert(vgroup, section(_("Portrait Position")))
-    table.insert(vgroup, centred(self.pos_table))
+    -- the preview sits in a rounded card (Figma #a9a9a9 hairline border) above
+    -- the radio groups it illustrates. The card stretches the full dialog width
+    -- (matching the radio rows below); the two panes are centred inside it.
+    local card_pad = Size.padding.large
+    local card_w = self.width - 2 * card_pad
+    local preview_card = FrameContainer:new{
+        radius = Size.radius.window, bordersize = Size.border.thick,
+        color = Blitbuffer.COLOR_LIGHT_GRAY, margin = 0,
+        padding = card_pad, background = Blitbuffer.COLOR_WHITE,
+        CenterContainer:new{
+            dimen = Geom:new{ w = card_w - 2 * card_pad,
+                h = self.preview:getSize().h },
+            self.preview,
+        },
+    }
+
+    -- No title bar: the dialog opens straight into the preview and options.
+    local vgroup = VerticalGroup:new{ align = "left",
+        VerticalSpan:new{ width = Size.padding.large } }
+    table.insert(vgroup, CenterContainer:new{
+        dimen = Geom:new{ w = self.width, h = preview_card:getSize().h },
+        preview_card })
+    -- Preferred Alignment on top, Portrait Position below.
     table.insert(vgroup, section(_("Preferred Alignment")))
-    table.insert(vgroup, centred(self.align_table))
+    table.insert(vgroup, left_aligned(self.align_table))
+    table.insert(vgroup, section(_("Portrait Position")))
+    table.insert(vgroup, left_aligned(self.pos_table))
     table.insert(vgroup, VerticalSpan:new{ width = Size.padding.large })
     table.insert(vgroup, CenterContainer:new{
         dimen = Geom:new{ w = self.width, h = buttons:getSize().h }, buttons })
@@ -6368,6 +7114,17 @@ function Glimpse:_menuItems()
                     end,
                 },
                 {
+                    text = _("Navigation Loops Around"),
+                    help_text = _("Let the ‹ › buttons and swipes wrap around at the ends: Next on the last image goes to the first, and Previous on the first goes to the last. The Gallery pages wrap the same way."),
+                    checked_func = function()
+                        return G_reader_settings:isTrue(NAV_LOOP_KEY)
+                    end,
+                    callback = function()
+                        G_reader_settings:saveSetting(NAV_LOOP_KEY,
+                            not G_reader_settings:isTrue(NAV_LOOP_KEY))
+                    end,
+                },
+                {
                     text = _("Show Zoom Controls"),
                     help_text = _("Show a vertical −/fit/+ control in the viewer for zooming in and out, as an alternative to double-tap and pinch. The middle button returns to the fitted view."),
                     checked_func = function()
@@ -6376,6 +7133,17 @@ function Glimpse:_menuItems()
                     callback = function()
                         G_reader_settings:saveSetting(ZOOMCTL_KEY,
                             not G_reader_settings:isTrue(ZOOMCTL_KEY))
+                    end,
+                },
+                {
+                    text = _("Show Mini Map"),
+                    help_text = _("While zoomed in, show a small overview of the image with a rectangle marking the visible area. Tap the map to jump there. It docks to the zoom controls when those are on, and is hidden at the fitted view."),
+                    checked_func = function()
+                        return G_reader_settings:isTrue(MINIMAP_KEY)
+                    end,
+                    callback = function()
+                        G_reader_settings:saveSetting(MINIMAP_KEY,
+                            not G_reader_settings:isTrue(MINIMAP_KEY))
                     end,
                 },
                 {
@@ -6397,6 +7165,16 @@ function Glimpse:_menuItems()
                     end,
                     callback = function()
                         G_reader_settings:flipNilOrTrue(CAPTIONS_KEY)
+                    end,
+                },
+                {
+                    text = _("Show bookmark label in corner"),
+                    help_text = _("On a bookmarked page, show a label with the page number and chapter in the viewer's top-left corner. Turn off to hide it."),
+                    checked_func = function()
+                        return G_reader_settings:nilOrTrue(BOOKMARK_LABEL_KEY)
+                    end,
+                    callback = function()
+                        G_reader_settings:flipNilOrTrue(BOOKMARK_LABEL_KEY)
                     end,
                 },
                 {

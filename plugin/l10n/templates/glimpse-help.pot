@@ -1,0 +1,155 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Erik Fanki
+# This file is distributed under the same license as the Glimpse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Glimpse\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid ""
+"Master switch. When off, the bound gesture and the Open Glimpse entry do "
+"nothing – a quick way to silence Glimpse without unbinding its gesture."
+msgstr ""
+
+msgid ""
+"Assign or change it under Taps and gestures → Gesture manager → (pick a "
+"gesture) → Reader → 'Open Glimpse'."
+msgstr ""
+
+msgid ""
+"Browse the maps, family trees and other reference images found in this book, "
+"without losing your reading position. Tip: bind the gesture action 'Open "
+"Glimpse' for one-touch access."
+msgstr ""
+
+msgid ""
+"Also show the pages you've bookmarked (the dogear bookmark) in the Gallery, "
+"rendered as page thumbnails and marked with a bookmark badge, in reading "
+"order alongside the images – a quick way to keep a reference page a swipe "
+"away. Off by default. Also available from the viewer's ⋯ menu (see Quick "
+"Actions)."
+msgstr ""
+
+msgid ""
+"Choose which actions appear in the viewer's ⋯ menu. Reset Rotation is "
+"automatic (shown while an image is rotated)."
+msgstr ""
+
+msgid ""
+"Double-tap the image to jump to the maximum zoom (centered on the tap), and "
+"again to return to the fitted view. On by default."
+msgstr ""
+
+msgid ""
+"Swipe left or right across the image to move to the next or previous image. "
+"On by default. (The Gallery's swipe-to-page is unaffected.)"
+msgstr ""
+
+msgid ""
+"Pinch or spread two fingers on the image to zoom out or in. On by default."
+msgstr ""
+
+msgid ""
+"Where Glimpse opens: a side panel (left or right) or, in portrait, a band "
+"across the top or bottom. In landscape it always uses the preferred side."
+msgstr ""
+
+msgid ""
+"Show ‹ and › buttons in the viewer for switching between images, as an "
+"alternative to swiping. A button is grayed out when there is no image on its "
+"side."
+msgstr ""
+
+msgid ""
+"Let the ‹ › buttons and swipes wrap around at the ends: Next on the last "
+"image goes to the first, and Previous on the first goes to the last. The "
+"Gallery pages wrap the same way."
+msgstr ""
+
+msgid ""
+"Show a vertical −/fit/+ control in the viewer for zooming in and out, as an "
+"alternative to double-tap and pinch. The middle button returns to the fitted "
+"view."
+msgstr ""
+
+msgid ""
+"While zoomed in, show a small overview of the image with a rectangle marking "
+"the visible area. Tap the map to jump there. It docks to the zoom controls "
+"when those are on, and is hidden at the fitted view."
+msgstr ""
+
+msgid ""
+"While KOReader's night mode is on, show images inverted (light lines on a "
+"dark background). Also toggleable from the viewer's ⋯ menu."
+msgstr ""
+
+msgid ""
+"Show the image's caption from the book, overlaid in the viewer's top-left "
+"corner."
+msgstr ""
+
+msgid ""
+"On a bookmarked page, show a label with the page number and chapter in the "
+"viewer's top-left corner. Turn off to hide it."
+msgstr ""
+
+msgid ""
+"How far you can zoom in, as a percentage of the image's own resolution. "
+"Double-tap jumps to this level and pinch stops here. Higher reveals more on "
+"detailed maps, but past 100% it is upscaling, so very high can look soft."
+msgstr ""
+
+msgid ""
+"While the viewer is open, a tap along the top edge of the screen opens "
+"KOReader's top menu (only the top menu, never the bottom one) over the "
+"drawer, instead of doing nothing. Turn off to keep the top edge inert."
+msgstr ""
+
+msgid ""
+"By default Glimpse sets aside covers, publisher logos, ornaments and other "
+"non-reference imagery, keeping maps, family trees, diagrams and "
+"illustrations. Enable this to switch that off and see every image in the "
+"book. (Individual wrongly-kept images can instead be ignored from the "
+"viewer's ⋯ menu; wrongly set-aside ones added back from the Gallery's "
+"Ignored tab.)"
+msgstr ""
+
+msgid ""
+"Silence the message shown when Glimpse is opened on a book format it doesn't "
+"support (PDF, comics, manga…). Handy if a reading gesture sometimes triggers "
+"Glimpse on non-EPUB files. Off by default."
+msgstr ""
+
+msgid ""
+"Remove the drawer's drop shadow. The shadow is a dithered gradient – the "
+"main cause of e-ink ghosting behind the drawer – so turn it off if a ghost "
+"lingers after closing Glimpse. No visible effect on LCD screens."
+msgstr ""
+
+msgid ""
+"Switch between images with a quick, flashless refresh instead of a full "
+"clear. On by default: faster and no flash. Turn it off if the previous image "
+"ghosts through the next one – most noticeable on detailed maps and on slower "
+"e-ink panels. No visible effect on LCD screens."
+msgstr ""
+
+msgid ""
+"Glimpse caches its scan of the book. Use this if the book file was replaced "
+"or images seem out of date."
+msgstr ""
+
+msgid ""
+"Also offer releases marked as pre-release on GitHub – test builds published "
+"before a proper release. Normal update checks never see those."
+msgstr ""
