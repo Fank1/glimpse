@@ -4760,12 +4760,24 @@ function GlimpseViewer:_buildMiniMap()
                 and self._more_frame)
         if anchor and anchor.overlap_offset then
             local asz = anchor:getSize()
-            mx = anchor.overlap_offset[1] + (asz.w - box_w)
+            -- Align the map to the anchor so it grows toward the panel INTERIOR,
+            -- not off the nearest edge. The zoom control is button-width so it can
+            -- always right-align, but a wide (landscape) map right-aligned to an
+            -- inner-edge button — e.g. ⋯ on a right-side panel with nav buttons
+            -- off — would spill outside. Left-align when the anchor sits in the
+            -- left half of the content, right-align otherwise.
+            if anchor.overlap_offset[1] + asz.w / 2 < self.width / 2 then
+                mx = anchor.overlap_offset[1]                     -- grow right
+            else
+                mx = anchor.overlap_offset[1] + (asz.w - box_w)   -- grow left
+            end
             my = anchor.overlap_offset[2] - btn_gap - box_h
         else
             mx = image_area_w - box_w
             my = self.height - box_h - btn_inset
         end
+        -- keep the box fully inside the content area regardless of image aspect
+        mx = math.max(0, math.min(mx, self.width - box_w))
     end
     mm.overlap_offset = { mx, my }
     self._minimap_frame = mm

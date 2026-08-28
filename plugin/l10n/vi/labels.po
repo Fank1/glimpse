@@ -1,0 +1,413 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Erik Fanki
+# This file is distributed under the same license as the Glimpse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Glimpse\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"PO-Revision-Date: 2026-08-25 00:00+0000\n"
+"Last-Translator: AI seed <noreply@glimpse>\n"
+"Language-Team: vi\n"
+"Language: vi\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Ignore Image"
+msgstr "Bỏ qua ảnh"
+
+msgid "Mode switch"
+msgstr "Chuyển chế độ"
+
+msgid "Rotate image"
+msgstr "Xoay ảnh"
+
+msgid "Show in Book"
+msgstr "Hiển thị trong Sách"
+
+msgid "Nav Buttons Toggle"
+msgstr "Nút Điều hướng"
+
+msgid "Zoom Controls Toggle"
+msgstr "Điều khiển Thu phóng"
+
+msgid "Mini Map Toggle"
+msgstr "Bản đồ Nhỏ"
+
+msgid "Image Captions Toggle"
+msgstr "Chú thích Ảnh"
+
+msgid "Include Bookmarks Toggle"
+msgstr "Bao gồm Dấu trang"
+
+msgid "Invert in Night Mode Toggle"
+msgstr "Đảo ngược trong Chế độ Ban đêm"
+
+msgid "Layout"
+msgstr "Bố cục"
+
+msgid "Page %1 (%2)"
+msgstr "Trang %1 (%2)"
+
+msgid "Page %1"
+msgstr "Trang %1"
+
+msgid "Gallery"
+msgstr "Thư viện"
+
+msgid "Ignored"
+msgstr "Đã bỏ qua"
+
+msgid "Reset"
+msgstr "Đặt lại"
+
+msgid "Remove bookmark"
+msgstr "Xóa dấu trang"
+
+msgid "Add back to Gallery"
+msgstr "Thêm lại vào Thư viện"
+
+msgid "Ignore this image"
+msgstr "Bỏ qua ảnh này"
+
+msgid "Page %1 of %2"
+msgstr "Trang %1 trên %2"
+
+msgid "1 image"
+msgstr "1 ảnh"
+
+msgid "%1 images"
+msgstr "%1 ảnh"
+
+msgid "1 bookmark"
+msgstr "1 dấu trang"
+
+msgid "%1 bookmarks"
+msgstr "%1 dấu trang"
+
+msgid "Mode: All images"
+msgstr "Chế độ: Tất cả ảnh"
+
+msgid "Mode: Spoiler-free"
+msgstr "Chế độ: Không tiết lộ"
+
+msgid "Reset Rotation"
+msgstr "Đặt lại Xoay"
+
+msgid "Nav Buttons"
+msgstr "Nút Điều hướng"
+
+msgid "Zoom Controls"
+msgstr "Điều khiển Thu phóng"
+
+msgid "Mini Map"
+msgstr "Bản đồ Nhỏ"
+
+msgid "Image Captions"
+msgstr "Chú thích Ảnh"
+
+msgid "Include Bookmarks"
+msgstr "Bao gồm Dấu trang"
+
+msgid "Invert in Night Mode"
+msgstr "Đảo ngược trong Chế độ Ban đêm"
+
+msgid "Image ignored."
+msgstr "Đã bỏ qua ảnh."
+
+msgid "Bookmark removed."
+msgstr "Đã xóa dấu trang."
+
+msgid "Open Glimpse"
+msgstr "Mở Glimpse"
+
+msgid "No book is open."
+msgstr "Không có sách nào đang mở."
+
+msgid ""
+"Glimpse failed to load its scanner module. Try reinstalling the plugin."
+msgstr ""
+"Glimpse không tải được mô-đun quét của nó. Hãy thử cài đặt lại phần bổ trợ."
+
+msgid ""
+"Glimpse works with EPUB books only (this document format is not supported)."
+msgstr ""
+"Glimpse chỉ hoạt động với sách EPUB (định dạng tài liệu này không được hỗ "
+"trợ)."
+
+msgid "Scanning book for images…"
+msgstr "Đang quét sách để tìm ảnh…"
+
+msgid "Glimpse works with EPUB books only."
+msgstr "Glimpse chỉ hoạt động với sách EPUB."
+
+msgid "Could not scan this book for images."
+msgstr "Không thể quét sách này để tìm ảnh."
+
+msgid "No images up to here yet – 1 further in the book."
+msgstr "Chưa có ảnh nào đến đây – còn 1 ảnh nữa trong sách."
+
+msgid "No images up to here yet – %1 further in the book."
+msgstr "Chưa có ảnh nào đến đây – còn %1 ảnh nữa trong sách."
+
+msgid "Show whole book"
+msgstr "Hiển thị toàn bộ sách"
+
+msgid "Close"
+msgstr "Đóng"
+
+msgid "No images to show – 1 was filtered out as irrelevant."
+msgstr "Không có ảnh để hiển thị – 1 ảnh đã bị lọc vì không liên quan."
+
+msgid "No images to show – %1 were filtered out as irrelevant."
+msgstr "Không có ảnh để hiển thị – %1 ảnh đã bị lọc vì không liên quan."
+
+msgid "Review filtered-out"
+msgstr "Xem lại ảnh đã lọc"
+
+msgid "No images to show."
+msgstr "Không có ảnh để hiển thị."
+
+msgid "Mode: Images up to here"
+msgstr "Chế độ: Ảnh đến đây"
+
+msgid "Bookmarked pages hidden"
+msgstr "Trang có dấu trang đã ẩn"
+
+msgid "Bookmarked pages shown"
+msgstr "Trang có dấu trang đã hiện"
+
+msgid "Moved to Ignored"
+msgstr "Đã chuyển đến Đã bỏ qua"
+
+msgid "Added to Gallery"
+msgstr "Đã thêm vào Thư viện"
+
+msgid "Cancel"
+msgstr "Hủy"
+
+msgid "Checking for updates…"
+msgstr "Đang kiểm tra cập nhật…"
+
+msgid "Update check failed:"
+msgstr "Kiểm tra cập nhật thất bại:"
+
+msgid "Could not read the latest release info."
+msgstr "Không thể đọc thông tin bản phát hành mới nhất."
+
+msgid "You're up to date (v%1)."
+msgstr "Bạn đã cập nhật (v%1)."
+
+msgid "No downloadable release package found."
+msgstr "Không tìm thấy gói phát hành tải xuống được."
+
+msgid ""
+"Update available: %1\n"
+"(installed: v%2)\n"
+"\n"
+"Download and install now?"
+msgstr ""
+"Có bản cập nhật: %1\n"
+"(đã cài: v%2)\n"
+"\n"
+"Tải xuống và cài đặt ngay?"
+
+msgid "Update"
+msgstr "Cập nhật"
+
+msgid "Updating to %1…"
+msgstr "Đang cập nhật lên %1…"
+
+msgid ""
+"Updated to %1.\n"
+"Restart KOReader now to load it?"
+msgstr ""
+"Đã cập nhật lên %1.\n"
+"Khởi động lại KOReader ngay để tải?"
+
+msgid "Restart"
+msgstr "Khởi động lại"
+
+msgid "Later"
+msgstr "Để sau"
+
+msgid "Update failed."
+msgstr "Cập nhật thất bại."
+
+msgid "Glimpse"
+msgstr "Glimpse"
+
+msgid "Gesture to open: none set"
+msgstr "Cử chỉ để mở: chưa đặt"
+
+msgid "Gesture to open: %1"
+msgstr "Cử chỉ để mở: %1"
+
+msgid "PORTRAIT"
+msgstr "DỌC"
+
+msgid "LANDSCAPE"
+msgstr "NGANG"
+
+msgid "Left"
+msgstr "Trái"
+
+msgid "Right"
+msgstr "Phải"
+
+msgid "Side"
+msgstr "Bên cạnh"
+
+msgid "Bottom"
+msgstr "Dưới"
+
+msgid "Top"
+msgstr "Trên"
+
+msgid "Apply"
+msgstr "Áp dụng"
+
+msgid "Preferred Alignment"
+msgstr "Căn chỉnh Ưu tiên"
+
+msgid "Portrait Position"
+msgstr "Vị trí Dọc"
+
+msgid "Enable Glimpse"
+msgstr "Bật Glimpse"
+
+msgid ""
+"Tip: open Glimpse instantly with a gesture.\n"
+"\n"
+"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n"
+"\n"
+"(This tip is shown only once.)"
+msgstr ""
+"Mẹo: mở Glimpse ngay lập tức bằng một cử chỉ.\n"
+"\n"
+"Đặt một cử chỉ trong Cài đặt → Chạm và cử chỉ → Trình quản lý cử chỉ → chọn một cử chỉ → Trình đọc → 'Mở Glimpse'.\n"
+"\n"
+"(Mẹo này chỉ hiển thị một lần.)"
+
+msgid "Mode: Show all images"
+msgstr "Chế độ: Hiển thị tất cả ảnh"
+
+msgid "Mode: Show images up to current chapter"
+msgstr "Chế độ: Hiển thị ảnh đến chương hiện tại"
+
+msgid "Show images up to current chapter"
+msgstr "Hiển thị ảnh đến chương hiện tại"
+
+msgid ""
+"Images that appear beyond your current position stay hidden, so you can't "
+"spoil yourself. Granularity is per chapter: images in the chapter you are "
+"currently reading are shown."
+msgstr ""
+"Những ảnh xuất hiện sau vị trí hiện tại của bạn sẽ được ẩn, để bạn không tự "
+"tiết lộ nội dung. Độ chi tiết theo từng chương: các ảnh trong chương bạn "
+"đang đọc sẽ được hiển thị."
+
+msgid "Show all images"
+msgstr "Hiển thị tất cả ảnh"
+
+msgid ""
+"Show reference images from anywhere in the book, including parts you haven't"
+" reached yet."
+msgstr ""
+"Hiển thị ảnh tham khảo từ bất kỳ đâu trong sách, kể cả những phần bạn chưa "
+"đọc tới."
+
+msgid "Include Bookmarks in Gallery"
+msgstr "Bao gồm Dấu trang trong Thư viện"
+
+msgid "Quick Actions"
+msgstr "Thao tác Nhanh"
+
+msgid "Settings"
+msgstr "Cài đặt"
+
+msgid "Gestures"
+msgstr "Cử chỉ"
+
+msgid "Double-tap for maximum zoom"
+msgstr "Chạm đúp để thu phóng tối đa"
+
+msgid "Swipe left/right to navigate"
+msgstr "Vuốt trái/phải để điều hướng"
+
+msgid "Pinch to zoom in/out"
+msgstr "Chụm để thu phóng"
+
+msgid "Layout: %1 · %2"
+msgstr "Bố cục: %1 · %2"
+
+msgid "Show Nav Buttons"
+msgstr "Hiển thị Nút Điều hướng"
+
+msgid "Navigation Loops Around"
+msgstr "Điều hướng Vòng lặp"
+
+msgid "Show Zoom Controls"
+msgstr "Hiển thị Điều khiển Thu phóng"
+
+msgid "Show Mini Map"
+msgstr "Hiển thị Bản đồ Nhỏ"
+
+msgid "Invert Images in Night Mode"
+msgstr "Đảo ngược Ảnh trong Chế độ Ban đêm"
+
+msgid "Show image captions"
+msgstr "Hiển thị chú thích ảnh"
+
+msgid "Show bookmark label in corner"
+msgstr "Hiển thị nhãn dấu trang ở góc"
+
+msgid "Maximum zoom: %1%"
+msgstr "Thu phóng tối đa: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (khuyến nghị)"
+
+msgid "%1%"
+msgstr "%1%"
+
+msgid "Enable top menu tap zone"
+msgstr "Bật vùng chạm menu trên cùng"
+
+msgid "Advanced"
+msgstr "Nâng cao"
+
+msgid "Disable irrelevant image filtering"
+msgstr "Tắt lọc ảnh không liên quan"
+
+msgid "Suppress \"format not supported\" notice"
+msgstr "Ẩn thông báo \"định dạng không được hỗ trợ\""
+
+msgid "Disable shadows"
+msgstr "Tắt bóng đổ"
+
+msgid "Fast image switching"
+msgstr "Chuyển ảnh nhanh"
+
+msgid "Rescan this book"
+msgstr "Quét lại sách này"
+
+msgid "Found %1 image(s)."
+msgstr "Đã tìm thấy %1 ảnh."
+
+msgid "Scan failed."
+msgstr "Quét thất bại."
+
+msgid "Updates"
+msgstr "Cập nhật"
+
+msgid "Check for updates (v%1)"
+msgstr "Kiểm tra cập nhật (v%1)"
+
+msgid "Include pre-release versions"
+msgstr "Bao gồm các bản tiền phát hành"

@@ -1,0 +1,412 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Erik Fanki
+# This file is distributed under the same license as the Glimpse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Glimpse\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"PO-Revision-Date: 2026-08-25 00:00+0000\n"
+"Last-Translator: AI seed <noreply@glimpse>\n"
+"Language-Team: id\n"
+"Language: id\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Ignore Image"
+msgstr "Abaikan Gambar"
+
+msgid "Mode switch"
+msgstr "Ganti mode"
+
+msgid "Rotate image"
+msgstr "Putar gambar"
+
+msgid "Show in Book"
+msgstr "Tampilkan di Buku"
+
+msgid "Nav Buttons Toggle"
+msgstr "Tombol Navigasi"
+
+msgid "Zoom Controls Toggle"
+msgstr "Kontrol Zoom"
+
+msgid "Mini Map Toggle"
+msgstr "Peta Mini"
+
+msgid "Image Captions Toggle"
+msgstr "Keterangan Gambar"
+
+msgid "Include Bookmarks Toggle"
+msgstr "Sertakan Markah"
+
+msgid "Invert in Night Mode Toggle"
+msgstr "Balikkan di Mode Malam"
+
+msgid "Layout"
+msgstr "Tata Letak"
+
+msgid "Page %1 (%2)"
+msgstr "Halaman %1 (%2)"
+
+msgid "Page %1"
+msgstr "Halaman %1"
+
+msgid "Gallery"
+msgstr "Galeri"
+
+msgid "Ignored"
+msgstr "Diabaikan"
+
+msgid "Reset"
+msgstr "Atur ulang"
+
+msgid "Remove bookmark"
+msgstr "Hapus markah"
+
+msgid "Add back to Gallery"
+msgstr "Tambahkan kembali ke Galeri"
+
+msgid "Ignore this image"
+msgstr "Abaikan gambar ini"
+
+msgid "Page %1 of %2"
+msgstr "Halaman %1 dari %2"
+
+msgid "1 image"
+msgstr "1 gambar"
+
+msgid "%1 images"
+msgstr "%1 gambar"
+
+msgid "1 bookmark"
+msgstr "1 markah"
+
+msgid "%1 bookmarks"
+msgstr "%1 markah"
+
+msgid "Mode: All images"
+msgstr "Mode: Semua gambar"
+
+msgid "Mode: Spoiler-free"
+msgstr "Mode: Bebas spoiler"
+
+msgid "Reset Rotation"
+msgstr "Atur Ulang Rotasi"
+
+msgid "Nav Buttons"
+msgstr "Tombol Navigasi"
+
+msgid "Zoom Controls"
+msgstr "Kontrol Zoom"
+
+msgid "Mini Map"
+msgstr "Peta Mini"
+
+msgid "Image Captions"
+msgstr "Keterangan Gambar"
+
+msgid "Include Bookmarks"
+msgstr "Sertakan Markah"
+
+msgid "Invert in Night Mode"
+msgstr "Balikkan di Mode Malam"
+
+msgid "Image ignored."
+msgstr "Gambar diabaikan."
+
+msgid "Bookmark removed."
+msgstr "Markah dihapus."
+
+msgid "Open Glimpse"
+msgstr "Buka Glimpse"
+
+msgid "No book is open."
+msgstr "Tidak ada buku yang terbuka."
+
+msgid ""
+"Glimpse failed to load its scanner module. Try reinstalling the plugin."
+msgstr "Glimpse gagal memuat modul pemindainya. Coba pasang ulang plugin."
+
+msgid ""
+"Glimpse works with EPUB books only (this document format is not supported)."
+msgstr ""
+"Glimpse hanya bekerja dengan buku EPUB (format dokumen ini tidak didukung)."
+
+msgid "Scanning book for images…"
+msgstr "Memindai buku untuk gambar…"
+
+msgid "Glimpse works with EPUB books only."
+msgstr "Glimpse hanya bekerja dengan buku EPUB."
+
+msgid "Could not scan this book for images."
+msgstr "Tidak dapat memindai buku ini untuk gambar."
+
+msgid "No images up to here yet – 1 further in the book."
+msgstr "Belum ada gambar sampai di sini – 1 lagi di buku."
+
+msgid "No images up to here yet – %1 further in the book."
+msgstr "Belum ada gambar sampai di sini – %1 lagi di buku."
+
+msgid "Show whole book"
+msgstr "Tampilkan seluruh buku"
+
+msgid "Close"
+msgstr "Tutup"
+
+msgid "No images to show – 1 was filtered out as irrelevant."
+msgstr "Tidak ada gambar untuk ditampilkan – 1 disaring karena tidak relevan."
+
+msgid "No images to show – %1 were filtered out as irrelevant."
+msgstr ""
+"Tidak ada gambar untuk ditampilkan – %1 disaring karena tidak relevan."
+
+msgid "Review filtered-out"
+msgstr "Tinjau yang tersaring"
+
+msgid "No images to show."
+msgstr "Tidak ada gambar untuk ditampilkan."
+
+msgid "Mode: Images up to here"
+msgstr "Mode: Gambar sampai di sini"
+
+msgid "Bookmarked pages hidden"
+msgstr "Halaman bermarkah disembunyikan"
+
+msgid "Bookmarked pages shown"
+msgstr "Halaman bermarkah ditampilkan"
+
+msgid "Moved to Ignored"
+msgstr "Dipindahkan ke Diabaikan"
+
+msgid "Added to Gallery"
+msgstr "Ditambahkan ke Galeri"
+
+msgid "Cancel"
+msgstr "Batal"
+
+msgid "Checking for updates…"
+msgstr "Memeriksa pembaruan…"
+
+msgid "Update check failed:"
+msgstr "Pemeriksaan pembaruan gagal:"
+
+msgid "Could not read the latest release info."
+msgstr "Tidak dapat membaca info rilis terbaru."
+
+msgid "You're up to date (v%1)."
+msgstr "Anda sudah yang terbaru (v%1)."
+
+msgid "No downloadable release package found."
+msgstr "Tidak ada paket rilis yang dapat diunduh ditemukan."
+
+msgid ""
+"Update available: %1\n"
+"(installed: v%2)\n"
+"\n"
+"Download and install now?"
+msgstr ""
+"Pembaruan tersedia: %1\n"
+"(terpasang: v%2)\n"
+"\n"
+"Unduh dan pasang sekarang?"
+
+msgid "Update"
+msgstr "Perbarui"
+
+msgid "Updating to %1…"
+msgstr "Memperbarui ke %1…"
+
+msgid ""
+"Updated to %1.\n"
+"Restart KOReader now to load it?"
+msgstr ""
+"Diperbarui ke %1.\n"
+"Mulai ulang KOReader sekarang untuk memuatnya?"
+
+msgid "Restart"
+msgstr "Mulai ulang"
+
+msgid "Later"
+msgstr "Nanti"
+
+msgid "Update failed."
+msgstr "Pembaruan gagal."
+
+msgid "Glimpse"
+msgstr "Glimpse"
+
+msgid "Gesture to open: none set"
+msgstr "Gestur untuk membuka: belum diatur"
+
+msgid "Gesture to open: %1"
+msgstr "Gestur untuk membuka: %1"
+
+msgid "PORTRAIT"
+msgstr "POTRET"
+
+msgid "LANDSCAPE"
+msgstr "LANSKAP"
+
+msgid "Left"
+msgstr "Kiri"
+
+msgid "Right"
+msgstr "Kanan"
+
+msgid "Side"
+msgstr "Samping"
+
+msgid "Bottom"
+msgstr "Bawah"
+
+msgid "Top"
+msgstr "Atas"
+
+msgid "Apply"
+msgstr "Terapkan"
+
+msgid "Preferred Alignment"
+msgstr "Perataan Pilihan"
+
+msgid "Portrait Position"
+msgstr "Posisi Potret"
+
+msgid "Enable Glimpse"
+msgstr "Aktifkan Glimpse"
+
+msgid ""
+"Tip: open Glimpse instantly with a gesture.\n"
+"\n"
+"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n"
+"\n"
+"(This tip is shown only once.)"
+msgstr ""
+"Tips: buka Glimpse seketika dengan gestur.\n"
+"\n"
+"Atur satu di Pengaturan → Ketuk dan gestur → Pengelola gestur → pilih gestur → Pembaca → 'Buka Glimpse'.\n"
+"\n"
+"(Tips ini hanya ditampilkan sekali.)"
+
+msgid "Mode: Show all images"
+msgstr "Mode: Tampilkan semua gambar"
+
+msgid "Mode: Show images up to current chapter"
+msgstr "Mode: Tampilkan gambar sampai bab saat ini"
+
+msgid "Show images up to current chapter"
+msgstr "Tampilkan gambar sampai bab saat ini"
+
+msgid ""
+"Images that appear beyond your current position stay hidden, so you can't "
+"spoil yourself. Granularity is per chapter: images in the chapter you are "
+"currently reading are shown."
+msgstr ""
+"Gambar yang muncul di luar posisi Anda saat ini tetap tersembunyi, sehingga "
+"Anda tidak akan terkena spoiler. Granularitasnya per bab: gambar di bab yang"
+" sedang Anda baca ditampilkan."
+
+msgid "Show all images"
+msgstr "Tampilkan semua gambar"
+
+msgid ""
+"Show reference images from anywhere in the book, including parts you haven't"
+" reached yet."
+msgstr ""
+"Tampilkan gambar referensi dari mana saja di buku, termasuk bagian yang "
+"belum Anda capai."
+
+msgid "Include Bookmarks in Gallery"
+msgstr "Sertakan Markah di Galeri"
+
+msgid "Quick Actions"
+msgstr "Tindakan Cepat"
+
+msgid "Settings"
+msgstr "Pengaturan"
+
+msgid "Gestures"
+msgstr "Gestur"
+
+msgid "Double-tap for maximum zoom"
+msgstr "Ketuk dua kali untuk zoom maksimum"
+
+msgid "Swipe left/right to navigate"
+msgstr "Geser kiri/kanan untuk navigasi"
+
+msgid "Pinch to zoom in/out"
+msgstr "Cubit untuk memperbesar/memperkecil"
+
+msgid "Layout: %1 · %2"
+msgstr "Tata Letak: %1 · %2"
+
+msgid "Show Nav Buttons"
+msgstr "Tampilkan Tombol Navigasi"
+
+msgid "Navigation Loops Around"
+msgstr "Navigasi Berputar"
+
+msgid "Show Zoom Controls"
+msgstr "Tampilkan Kontrol Zoom"
+
+msgid "Show Mini Map"
+msgstr "Tampilkan Peta Mini"
+
+msgid "Invert Images in Night Mode"
+msgstr "Balikkan Gambar di Mode Malam"
+
+msgid "Show image captions"
+msgstr "Tampilkan keterangan gambar"
+
+msgid "Show bookmark label in corner"
+msgstr "Tampilkan label markah di sudut"
+
+msgid "Maximum zoom: %1%"
+msgstr "Zoom maksimum: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (disarankan)"
+
+msgid "%1%"
+msgstr "%1%"
+
+msgid "Enable top menu tap zone"
+msgstr "Aktifkan zona ketuk menu atas"
+
+msgid "Advanced"
+msgstr "Lanjutan"
+
+msgid "Disable irrelevant image filtering"
+msgstr "Nonaktifkan penyaringan gambar tidak relevan"
+
+msgid "Suppress \"format not supported\" notice"
+msgstr "Sembunyikan pemberitahuan \"format tidak didukung\""
+
+msgid "Disable shadows"
+msgstr "Nonaktifkan bayangan"
+
+msgid "Fast image switching"
+msgstr "Pergantian gambar cepat"
+
+msgid "Rescan this book"
+msgstr "Pindai ulang buku ini"
+
+msgid "Found %1 image(s)."
+msgstr "Ditemukan %1 gambar."
+
+msgid "Scan failed."
+msgstr "Pemindaian gagal."
+
+msgid "Updates"
+msgstr "Pembaruan"
+
+msgid "Check for updates (v%1)"
+msgstr "Periksa pembaruan (v%1)"
+
+msgid "Include pre-release versions"
+msgstr "Sertakan versi pra-rilis"

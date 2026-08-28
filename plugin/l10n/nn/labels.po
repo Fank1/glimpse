@@ -1,0 +1,414 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Erik Fanki
+# This file is distributed under the same license as the Glimpse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Glimpse\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"PO-Revision-Date: 2026-08-25 00:00+0000\n"
+"Last-Translator: AI seed <noreply@glimpse>\n"
+"Language-Team: nn\n"
+"Language: nn\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Ignore Image"
+msgstr "Ignorer bilete"
+
+msgid "Mode switch"
+msgstr "Modusbyte"
+
+msgid "Rotate image"
+msgstr "Roter bilete"
+
+msgid "Show in Book"
+msgstr "Vis i boka"
+
+msgid "Nav Buttons Toggle"
+msgstr "Navigasjonsknappar"
+
+msgid "Zoom Controls Toggle"
+msgstr "Zoomkontrollar"
+
+msgid "Mini Map Toggle"
+msgstr "Minikart"
+
+msgid "Image Captions Toggle"
+msgstr "Biletetekstar"
+
+msgid "Include Bookmarks Toggle"
+msgstr "Inkluder bokmerke"
+
+msgid "Invert in Night Mode Toggle"
+msgstr "Inverter i nattmodus"
+
+msgid "Layout"
+msgstr "Oppsett"
+
+msgid "Page %1 (%2)"
+msgstr "Side %1 (%2)"
+
+msgid "Page %1"
+msgstr "Side %1"
+
+msgid "Gallery"
+msgstr "Galleri"
+
+msgid "Ignored"
+msgstr "Ignorerte"
+
+msgid "Reset"
+msgstr "Nullstill"
+
+msgid "Remove bookmark"
+msgstr "Fjern bokmerke"
+
+msgid "Add back to Gallery"
+msgstr "Legg tilbake i galleriet"
+
+msgid "Ignore this image"
+msgstr "Ignorer dette biletet"
+
+msgid "Page %1 of %2"
+msgstr "Side %1 av %2"
+
+msgid "1 image"
+msgstr "1 bilete"
+
+msgid "%1 images"
+msgstr "%1 bilete"
+
+msgid "1 bookmark"
+msgstr "1 bokmerke"
+
+msgid "%1 bookmarks"
+msgstr "%1 bokmerke"
+
+msgid "Mode: All images"
+msgstr "Modus: Alle bilete"
+
+msgid "Mode: Spoiler-free"
+msgstr "Modus: Spoilerfri"
+
+msgid "Reset Rotation"
+msgstr "Nullstill rotasjon"
+
+msgid "Nav Buttons"
+msgstr "Navigasjonsknappar"
+
+msgid "Zoom Controls"
+msgstr "Zoomkontrollar"
+
+msgid "Mini Map"
+msgstr "Minikart"
+
+msgid "Image Captions"
+msgstr "Biletetekstar"
+
+msgid "Include Bookmarks"
+msgstr "Inkluder bokmerke"
+
+msgid "Invert in Night Mode"
+msgstr "Inverter i nattmodus"
+
+msgid "Image ignored."
+msgstr "Bilete ignorert."
+
+msgid "Bookmark removed."
+msgstr "Bokmerke fjerna."
+
+msgid "Open Glimpse"
+msgstr "Opne Glimpse"
+
+msgid "No book is open."
+msgstr "Inga bok er open."
+
+msgid ""
+"Glimpse failed to load its scanner module. Try reinstalling the plugin."
+msgstr ""
+"Glimpse klarte ikkje å lasta skannemodulen sin. Prøv å installera tillegget "
+"på nytt."
+
+msgid ""
+"Glimpse works with EPUB books only (this document format is not supported)."
+msgstr ""
+"Glimpse fungerer berre med EPUB-bøker (dette dokumentformatet er ikkje "
+"støtta)."
+
+msgid "Scanning book for images…"
+msgstr "Skannar boka for bilete…"
+
+msgid "Glimpse works with EPUB books only."
+msgstr "Glimpse fungerer berre med EPUB-bøker."
+
+msgid "Could not scan this book for images."
+msgstr "Kunne ikkje skanna denne boka for bilete."
+
+msgid "No images up to here yet – 1 further in the book."
+msgstr "Ingen bilete hit enno – 1 lenger ut i boka."
+
+msgid "No images up to here yet – %1 further in the book."
+msgstr "Ingen bilete hit enno – %1 lenger ut i boka."
+
+msgid "Show whole book"
+msgstr "Vis heile boka"
+
+msgid "Close"
+msgstr "Lukk"
+
+msgid "No images to show – 1 was filtered out as irrelevant."
+msgstr "Ingen bilete å visa – 1 vart filtrert ut som irrelevant."
+
+msgid "No images to show – %1 were filtered out as irrelevant."
+msgstr "Ingen bilete å visa – %1 vart filtrerte ut som irrelevante."
+
+msgid "Review filtered-out"
+msgstr "Gå gjennom utfiltrerte"
+
+msgid "No images to show."
+msgstr "Ingen bilete å visa."
+
+msgid "Mode: Images up to here"
+msgstr "Modus: Bilete hit"
+
+msgid "Bookmarked pages hidden"
+msgstr "Bokmerkte sider skjulte"
+
+msgid "Bookmarked pages shown"
+msgstr "Bokmerkte sider viste"
+
+msgid "Moved to Ignored"
+msgstr "Flytta til Ignorerte"
+
+msgid "Added to Gallery"
+msgstr "Lagt til i galleriet"
+
+msgid "Cancel"
+msgstr "Avbryt"
+
+msgid "Checking for updates…"
+msgstr "Ser etter oppdateringar…"
+
+msgid "Update check failed:"
+msgstr "Oppdateringssjekk mislukkast:"
+
+msgid "Could not read the latest release info."
+msgstr "Kunne ikkje lesa informasjonen om siste utgåve."
+
+msgid "You're up to date (v%1)."
+msgstr "Du er oppdatert (v%1)."
+
+msgid "No downloadable release package found."
+msgstr "Fann ingen nedlastbar utgåvepakke."
+
+msgid ""
+"Update available: %1\n"
+"(installed: v%2)\n"
+"\n"
+"Download and install now?"
+msgstr ""
+"Oppdatering tilgjengeleg: %1\n"
+"(installert: v%2)\n"
+"\n"
+"Last ned og installer no?"
+
+msgid "Update"
+msgstr "Oppdater"
+
+msgid "Updating to %1…"
+msgstr "Oppdaterer til %1…"
+
+msgid ""
+"Updated to %1.\n"
+"Restart KOReader now to load it?"
+msgstr ""
+"Oppdatert til %1.\n"
+"Start KOReader på nytt no for å lasta det?"
+
+msgid "Restart"
+msgstr "Start på nytt"
+
+msgid "Later"
+msgstr "Seinare"
+
+msgid "Update failed."
+msgstr "Oppdatering mislukkast."
+
+msgid "Glimpse"
+msgstr "Glimpse"
+
+msgid "Gesture to open: none set"
+msgstr "Rørsle for å opna: inga sett"
+
+msgid "Gesture to open: %1"
+msgstr "Rørsle for å opna: %1"
+
+msgid "PORTRAIT"
+msgstr "STÅANDE"
+
+msgid "LANDSCAPE"
+msgstr "LIGGJANDE"
+
+msgid "Left"
+msgstr "Venstre"
+
+msgid "Right"
+msgstr "Høgre"
+
+msgid "Side"
+msgstr "Side"
+
+msgid "Bottom"
+msgstr "Nedst"
+
+msgid "Top"
+msgstr "Øvst"
+
+msgid "Apply"
+msgstr "Bruk"
+
+msgid "Preferred Alignment"
+msgstr "Føretrekt justering"
+
+msgid "Portrait Position"
+msgstr "Ståande posisjon"
+
+msgid "Enable Glimpse"
+msgstr "Aktiver Glimpse"
+
+msgid ""
+"Tip: open Glimpse instantly with a gesture.\n"
+"\n"
+"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n"
+"\n"
+"(This tip is shown only once.)"
+msgstr ""
+"Tips: opna Glimpse med ein gong med ei rørsle.\n"
+"\n"
+"Set éi under Innstillingar → Trykk og rørsler → Rørslehandsamar → vel ei rørsle → Lesar → 'Opne Glimpse'.\n"
+"\n"
+"(Dette tipset blir vist berre éin gong.)"
+
+msgid "Mode: Show all images"
+msgstr "Modus: Vis alle bilete"
+
+msgid "Mode: Show images up to current chapter"
+msgstr "Modus: Vis bilete til gjeldande kapittel"
+
+msgid "Show images up to current chapter"
+msgstr "Vis bilete til gjeldande kapittel"
+
+msgid ""
+"Images that appear beyond your current position stay hidden, so you can't "
+"spoil yourself. Granularity is per chapter: images in the chapter you are "
+"currently reading are shown."
+msgstr ""
+"Bilete som dukkar opp forbi din noverande posisjon, blir verande skjulte, så"
+" du ikkje avslører noko for deg sjølv. Granulariteten er per kapittel: "
+"bilete i kapittelet du les no, blir viste."
+
+msgid "Show all images"
+msgstr "Vis alle bilete"
+
+msgid ""
+"Show reference images from anywhere in the book, including parts you haven't"
+" reached yet."
+msgstr ""
+"Vis referansebilete frå kvar som helst i boka, inkludert delar du ikkje har "
+"nådd enno."
+
+msgid "Include Bookmarks in Gallery"
+msgstr "Inkluder bokmerke i galleriet"
+
+msgid "Quick Actions"
+msgstr "Snøgghandlingar"
+
+msgid "Settings"
+msgstr "Innstillingar"
+
+msgid "Gestures"
+msgstr "Rørsler"
+
+msgid "Double-tap for maximum zoom"
+msgstr "Dobbelttrykk for maksimal zoom"
+
+msgid "Swipe left/right to navigate"
+msgstr "Sveip venstre/høgre for å navigera"
+
+msgid "Pinch to zoom in/out"
+msgstr "Knip for å zooma inn/ut"
+
+msgid "Layout: %1 · %2"
+msgstr "Oppsett: %1 · %2"
+
+msgid "Show Nav Buttons"
+msgstr "Vis navigasjonsknappar"
+
+msgid "Navigation Loops Around"
+msgstr "Syklisk navigasjon"
+
+msgid "Show Zoom Controls"
+msgstr "Vis zoomkontrollar"
+
+msgid "Show Mini Map"
+msgstr "Vis minikart"
+
+msgid "Invert Images in Night Mode"
+msgstr "Inverter bilete i nattmodus"
+
+msgid "Show image captions"
+msgstr "Vis biletetekstar"
+
+msgid "Show bookmark label in corner"
+msgstr "Vis bokmerkeetikett i hjørnet"
+
+msgid "Maximum zoom: %1%"
+msgstr "Maksimal zoom: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (tilrådd)"
+
+msgid "%1%"
+msgstr "%1%"
+
+msgid "Enable top menu tap zone"
+msgstr "Aktiver trykksone for toppmeny"
+
+msgid "Advanced"
+msgstr "Avansert"
+
+msgid "Disable irrelevant image filtering"
+msgstr "Deaktiver filtrering av irrelevante bilete"
+
+msgid "Suppress \"format not supported\" notice"
+msgstr "Demp varselet \"format ikkje støtta\""
+
+msgid "Disable shadows"
+msgstr "Deaktiver skuggar"
+
+msgid "Fast image switching"
+msgstr "Rask biletebyte"
+
+msgid "Rescan this book"
+msgstr "Skann denne boka på nytt"
+
+msgid "Found %1 image(s)."
+msgstr "Fann %1 bilete."
+
+msgid "Scan failed."
+msgstr "Skanning mislukkast."
+
+msgid "Updates"
+msgstr "Oppdateringar"
+
+msgid "Check for updates (v%1)"
+msgstr "Sjå etter oppdateringar (v%1)"
+
+msgid "Include pre-release versions"
+msgstr "Inkluder førehandsutgåver"

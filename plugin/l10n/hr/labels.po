@@ -1,0 +1,413 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Erik Fanki
+# This file is distributed under the same license as the Glimpse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Glimpse\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"PO-Revision-Date: 2026-08-25 00:00+0000\n"
+"Last-Translator: AI seed <noreply@glimpse>\n"
+"Language-Team: hr\n"
+"Language: hr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Ignore Image"
+msgstr "Zanemari sliku"
+
+msgid "Mode switch"
+msgstr "Promjena načina"
+
+msgid "Rotate image"
+msgstr "Zakreni sliku"
+
+msgid "Show in Book"
+msgstr "Prikaži u knjizi"
+
+msgid "Nav Buttons Toggle"
+msgstr "Navigacijski gumbi"
+
+msgid "Zoom Controls Toggle"
+msgstr "Kontrole zumiranja"
+
+msgid "Mini Map Toggle"
+msgstr "Minikarta"
+
+msgid "Image Captions Toggle"
+msgstr "Opisi slika"
+
+msgid "Include Bookmarks Toggle"
+msgstr "Uključi oznake"
+
+msgid "Invert in Night Mode Toggle"
+msgstr "Invertiraj u noćnom načinu"
+
+msgid "Layout"
+msgstr "Raspored"
+
+msgid "Page %1 (%2)"
+msgstr "Stranica %1 (%2)"
+
+msgid "Page %1"
+msgstr "Stranica %1"
+
+msgid "Gallery"
+msgstr "Galerija"
+
+msgid "Ignored"
+msgstr "Zanemarene"
+
+msgid "Reset"
+msgstr "Poništi"
+
+msgid "Remove bookmark"
+msgstr "Ukloni oznaku"
+
+msgid "Add back to Gallery"
+msgstr "Vrati u galeriju"
+
+msgid "Ignore this image"
+msgstr "Zanemari ovu sliku"
+
+msgid "Page %1 of %2"
+msgstr "Stranica %1 od %2"
+
+msgid "1 image"
+msgstr "1 slika"
+
+msgid "%1 images"
+msgstr "%1 slika"
+
+msgid "1 bookmark"
+msgstr "1 oznaka"
+
+msgid "%1 bookmarks"
+msgstr "%1 oznaka"
+
+msgid "Mode: All images"
+msgstr "Način: Sve slike"
+
+msgid "Mode: Spoiler-free"
+msgstr "Način: Bez spojlera"
+
+msgid "Reset Rotation"
+msgstr "Poništi zakretanje"
+
+msgid "Nav Buttons"
+msgstr "Navigacijski gumbi"
+
+msgid "Zoom Controls"
+msgstr "Kontrole zumiranja"
+
+msgid "Mini Map"
+msgstr "Minikarta"
+
+msgid "Image Captions"
+msgstr "Opisi slika"
+
+msgid "Include Bookmarks"
+msgstr "Uključi oznake"
+
+msgid "Invert in Night Mode"
+msgstr "Invertiraj u noćnom načinu"
+
+msgid "Image ignored."
+msgstr "Slika zanemarena."
+
+msgid "Bookmark removed."
+msgstr "Oznaka uklonjena."
+
+msgid "Open Glimpse"
+msgstr "Otvori Glimpse"
+
+msgid "No book is open."
+msgstr "Nijedna knjiga nije otvorena."
+
+msgid ""
+"Glimpse failed to load its scanner module. Try reinstalling the plugin."
+msgstr ""
+"Glimpse nije uspio učitati modul za skeniranje. Pokušajte ponovno "
+"instalirati dodatak."
+
+msgid ""
+"Glimpse works with EPUB books only (this document format is not supported)."
+msgstr ""
+"Glimpse radi samo s EPUB knjigama (ovaj format dokumenta nije podržan)."
+
+msgid "Scanning book for images…"
+msgstr "Pretraživanje slika u knjizi…"
+
+msgid "Glimpse works with EPUB books only."
+msgstr "Glimpse radi samo s EPUB knjigama."
+
+msgid "Could not scan this book for images."
+msgstr "Nije moguće pretražiti slike u ovoj knjizi."
+
+msgid "No images up to here yet – 1 further in the book."
+msgstr "Zasad nema slika do ovdje – još 1 dalje u knjizi."
+
+msgid "No images up to here yet – %1 further in the book."
+msgstr "Zasad nema slika do ovdje – još %1 dalje u knjizi."
+
+msgid "Show whole book"
+msgstr "Prikaži cijelu knjigu"
+
+msgid "Close"
+msgstr "Zatvori"
+
+msgid "No images to show – 1 was filtered out as irrelevant."
+msgstr "Nema slika za prikaz – 1 je filtrirana kao nevažna."
+
+msgid "No images to show – %1 were filtered out as irrelevant."
+msgstr "Nema slika za prikaz – %1 su filtrirane kao nevažne."
+
+msgid "Review filtered-out"
+msgstr "Pregledaj filtrirane"
+
+msgid "No images to show."
+msgstr "Nema slika za prikaz."
+
+msgid "Mode: Images up to here"
+msgstr "Način: Slike do ovdje"
+
+msgid "Bookmarked pages hidden"
+msgstr "Označene stranice skrivene"
+
+msgid "Bookmarked pages shown"
+msgstr "Označene stranice prikazane"
+
+msgid "Moved to Ignored"
+msgstr "Premješteno u Zanemarene"
+
+msgid "Added to Gallery"
+msgstr "Dodano u galeriju"
+
+msgid "Cancel"
+msgstr "Odustani"
+
+msgid "Checking for updates…"
+msgstr "Provjera ažuriranja…"
+
+msgid "Update check failed:"
+msgstr "Provjera ažuriranja nije uspjela:"
+
+msgid "Could not read the latest release info."
+msgstr "Nije moguće pročitati podatke o najnovijem izdanju."
+
+msgid "You're up to date (v%1)."
+msgstr "Ažurni ste (v%1)."
+
+msgid "No downloadable release package found."
+msgstr "Nije pronađen paket izdanja za preuzimanje."
+
+msgid ""
+"Update available: %1\n"
+"(installed: v%2)\n"
+"\n"
+"Download and install now?"
+msgstr ""
+"Dostupno ažuriranje: %1\n"
+"(instalirano: v%2)\n"
+"\n"
+"Preuzeti i instalirati sada?"
+
+msgid "Update"
+msgstr "Ažuriraj"
+
+msgid "Updating to %1…"
+msgstr "Ažuriranje na %1…"
+
+msgid ""
+"Updated to %1.\n"
+"Restart KOReader now to load it?"
+msgstr ""
+"Ažurirano na %1.\n"
+"Ponovno pokrenuti KOReader sada za učitavanje?"
+
+msgid "Restart"
+msgstr "Ponovno pokreni"
+
+msgid "Later"
+msgstr "Kasnije"
+
+msgid "Update failed."
+msgstr "Ažuriranje nije uspjelo."
+
+msgid "Glimpse"
+msgstr "Glimpse"
+
+msgid "Gesture to open: none set"
+msgstr "Gesta za otvaranje: nije postavljena"
+
+msgid "Gesture to open: %1"
+msgstr "Gesta za otvaranje: %1"
+
+msgid "PORTRAIT"
+msgstr "OKOMITO"
+
+msgid "LANDSCAPE"
+msgstr "VODORAVNO"
+
+msgid "Left"
+msgstr "Lijevo"
+
+msgid "Right"
+msgstr "Desno"
+
+msgid "Side"
+msgstr "Bočno"
+
+msgid "Bottom"
+msgstr "Dolje"
+
+msgid "Top"
+msgstr "Gore"
+
+msgid "Apply"
+msgstr "Primijeni"
+
+msgid "Preferred Alignment"
+msgstr "Željeno poravnanje"
+
+msgid "Portrait Position"
+msgstr "Okomiti položaj"
+
+msgid "Enable Glimpse"
+msgstr "Omogući Glimpse"
+
+msgid ""
+"Tip: open Glimpse instantly with a gesture.\n"
+"\n"
+"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n"
+"\n"
+"(This tip is shown only once.)"
+msgstr ""
+"Savjet: otvorite Glimpse odmah gestom.\n"
+"\n"
+"Postavite je u Postavke → Dodiri i geste → Upravitelj gesti → odaberite gestu → Čitač → 'Otvori Glimpse'.\n"
+"\n"
+"(Ovaj savjet prikazuje se samo jednom.)"
+
+msgid "Mode: Show all images"
+msgstr "Način: Prikaži sve slike"
+
+msgid "Mode: Show images up to current chapter"
+msgstr "Način: Prikaži slike do trenutnog poglavlja"
+
+msgid "Show images up to current chapter"
+msgstr "Prikaži slike do trenutnog poglavlja"
+
+msgid ""
+"Images that appear beyond your current position stay hidden, so you can't "
+"spoil yourself. Granularity is per chapter: images in the chapter you are "
+"currently reading are shown."
+msgstr ""
+"Slike koje se pojavljuju iza vašeg trenutnog položaja ostaju skrivene, kako "
+"se ne biste spojlali. Granularnost je po poglavlju: slike u poglavlju koje "
+"trenutno čitate su prikazane."
+
+msgid "Show all images"
+msgstr "Prikaži sve slike"
+
+msgid ""
+"Show reference images from anywhere in the book, including parts you haven't"
+" reached yet."
+msgstr ""
+"Prikaži referentne slike iz bilo kojeg dijela knjige, uključujući dijelove "
+"do kojih još niste stigli."
+
+msgid "Include Bookmarks in Gallery"
+msgstr "Uključi oznake u galeriju"
+
+msgid "Quick Actions"
+msgstr "Brze radnje"
+
+msgid "Settings"
+msgstr "Postavke"
+
+msgid "Gestures"
+msgstr "Geste"
+
+msgid "Double-tap for maximum zoom"
+msgstr "Dvostruki dodir za maksimalno zumiranje"
+
+msgid "Swipe left/right to navigate"
+msgstr "Prijeđite lijevo/desno za navigaciju"
+
+msgid "Pinch to zoom in/out"
+msgstr "Približite/razdvojite prste za zumiranje"
+
+msgid "Layout: %1 · %2"
+msgstr "Raspored: %1 · %2"
+
+msgid "Show Nav Buttons"
+msgstr "Prikaži navigacijske gumbe"
+
+msgid "Navigation Loops Around"
+msgstr "Kružna navigacija"
+
+msgid "Show Zoom Controls"
+msgstr "Prikaži kontrole zumiranja"
+
+msgid "Show Mini Map"
+msgstr "Prikaži minikartu"
+
+msgid "Invert Images in Night Mode"
+msgstr "Invertiraj slike u noćnom načinu"
+
+msgid "Show image captions"
+msgstr "Prikaži opise slika"
+
+msgid "Show bookmark label in corner"
+msgstr "Prikaži oznaku knjižne oznake u kutu"
+
+msgid "Maximum zoom: %1%"
+msgstr "Maksimalno zumiranje: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (preporučeno)"
+
+msgid "%1%"
+msgstr "%1%"
+
+msgid "Enable top menu tap zone"
+msgstr "Omogući zonu dodira gornjeg izbornika"
+
+msgid "Advanced"
+msgstr "Napredno"
+
+msgid "Disable irrelevant image filtering"
+msgstr "Onemogući filtriranje nevažnih slika"
+
+msgid "Suppress \"format not supported\" notice"
+msgstr "Sakrij obavijest \"format nije podržan\""
+
+msgid "Disable shadows"
+msgstr "Onemogući sjene"
+
+msgid "Fast image switching"
+msgstr "Brzo mijenjanje slika"
+
+msgid "Rescan this book"
+msgstr "Ponovno skeniraj ovu knjigu"
+
+msgid "Found %1 image(s)."
+msgstr "Pronađeno %1 slika."
+
+msgid "Scan failed."
+msgstr "Skeniranje nije uspjelo."
+
+msgid "Updates"
+msgstr "Ažuriranja"
+
+msgid "Check for updates (v%1)"
+msgstr "Provjeri ažuriranja (v%1)"
+
+msgid "Include pre-release versions"
+msgstr "Uključi pretproizvodna izdanja"

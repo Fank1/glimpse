@@ -1,0 +1,415 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Erik Fanki
+# This file is distributed under the same license as the Glimpse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Glimpse\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"PO-Revision-Date: 2026-08-25 00:00+0000\n"
+"Last-Translator: AI seed <noreply@glimpse>\n"
+"Language-Team: ga\n"
+"Language: ga\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Ignore Image"
+msgstr "Déan neamhaird den íomhá"
+
+msgid "Mode switch"
+msgstr "Athrú móid"
+
+msgid "Rotate image"
+msgstr "Rothlaigh íomhá"
+
+msgid "Show in Book"
+msgstr "Taispeáin sa Leabhar"
+
+msgid "Nav Buttons Toggle"
+msgstr "Cnaipí Nascleanúna"
+
+msgid "Zoom Controls Toggle"
+msgstr "Rialtáin Súmála"
+
+msgid "Mini Map Toggle"
+msgstr "Mionléarscáil"
+
+msgid "Image Captions Toggle"
+msgstr "Foscríbhinní Íomhá"
+
+msgid "Include Bookmarks Toggle"
+msgstr "Cuir Leabharmharcanna san Áireamh"
+
+msgid "Invert in Night Mode Toggle"
+msgstr "Inbhéartaigh sa Mhód Oíche"
+
+msgid "Layout"
+msgstr "Leagan Amach"
+
+msgid "Page %1 (%2)"
+msgstr "Leathanach %1 (%2)"
+
+msgid "Page %1"
+msgstr "Leathanach %1"
+
+msgid "Gallery"
+msgstr "Gailearaí"
+
+msgid "Ignored"
+msgstr "Neamhairde"
+
+msgid "Reset"
+msgstr "Athshocraigh"
+
+msgid "Remove bookmark"
+msgstr "Bain leabharmharc"
+
+msgid "Add back to Gallery"
+msgstr "Cuir ar ais sa Ghailearaí"
+
+msgid "Ignore this image"
+msgstr "Déan neamhaird den íomhá seo"
+
+msgid "Page %1 of %2"
+msgstr "Leathanach %1 as %2"
+
+msgid "1 image"
+msgstr "1 íomhá"
+
+msgid "%1 images"
+msgstr "%1 íomhá"
+
+msgid "1 bookmark"
+msgstr "1 leabharmharc"
+
+msgid "%1 bookmarks"
+msgstr "%1 leabharmharc"
+
+msgid "Mode: All images"
+msgstr "Mód: Gach íomhá"
+
+msgid "Mode: Spoiler-free"
+msgstr "Mód: Saor ó sproic"
+
+msgid "Reset Rotation"
+msgstr "Athshocraigh Rothlú"
+
+msgid "Nav Buttons"
+msgstr "Cnaipí Nascleanúna"
+
+msgid "Zoom Controls"
+msgstr "Rialtáin Súmála"
+
+msgid "Mini Map"
+msgstr "Mionléarscáil"
+
+msgid "Image Captions"
+msgstr "Foscríbhinní Íomhá"
+
+msgid "Include Bookmarks"
+msgstr "Cuir Leabharmharcanna san Áireamh"
+
+msgid "Invert in Night Mode"
+msgstr "Inbhéartaigh sa Mhód Oíche"
+
+msgid "Image ignored."
+msgstr "Rinneadh neamhaird den íomhá."
+
+msgid "Bookmark removed."
+msgstr "Baineadh an leabharmharc."
+
+msgid "Open Glimpse"
+msgstr "Oscail Glimpse"
+
+msgid "No book is open."
+msgstr "Níl aon leabhar oscailte."
+
+msgid ""
+"Glimpse failed to load its scanner module. Try reinstalling the plugin."
+msgstr ""
+"Theip ar Glimpse a mhodúl scanacháin a lódáil. Bain triail as an mbreiseán a"
+" athshuiteáil."
+
+msgid ""
+"Glimpse works with EPUB books only (this document format is not supported)."
+msgstr ""
+"Ní oibríonn Glimpse ach le leabhair EPUB (ní thacaítear leis an bhformáid "
+"cháipéise seo)."
+
+msgid "Scanning book for images…"
+msgstr "Ag scanadh an leabhair le haghaidh íomhánna…"
+
+msgid "Glimpse works with EPUB books only."
+msgstr "Ní oibríonn Glimpse ach le leabhair EPUB."
+
+msgid "Could not scan this book for images."
+msgstr "Níorbh fhéidir an leabhar seo a scanadh le haghaidh íomhánna."
+
+msgid "No images up to here yet – 1 further in the book."
+msgstr "Níl aon íomhá go dtí seo fós – 1 eile níos faide sa leabhar."
+
+msgid "No images up to here yet – %1 further in the book."
+msgstr "Níl aon íomhá go dtí seo fós – %1 eile níos faide sa leabhar."
+
+msgid "Show whole book"
+msgstr "Taispeáin an leabhar iomlán"
+
+msgid "Close"
+msgstr "Dún"
+
+msgid "No images to show – 1 was filtered out as irrelevant."
+msgstr "Níl aon íomhá le taispeáint – scagadh 1 amach mar rud neamhábhartha."
+
+msgid "No images to show – %1 were filtered out as irrelevant."
+msgstr ""
+"Níl aon íomhá le taispeáint – scagadh %1 amach mar rudaí neamhábhartha."
+
+msgid "Review filtered-out"
+msgstr "Athbhreithnigh na cinn a scagadh"
+
+msgid "No images to show."
+msgstr "Níl aon íomhá le taispeáint."
+
+msgid "Mode: Images up to here"
+msgstr "Mód: Íomhánna go dtí seo"
+
+msgid "Bookmarked pages hidden"
+msgstr "Leathanaigh leabharmharcáilte i bhfolach"
+
+msgid "Bookmarked pages shown"
+msgstr "Leathanaigh leabharmharcáilte ar taispeáint"
+
+msgid "Moved to Ignored"
+msgstr "Bogtha go Neamhairde"
+
+msgid "Added to Gallery"
+msgstr "Curtha leis an nGailearaí"
+
+msgid "Cancel"
+msgstr "Cealaigh"
+
+msgid "Checking for updates…"
+msgstr "Ag seiceáil le haghaidh nuashonruithe…"
+
+msgid "Update check failed:"
+msgstr "Theip ar an seiceáil nuashonruithe:"
+
+msgid "Could not read the latest release info."
+msgstr "Níorbh fhéidir eolas an eisiúna is déanaí a léamh."
+
+msgid "You're up to date (v%1)."
+msgstr "Tá tú suas chun dáta (v%1)."
+
+msgid "No downloadable release package found."
+msgstr "Níor aimsíodh aon phacáiste eisiúna in-íoslódáilte."
+
+msgid ""
+"Update available: %1\n"
+"(installed: v%2)\n"
+"\n"
+"Download and install now?"
+msgstr ""
+"Nuashonrú ar fáil: %1\n"
+"(suiteáilte: v%2)\n"
+"\n"
+"Íoslódáil agus suiteáil anois?"
+
+msgid "Update"
+msgstr "Nuashonraigh"
+
+msgid "Updating to %1…"
+msgstr "Ag nuashonrú go %1…"
+
+msgid ""
+"Updated to %1.\n"
+"Restart KOReader now to load it?"
+msgstr ""
+"Nuashonraithe go %1.\n"
+"Atosaigh KOReader anois chun é a lódáil?"
+
+msgid "Restart"
+msgstr "Atosaigh"
+
+msgid "Later"
+msgstr "Níos déanaí"
+
+msgid "Update failed."
+msgstr "Theip ar an nuashonrú."
+
+msgid "Glimpse"
+msgstr "Glimpse"
+
+msgid "Gesture to open: none set"
+msgstr "Gotha le hoscailt: gan socrú"
+
+msgid "Gesture to open: %1"
+msgstr "Gotha le hoscailt: %1"
+
+msgid "PORTRAIT"
+msgstr "POIRTRÉID"
+
+msgid "LANDSCAPE"
+msgstr "TÍRDHREACH"
+
+msgid "Left"
+msgstr "Ar Chlé"
+
+msgid "Right"
+msgstr "Ar Dheis"
+
+msgid "Side"
+msgstr "Taobh"
+
+msgid "Bottom"
+msgstr "Bun"
+
+msgid "Top"
+msgstr "Barr"
+
+msgid "Apply"
+msgstr "Cuir i bhFeidhm"
+
+msgid "Preferred Alignment"
+msgstr "Ailíniú Roghnaithe"
+
+msgid "Portrait Position"
+msgstr "Suíomh Poirtréide"
+
+msgid "Enable Glimpse"
+msgstr "Cumasaigh Glimpse"
+
+msgid ""
+"Tip: open Glimpse instantly with a gesture.\n"
+"\n"
+"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n"
+"\n"
+"(This tip is shown only once.)"
+msgstr ""
+"Leid: oscail Glimpse láithreach le gotha.\n"
+"\n"
+"Socraigh ceann faoi Socruithe → Tapáil agus gothaí → Bainisteoir gothaí → roghnaigh gotha → Léitheoir → 'Oscail Glimpse'.\n"
+"\n"
+"(Taispeántar an leid seo uair amháin.)"
+
+msgid "Mode: Show all images"
+msgstr "Mód: Taispeáin gach íomhá"
+
+msgid "Mode: Show images up to current chapter"
+msgstr "Mód: Taispeáin íomhánna go dtí an chaibidil reatha"
+
+msgid "Show images up to current chapter"
+msgstr "Taispeáin íomhánna go dtí an chaibidil reatha"
+
+msgid ""
+"Images that appear beyond your current position stay hidden, so you can't "
+"spoil yourself. Granularity is per chapter: images in the chapter you are "
+"currently reading are shown."
+msgstr ""
+"Fanann íomhánna a thagann chun cinn thar do shuíomh reatha i bhfolach, ionas"
+" nach spoilfidh tú duit féin. Tá an mhionghráinneacht de réir caibidle: "
+"taispeántar íomhánna sa chaibidil atá á léamh agat faoi láthair."
+
+msgid "Show all images"
+msgstr "Taispeáin gach íomhá"
+
+msgid ""
+"Show reference images from anywhere in the book, including parts you haven't"
+" reached yet."
+msgstr ""
+"Taispeáin íomhánna tagartha ó áit ar bith sa leabhar, na codanna nár shroich"
+" tú fós san áireamh."
+
+msgid "Include Bookmarks in Gallery"
+msgstr "Cuir Leabharmharcanna sa Ghailearaí"
+
+msgid "Quick Actions"
+msgstr "Gníomhartha Tapa"
+
+msgid "Settings"
+msgstr "Socruithe"
+
+msgid "Gestures"
+msgstr "Gothaí"
+
+msgid "Double-tap for maximum zoom"
+msgstr "Tapáil dhúbailte le haghaidh súmáil uasta"
+
+msgid "Swipe left/right to navigate"
+msgstr "Svaidhpeáil ar chlé/ar dheis le nascleanúint"
+
+msgid "Pinch to zoom in/out"
+msgstr "Bain le chéile chun súmáil isteach/amach"
+
+msgid "Layout: %1 · %2"
+msgstr "Leagan Amach: %1 · %2"
+
+msgid "Show Nav Buttons"
+msgstr "Taispeáin Cnaipí Nascleanúna"
+
+msgid "Navigation Loops Around"
+msgstr "Nascleanúint Timthriallach"
+
+msgid "Show Zoom Controls"
+msgstr "Taispeáin Rialtáin Súmála"
+
+msgid "Show Mini Map"
+msgstr "Taispeáin Mionléarscáil"
+
+msgid "Invert Images in Night Mode"
+msgstr "Inbhéartaigh Íomhánna sa Mhód Oíche"
+
+msgid "Show image captions"
+msgstr "Taispeáin foscríbhinní íomhá"
+
+msgid "Show bookmark label in corner"
+msgstr "Taispeáin lipéad leabharmhairc sa chúinne"
+
+msgid "Maximum zoom: %1%"
+msgstr "Súmáil uasta: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (molta)"
+
+msgid "%1%"
+msgstr "%1%"
+
+msgid "Enable top menu tap zone"
+msgstr "Cumasaigh crios tapála an bharrchláir"
+
+msgid "Advanced"
+msgstr "Casta"
+
+msgid "Disable irrelevant image filtering"
+msgstr "Díchumasaigh scagadh íomhánna neamhábhartha"
+
+msgid "Suppress \"format not supported\" notice"
+msgstr "Múch fógra \"ní thacaítear leis an bhformáid\""
+
+msgid "Disable shadows"
+msgstr "Díchumasaigh scáthanna"
+
+msgid "Fast image switching"
+msgstr "Athrú tapa íomhánna"
+
+msgid "Rescan this book"
+msgstr "Athscan an leabhar seo"
+
+msgid "Found %1 image(s)."
+msgstr "Aimsíodh %1 íomhá."
+
+msgid "Scan failed."
+msgstr "Theip ar an scanadh."
+
+msgid "Updates"
+msgstr "Nuashonruithe"
+
+msgid "Check for updates (v%1)"
+msgstr "Seiceáil le haghaidh nuashonruithe (v%1)"
+
+msgid "Include pre-release versions"
+msgstr "Cuir leaganacha réamheisiúna san áireamh"

@@ -1,0 +1,413 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Erik Fanki
+# This file is distributed under the same license as the Glimpse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Glimpse\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"PO-Revision-Date: 2026-08-25 00:00+0000\n"
+"Last-Translator: AI seed <noreply@glimpse>\n"
+"Language-Team: eo\n"
+"Language: eo\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Ignore Image"
+msgstr "Ignori bildon"
+
+msgid "Mode switch"
+msgstr "Reĝima ŝalto"
+
+msgid "Rotate image"
+msgstr "Turni bildon"
+
+msgid "Show in Book"
+msgstr "Montri en libro"
+
+msgid "Nav Buttons Toggle"
+msgstr "Navigaj butonoj"
+
+msgid "Zoom Controls Toggle"
+msgstr "Zomregiloj"
+
+msgid "Mini Map Toggle"
+msgstr "Mapeto"
+
+msgid "Image Captions Toggle"
+msgstr "Bildaj apudskriboj"
+
+msgid "Include Bookmarks Toggle"
+msgstr "Inkluzivi legosignojn"
+
+msgid "Invert in Night Mode Toggle"
+msgstr "Inversigi en nokta reĝimo"
+
+msgid "Layout"
+msgstr "Aranĝo"
+
+msgid "Page %1 (%2)"
+msgstr "Paĝo %1 (%2)"
+
+msgid "Page %1"
+msgstr "Paĝo %1"
+
+msgid "Gallery"
+msgstr "Galerio"
+
+msgid "Ignored"
+msgstr "Ignoritaj"
+
+msgid "Reset"
+msgstr "Restarigi"
+
+msgid "Remove bookmark"
+msgstr "Forigi legosignon"
+
+msgid "Add back to Gallery"
+msgstr "Aldoni reen al galerio"
+
+msgid "Ignore this image"
+msgstr "Ignori ĉi tiun bildon"
+
+msgid "Page %1 of %2"
+msgstr "Paĝo %1 el %2"
+
+msgid "1 image"
+msgstr "1 bildo"
+
+msgid "%1 images"
+msgstr "%1 bildoj"
+
+msgid "1 bookmark"
+msgstr "1 legosigno"
+
+msgid "%1 bookmarks"
+msgstr "%1 legosignoj"
+
+msgid "Mode: All images"
+msgstr "Reĝimo: Ĉiuj bildoj"
+
+msgid "Mode: Spoiler-free"
+msgstr "Reĝimo: Sen malkaŝoj"
+
+msgid "Reset Rotation"
+msgstr "Restarigi turnon"
+
+msgid "Nav Buttons"
+msgstr "Navigaj butonoj"
+
+msgid "Zoom Controls"
+msgstr "Zomregiloj"
+
+msgid "Mini Map"
+msgstr "Mapeto"
+
+msgid "Image Captions"
+msgstr "Bildaj apudskriboj"
+
+msgid "Include Bookmarks"
+msgstr "Inkluzivi legosignojn"
+
+msgid "Invert in Night Mode"
+msgstr "Inversigi en nokta reĝimo"
+
+msgid "Image ignored."
+msgstr "Bildo ignorita."
+
+msgid "Bookmark removed."
+msgstr "Legosigno forigita."
+
+msgid "Open Glimpse"
+msgstr "Malfermi Glimpse"
+
+msgid "No book is open."
+msgstr "Neniu libro estas malfermita."
+
+msgid ""
+"Glimpse failed to load its scanner module. Try reinstalling the plugin."
+msgstr ""
+"Glimpse malsukcesis ŝargi sian skanmodulon. Provu reinstali la kromaĵon."
+
+msgid ""
+"Glimpse works with EPUB books only (this document format is not supported)."
+msgstr ""
+"Glimpse funkcias nur kun EPUB-libroj (ĉi tiu dokumentformato ne estas "
+"subtenata)."
+
+msgid "Scanning book for images…"
+msgstr "Skanado de la libro por bildoj…"
+
+msgid "Glimpse works with EPUB books only."
+msgstr "Glimpse funkcias nur kun EPUB-libroj."
+
+msgid "Could not scan this book for images."
+msgstr "Ne eblis skani ĉi tiun libron por bildoj."
+
+msgid "No images up to here yet – 1 further in the book."
+msgstr "Ankoraŭ neniuj bildoj ĝis ĉi tie – 1 plu en la libro."
+
+msgid "No images up to here yet – %1 further in the book."
+msgstr "Ankoraŭ neniuj bildoj ĝis ĉi tie – %1 plu en la libro."
+
+msgid "Show whole book"
+msgstr "Montri la tutan libron"
+
+msgid "Close"
+msgstr "Fermi"
+
+msgid "No images to show – 1 was filtered out as irrelevant."
+msgstr "Neniuj bildoj por montri – 1 estis filtrita kiel malgrava."
+
+msgid "No images to show – %1 were filtered out as irrelevant."
+msgstr "Neniuj bildoj por montri – %1 estis filtritaj kiel malgravaj."
+
+msgid "Review filtered-out"
+msgstr "Revizii filtritajn"
+
+msgid "No images to show."
+msgstr "Neniuj bildoj por montri."
+
+msgid "Mode: Images up to here"
+msgstr "Reĝimo: Bildoj ĝis ĉi tie"
+
+msgid "Bookmarked pages hidden"
+msgstr "Legosignaj paĝoj kaŝitaj"
+
+msgid "Bookmarked pages shown"
+msgstr "Legosignaj paĝoj montritaj"
+
+msgid "Moved to Ignored"
+msgstr "Movita al Ignoritaj"
+
+msgid "Added to Gallery"
+msgstr "Aldonita al galerio"
+
+msgid "Cancel"
+msgstr "Nuligi"
+
+msgid "Checking for updates…"
+msgstr "Kontrolado de ĝisdatigoj…"
+
+msgid "Update check failed:"
+msgstr "Kontrolo de ĝisdatigoj malsukcesis:"
+
+msgid "Could not read the latest release info."
+msgstr "Ne eblis legi la informojn pri la plej nova eldono."
+
+msgid "You're up to date (v%1)."
+msgstr "Vi estas ĝisdata (v%1)."
+
+msgid "No downloadable release package found."
+msgstr "Neniu elŝutebla eldonpako trovita."
+
+msgid ""
+"Update available: %1\n"
+"(installed: v%2)\n"
+"\n"
+"Download and install now?"
+msgstr ""
+"Ĝisdatigo disponebla: %1\n"
+"(instalita: v%2)\n"
+"\n"
+"Elŝuti kaj instali nun?"
+
+msgid "Update"
+msgstr "Ĝisdatigi"
+
+msgid "Updating to %1…"
+msgstr "Ĝisdatigado al %1…"
+
+msgid ""
+"Updated to %1.\n"
+"Restart KOReader now to load it?"
+msgstr ""
+"Ĝisdatigita al %1.\n"
+"Ĉu rekomenci KOReader nun por ŝargi ĝin?"
+
+msgid "Restart"
+msgstr "Rekomenci"
+
+msgid "Later"
+msgstr "Poste"
+
+msgid "Update failed."
+msgstr "Ĝisdatigo malsukcesis."
+
+msgid "Glimpse"
+msgstr "Glimpse"
+
+msgid "Gesture to open: none set"
+msgstr "Gesto por malfermi: neniu agordita"
+
+msgid "Gesture to open: %1"
+msgstr "Gesto por malfermi: %1"
+
+msgid "PORTRAIT"
+msgstr "VERTIKALA"
+
+msgid "LANDSCAPE"
+msgstr "HORIZONTALA"
+
+msgid "Left"
+msgstr "Maldekstra"
+
+msgid "Right"
+msgstr "Dekstra"
+
+msgid "Side"
+msgstr "Flanko"
+
+msgid "Bottom"
+msgstr "Malsupro"
+
+msgid "Top"
+msgstr "Supro"
+
+msgid "Apply"
+msgstr "Apliki"
+
+msgid "Preferred Alignment"
+msgstr "Preferata ĝisrandigo"
+
+msgid "Portrait Position"
+msgstr "Vertikala pozicio"
+
+msgid "Enable Glimpse"
+msgstr "Ebligi Glimpse"
+
+msgid ""
+"Tip: open Glimpse instantly with a gesture.\n"
+"\n"
+"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n"
+"\n"
+"(This tip is shown only once.)"
+msgstr ""
+"Konsileto: malfermu Glimpse tuj per gesto.\n"
+"\n"
+"Agordu unu ĉe Agordoj → Tuŝetoj kaj gestoj → Gestomastrumilo → elektu geston → Legilo → 'Malfermi Glimpse'.\n"
+"\n"
+"(Ĉi tiu konsileto montriĝas nur unufoje.)"
+
+msgid "Mode: Show all images"
+msgstr "Reĝimo: Montri ĉiujn bildojn"
+
+msgid "Mode: Show images up to current chapter"
+msgstr "Reĝimo: Montri bildojn ĝis la nuna ĉapitro"
+
+msgid "Show images up to current chapter"
+msgstr "Montri bildojn ĝis la nuna ĉapitro"
+
+msgid ""
+"Images that appear beyond your current position stay hidden, so you can't "
+"spoil yourself. Granularity is per chapter: images in the chapter you are "
+"currently reading are shown."
+msgstr ""
+"Bildoj kiuj aperas preter via nuna pozicio restas kaŝitaj, por ke vi ne "
+"malkaŝu al vi mem. La detaleco estas laŭ ĉapitro: bildoj en la ĉapitro kiun "
+"vi nun legas estas montritaj."
+
+msgid "Show all images"
+msgstr "Montri ĉiujn bildojn"
+
+msgid ""
+"Show reference images from anywhere in the book, including parts you haven't"
+" reached yet."
+msgstr ""
+"Montri referencajn bildojn el ie ajn en la libro, inkluzive partojn kiujn vi"
+" ankoraŭ ne atingis."
+
+msgid "Include Bookmarks in Gallery"
+msgstr "Inkluzivi legosignojn en galerio"
+
+msgid "Quick Actions"
+msgstr "Rapidaj agoj"
+
+msgid "Settings"
+msgstr "Agordoj"
+
+msgid "Gestures"
+msgstr "Gestoj"
+
+msgid "Double-tap for maximum zoom"
+msgstr "Duobla tuŝeto por maksimuma zomo"
+
+msgid "Swipe left/right to navigate"
+msgstr "Ŝovu maldekstren/dekstren por navigi"
+
+msgid "Pinch to zoom in/out"
+msgstr "Pinĉu por zomi en/el"
+
+msgid "Layout: %1 · %2"
+msgstr "Aranĝo: %1 · %2"
+
+msgid "Show Nav Buttons"
+msgstr "Montri navigajn butonojn"
+
+msgid "Navigation Loops Around"
+msgstr "Cikla navigado"
+
+msgid "Show Zoom Controls"
+msgstr "Montri zomregilojn"
+
+msgid "Show Mini Map"
+msgstr "Montri mapeton"
+
+msgid "Invert Images in Night Mode"
+msgstr "Inversigi bildojn en nokta reĝimo"
+
+msgid "Show image captions"
+msgstr "Montri bildajn apudskribojn"
+
+msgid "Show bookmark label in corner"
+msgstr "Montri legosignan etikedon en angulo"
+
+msgid "Maximum zoom: %1%"
+msgstr "Maksimuma zomo: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (rekomendata)"
+
+msgid "%1%"
+msgstr "%1%"
+
+msgid "Enable top menu tap zone"
+msgstr "Ebligi supran menuan tuŝzonon"
+
+msgid "Advanced"
+msgstr "Altnivela"
+
+msgid "Disable irrelevant image filtering"
+msgstr "Malebligi filtradon de malgravaj bildoj"
+
+msgid "Suppress \"format not supported\" notice"
+msgstr "Silentigi averton \"formato ne subtenata\""
+
+msgid "Disable shadows"
+msgstr "Malebligi ombrojn"
+
+msgid "Fast image switching"
+msgstr "Rapida bildoŝanĝo"
+
+msgid "Rescan this book"
+msgstr "Reskani ĉi tiun libron"
+
+msgid "Found %1 image(s)."
+msgstr "Trovis %1 bildo(j)n."
+
+msgid "Scan failed."
+msgstr "Skanado malsukcesis."
+
+msgid "Updates"
+msgstr "Ĝisdatigoj"
+
+msgid "Check for updates (v%1)"
+msgstr "Kontroli ĝisdatigojn (v%1)"
+
+msgid "Include pre-release versions"
+msgstr "Inkluzivi antaŭeldonajn versiojn"

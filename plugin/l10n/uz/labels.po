@@ -1,0 +1,413 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Erik Fanki
+# This file is distributed under the same license as the Glimpse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Glimpse\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"PO-Revision-Date: 2026-08-25 00:00+0000\n"
+"Last-Translator: AI seed <noreply@glimpse>\n"
+"Language-Team: uz\n"
+"Language: uz\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Ignore Image"
+msgstr "Rasmga e'tibor bermaslik"
+
+msgid "Mode switch"
+msgstr "Rejimni almashtirish"
+
+msgid "Rotate image"
+msgstr "Rasmni aylantirish"
+
+msgid "Show in Book"
+msgstr "Kitobda ko'rsatish"
+
+msgid "Nav Buttons Toggle"
+msgstr "Navigatsiya tugmalari"
+
+msgid "Zoom Controls Toggle"
+msgstr "Masshtab boshqaruvi"
+
+msgid "Mini Map Toggle"
+msgstr "Mini xarita"
+
+msgid "Image Captions Toggle"
+msgstr "Rasm izohlari"
+
+msgid "Include Bookmarks Toggle"
+msgstr "Xatcho'plarni qo'shish"
+
+msgid "Invert in Night Mode Toggle"
+msgstr "Tungi rejimda invertlash"
+
+msgid "Layout"
+msgstr "Joylashuv"
+
+msgid "Page %1 (%2)"
+msgstr "%1-sahifa (%2)"
+
+msgid "Page %1"
+msgstr "%1-sahifa"
+
+msgid "Gallery"
+msgstr "Galereya"
+
+msgid "Ignored"
+msgstr "E'tiborsiz qoldirilgan"
+
+msgid "Reset"
+msgstr "Qayta tiklash"
+
+msgid "Remove bookmark"
+msgstr "Xatcho'pni olib tashlash"
+
+msgid "Add back to Gallery"
+msgstr "Galereyaga qaytarish"
+
+msgid "Ignore this image"
+msgstr "Bu rasmga e'tibor bermaslik"
+
+msgid "Page %1 of %2"
+msgstr "%1-sahifa, jami %2"
+
+msgid "1 image"
+msgstr "1 rasm"
+
+msgid "%1 images"
+msgstr "%1 rasm"
+
+msgid "1 bookmark"
+msgstr "1 xatcho'p"
+
+msgid "%1 bookmarks"
+msgstr "%1 xatcho'p"
+
+msgid "Mode: All images"
+msgstr "Rejim: Barcha rasmlar"
+
+msgid "Mode: Spoiler-free"
+msgstr "Rejim: Spoylersiz"
+
+msgid "Reset Rotation"
+msgstr "Aylantirishni qayta tiklash"
+
+msgid "Nav Buttons"
+msgstr "Navigatsiya tugmalari"
+
+msgid "Zoom Controls"
+msgstr "Masshtab boshqaruvi"
+
+msgid "Mini Map"
+msgstr "Mini xarita"
+
+msgid "Image Captions"
+msgstr "Rasm izohlari"
+
+msgid "Include Bookmarks"
+msgstr "Xatcho'plarni qo'shish"
+
+msgid "Invert in Night Mode"
+msgstr "Tungi rejimda invertlash"
+
+msgid "Image ignored."
+msgstr "Rasmga e'tibor berilmadi."
+
+msgid "Bookmark removed."
+msgstr "Xatcho'p olib tashlandi."
+
+msgid "Open Glimpse"
+msgstr "Glimpse'ni ochish"
+
+msgid "No book is open."
+msgstr "Hech qanday kitob ochilmagan."
+
+msgid ""
+"Glimpse failed to load its scanner module. Try reinstalling the plugin."
+msgstr ""
+"Glimpse skanerlash modulini yuklay olmadi. Plaginni qayta o'rnatib ko'ring."
+
+msgid ""
+"Glimpse works with EPUB books only (this document format is not supported)."
+msgstr ""
+"Glimpse faqat EPUB kitoblari bilan ishlaydi (bu hujjat formati qo'llab-"
+"quvvatlanmaydi)."
+
+msgid "Scanning book for images…"
+msgstr "Kitob rasmlar uchun skanerlanmoqda…"
+
+msgid "Glimpse works with EPUB books only."
+msgstr "Glimpse faqat EPUB kitoblari bilan ishlaydi."
+
+msgid "Could not scan this book for images."
+msgstr "Bu kitobni rasmlar uchun skanerlab bo'lmadi."
+
+msgid "No images up to here yet – 1 further in the book."
+msgstr "Bu yergacha hali rasm yo'q – kitobda yana 1 ta oldinda."
+
+msgid "No images up to here yet – %1 further in the book."
+msgstr "Bu yergacha hali rasm yo'q – kitobda yana %1 ta oldinda."
+
+msgid "Show whole book"
+msgstr "Butun kitobni ko'rsatish"
+
+msgid "Close"
+msgstr "Yopish"
+
+msgid "No images to show – 1 was filtered out as irrelevant."
+msgstr "Ko'rsatadigan rasm yo'q – 1 tasi ahamiyatsiz deb filtrlandi."
+
+msgid "No images to show – %1 were filtered out as irrelevant."
+msgstr "Ko'rsatadigan rasm yo'q – %1 tasi ahamiyatsiz deb filtrlandi."
+
+msgid "Review filtered-out"
+msgstr "Filtrlanganlarini ko'rib chiqish"
+
+msgid "No images to show."
+msgstr "Ko'rsatadigan rasm yo'q."
+
+msgid "Mode: Images up to here"
+msgstr "Rejim: Bu yergacha rasmlar"
+
+msgid "Bookmarked pages hidden"
+msgstr "Xatcho'pli sahifalar yashirilgan"
+
+msgid "Bookmarked pages shown"
+msgstr "Xatcho'pli sahifalar ko'rsatilgan"
+
+msgid "Moved to Ignored"
+msgstr "E'tiborsiz qoldirilganga ko'chirildi"
+
+msgid "Added to Gallery"
+msgstr "Galereyaga qo'shildi"
+
+msgid "Cancel"
+msgstr "Bekor qilish"
+
+msgid "Checking for updates…"
+msgstr "Yangilanishlar tekshirilmoqda…"
+
+msgid "Update check failed:"
+msgstr "Yangilanishni tekshirish muvaffaqiyatsiz tugadi:"
+
+msgid "Could not read the latest release info."
+msgstr "Eng so'nggi nashr ma'lumotini o'qib bo'lmadi."
+
+msgid "You're up to date (v%1)."
+msgstr "Sizda eng so'nggi versiya (v%1)."
+
+msgid "No downloadable release package found."
+msgstr "Yuklab olinadigan nashr paketi topilmadi."
+
+msgid ""
+"Update available: %1\n"
+"(installed: v%2)\n"
+"\n"
+"Download and install now?"
+msgstr ""
+"Yangilanish mavjud: %1\n"
+"(o'rnatilgan: v%2)\n"
+"\n"
+"Hozir yuklab olib o'rnatilsinmi?"
+
+msgid "Update"
+msgstr "Yangilash"
+
+msgid "Updating to %1…"
+msgstr "%1 ga yangilanmoqda…"
+
+msgid ""
+"Updated to %1.\n"
+"Restart KOReader now to load it?"
+msgstr ""
+"%1 ga yangilandi.\n"
+"Uni yuklash uchun KOReader hozir qayta ishga tushirilsinmi?"
+
+msgid "Restart"
+msgstr "Qayta ishga tushirish"
+
+msgid "Later"
+msgstr "Keyinroq"
+
+msgid "Update failed."
+msgstr "Yangilash muvaffaqiyatsiz tugadi."
+
+msgid "Glimpse"
+msgstr "Glimpse"
+
+msgid "Gesture to open: none set"
+msgstr "Ochish imo-ishorasi: o'rnatilmagan"
+
+msgid "Gesture to open: %1"
+msgstr "Ochish imo-ishorasi: %1"
+
+msgid "PORTRAIT"
+msgstr "TIK"
+
+msgid "LANDSCAPE"
+msgstr "YOTIQ"
+
+msgid "Left"
+msgstr "Chap"
+
+msgid "Right"
+msgstr "O'ng"
+
+msgid "Side"
+msgstr "Yon"
+
+msgid "Bottom"
+msgstr "Past"
+
+msgid "Top"
+msgstr "Yuqori"
+
+msgid "Apply"
+msgstr "Qo'llash"
+
+msgid "Preferred Alignment"
+msgstr "Afzal ko'rilgan tekislash"
+
+msgid "Portrait Position"
+msgstr "Tik holat"
+
+msgid "Enable Glimpse"
+msgstr "Glimpse'ni yoqish"
+
+msgid ""
+"Tip: open Glimpse instantly with a gesture.\n"
+"\n"
+"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n"
+"\n"
+"(This tip is shown only once.)"
+msgstr ""
+"Maslahat: Glimpse'ni imo-ishora bilan darhol oching.\n"
+"\n"
+"Bittasini o'rnating: Sozlamalar → Teginish va imo-ishoralar → Imo-ishora menejeri → imo-ishorani tanlang → O'quvchi → 'Glimpse'ni ochish'.\n"
+"\n"
+"(Bu maslahat faqat bir marta ko'rsatiladi.)"
+
+msgid "Mode: Show all images"
+msgstr "Rejim: Barcha rasmlarni ko'rsatish"
+
+msgid "Mode: Show images up to current chapter"
+msgstr "Rejim: Joriy bobgacha rasmlarni ko'rsatish"
+
+msgid "Show images up to current chapter"
+msgstr "Joriy bobgacha rasmlarni ko'rsatish"
+
+msgid ""
+"Images that appear beyond your current position stay hidden, so you can't "
+"spoil yourself. Granularity is per chapter: images in the chapter you are "
+"currently reading are shown."
+msgstr ""
+"Joriy holatingizdan nariga chiqadigan rasmlar yashirin qoladi, shunda "
+"o'zingizga spoyler qilmaysiz. Granulyarlik bob bo'yicha: hozir o'qiyotgan "
+"bobingizdagi rasmlar ko'rsatiladi."
+
+msgid "Show all images"
+msgstr "Barcha rasmlarni ko'rsatish"
+
+msgid ""
+"Show reference images from anywhere in the book, including parts you haven't"
+" reached yet."
+msgstr ""
+"Kitobning istalgan joyidan, siz hali yetib bormagan qismlar ham, ma'lumot "
+"rasmlarini ko'rsatish."
+
+msgid "Include Bookmarks in Gallery"
+msgstr "Galereyaga xatcho'plarni qo'shish"
+
+msgid "Quick Actions"
+msgstr "Tezkor amallar"
+
+msgid "Settings"
+msgstr "Sozlamalar"
+
+msgid "Gestures"
+msgstr "Imo-ishoralar"
+
+msgid "Double-tap for maximum zoom"
+msgstr "Maksimal masshtab uchun ikki marta bosing"
+
+msgid "Swipe left/right to navigate"
+msgstr "Navigatsiya uchun chapga/o'ngga suring"
+
+msgid "Pinch to zoom in/out"
+msgstr "Kattalashtirish/kichraytirish uchun chimchilang"
+
+msgid "Layout: %1 · %2"
+msgstr "Joylashuv: %1 · %2"
+
+msgid "Show Nav Buttons"
+msgstr "Navigatsiya tugmalarini ko'rsatish"
+
+msgid "Navigation Loops Around"
+msgstr "Aylanma navigatsiya"
+
+msgid "Show Zoom Controls"
+msgstr "Masshtab boshqaruvini ko'rsatish"
+
+msgid "Show Mini Map"
+msgstr "Mini xaritani ko'rsatish"
+
+msgid "Invert Images in Night Mode"
+msgstr "Tungi rejimda rasmlarni invertlash"
+
+msgid "Show image captions"
+msgstr "Rasm izohlarini ko'rsatish"
+
+msgid "Show bookmark label in corner"
+msgstr "Burchakda xatcho'p yorlig'ini ko'rsatish"
+
+msgid "Maximum zoom: %1%"
+msgstr "Maksimal masshtab: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (tavsiya etiladi)"
+
+msgid "%1%"
+msgstr "%1%"
+
+msgid "Enable top menu tap zone"
+msgstr "Yuqori menyu teginish zonasini yoqish"
+
+msgid "Advanced"
+msgstr "Kengaytirilgan"
+
+msgid "Disable irrelevant image filtering"
+msgstr "Ahamiyatsiz rasmlarni filtrlashni o'chirish"
+
+msgid "Suppress \"format not supported\" notice"
+msgstr "\"Format qo'llab-quvvatlanmaydi\" bildirishnomasini bostirish"
+
+msgid "Disable shadows"
+msgstr "Soyalarni o'chirish"
+
+msgid "Fast image switching"
+msgstr "Tez rasm almashtirish"
+
+msgid "Rescan this book"
+msgstr "Bu kitobni qayta skanerlash"
+
+msgid "Found %1 image(s)."
+msgstr "%1 ta rasm topildi."
+
+msgid "Scan failed."
+msgstr "Skanerlash muvaffaqiyatsiz tugadi."
+
+msgid "Updates"
+msgstr "Yangilanishlar"
+
+msgid "Check for updates (v%1)"
+msgstr "Yangilanishlarni tekshirish (v%1)"
+
+msgid "Include pre-release versions"
+msgstr "Old nashr versiyalarini qo'shish"

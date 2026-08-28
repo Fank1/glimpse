@@ -1,0 +1,413 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Erik Fanki
+# This file is distributed under the same license as the Glimpse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Glimpse\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"PO-Revision-Date: 2026-08-25 00:00+0000\n"
+"Last-Translator: AI seed <noreply@glimpse>\n"
+"Language-Team: bg_BG\n"
+"Language: bg_BG\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Ignore Image"
+msgstr "Игнориране на изображение"
+
+msgid "Mode switch"
+msgstr "Смяна на режим"
+
+msgid "Rotate image"
+msgstr "Завъртане на изображение"
+
+msgid "Show in Book"
+msgstr "Показване в книгата"
+
+msgid "Nav Buttons Toggle"
+msgstr "Бутони за навигация"
+
+msgid "Zoom Controls Toggle"
+msgstr "Контроли за мащаб"
+
+msgid "Mini Map Toggle"
+msgstr "Мини карта"
+
+msgid "Image Captions Toggle"
+msgstr "Надписи на изображения"
+
+msgid "Include Bookmarks Toggle"
+msgstr "Включване на отметки"
+
+msgid "Invert in Night Mode Toggle"
+msgstr "Инвертиране в нощен режим"
+
+msgid "Layout"
+msgstr "Оформление"
+
+msgid "Page %1 (%2)"
+msgstr "Страница %1 (%2)"
+
+msgid "Page %1"
+msgstr "Страница %1"
+
+msgid "Gallery"
+msgstr "Галерия"
+
+msgid "Ignored"
+msgstr "Игнорирани"
+
+msgid "Reset"
+msgstr "Нулиране"
+
+msgid "Remove bookmark"
+msgstr "Премахване на отметка"
+
+msgid "Add back to Gallery"
+msgstr "Връщане в галерията"
+
+msgid "Ignore this image"
+msgstr "Игнориране на това изображение"
+
+msgid "Page %1 of %2"
+msgstr "Страница %1 от %2"
+
+msgid "1 image"
+msgstr "1 изображение"
+
+msgid "%1 images"
+msgstr "%1 изображения"
+
+msgid "1 bookmark"
+msgstr "1 отметка"
+
+msgid "%1 bookmarks"
+msgstr "%1 отметки"
+
+msgid "Mode: All images"
+msgstr "Режим: Всички изображения"
+
+msgid "Mode: Spoiler-free"
+msgstr "Режим: Без спойлери"
+
+msgid "Reset Rotation"
+msgstr "Нулиране на въртенето"
+
+msgid "Nav Buttons"
+msgstr "Бутони за навигация"
+
+msgid "Zoom Controls"
+msgstr "Контроли за мащаб"
+
+msgid "Mini Map"
+msgstr "Мини карта"
+
+msgid "Image Captions"
+msgstr "Надписи на изображения"
+
+msgid "Include Bookmarks"
+msgstr "Включване на отметки"
+
+msgid "Invert in Night Mode"
+msgstr "Инвертиране в нощен режим"
+
+msgid "Image ignored."
+msgstr "Изображението е игнорирано."
+
+msgid "Bookmark removed."
+msgstr "Отметката е премахната."
+
+msgid "Open Glimpse"
+msgstr "Отваряне на Glimpse"
+
+msgid "No book is open."
+msgstr "Няма отворена книга."
+
+msgid ""
+"Glimpse failed to load its scanner module. Try reinstalling the plugin."
+msgstr ""
+"Glimpse не успя да зареди модула си за сканиране. Опитайте да преинсталирате"
+" приставката."
+
+msgid ""
+"Glimpse works with EPUB books only (this document format is not supported)."
+msgstr ""
+"Glimpse работи само с книги EPUB (този формат на документ не се поддържа)."
+
+msgid "Scanning book for images…"
+msgstr "Сканиране на книгата за изображения…"
+
+msgid "Glimpse works with EPUB books only."
+msgstr "Glimpse работи само с книги EPUB."
+
+msgid "Could not scan this book for images."
+msgstr "Тази книга не можа да бъде сканирана за изображения."
+
+msgid "No images up to here yet – 1 further in the book."
+msgstr "Дотук още няма изображения – още 1 нататък в книгата."
+
+msgid "No images up to here yet – %1 further in the book."
+msgstr "Дотук още няма изображения – още %1 нататък в книгата."
+
+msgid "Show whole book"
+msgstr "Показване на цялата книга"
+
+msgid "Close"
+msgstr "Затваряне"
+
+msgid "No images to show – 1 was filtered out as irrelevant."
+msgstr "Няма изображения за показване – 1 беше филтрирано като неуместно."
+
+msgid "No images to show – %1 were filtered out as irrelevant."
+msgstr "Няма изображения за показване – %1 бяха филтрирани като неуместни."
+
+msgid "Review filtered-out"
+msgstr "Преглед на филтрираните"
+
+msgid "No images to show."
+msgstr "Няма изображения за показване."
+
+msgid "Mode: Images up to here"
+msgstr "Режим: Изображения дотук"
+
+msgid "Bookmarked pages hidden"
+msgstr "Страниците с отметки са скрити"
+
+msgid "Bookmarked pages shown"
+msgstr "Страниците с отметки са показани"
+
+msgid "Moved to Ignored"
+msgstr "Преместено в Игнорирани"
+
+msgid "Added to Gallery"
+msgstr "Добавено в галерията"
+
+msgid "Cancel"
+msgstr "Отказ"
+
+msgid "Checking for updates…"
+msgstr "Проверка за актуализации…"
+
+msgid "Update check failed:"
+msgstr "Проверката за актуализации е неуспешна:"
+
+msgid "Could not read the latest release info."
+msgstr "Информацията за най-новото издание не можа да бъде прочетена."
+
+msgid "You're up to date (v%1)."
+msgstr "Разполагате с най-новата версия (v%1)."
+
+msgid "No downloadable release package found."
+msgstr "Не е намерен пакет за изтегляне на изданието."
+
+msgid ""
+"Update available: %1\n"
+"(installed: v%2)\n"
+"\n"
+"Download and install now?"
+msgstr ""
+"Налична актуализация: %1\n"
+"(инсталирана: v%2)\n"
+"\n"
+"Да се изтегли и инсталира сега?"
+
+msgid "Update"
+msgstr "Актуализиране"
+
+msgid "Updating to %1…"
+msgstr "Актуализиране до %1…"
+
+msgid ""
+"Updated to %1.\n"
+"Restart KOReader now to load it?"
+msgstr ""
+"Актуализирано до %1.\n"
+"Да се рестартира KOReader сега за зареждане?"
+
+msgid "Restart"
+msgstr "Рестартиране"
+
+msgid "Later"
+msgstr "По-късно"
+
+msgid "Update failed."
+msgstr "Актуализацията е неуспешна."
+
+msgid "Glimpse"
+msgstr "Glimpse"
+
+msgid "Gesture to open: none set"
+msgstr "Жест за отваряне: няма зададен"
+
+msgid "Gesture to open: %1"
+msgstr "Жест за отваряне: %1"
+
+msgid "PORTRAIT"
+msgstr "ПОРТРЕТНО"
+
+msgid "LANDSCAPE"
+msgstr "ПЕЙЗАЖНО"
+
+msgid "Left"
+msgstr "Ляво"
+
+msgid "Right"
+msgstr "Дясно"
+
+msgid "Side"
+msgstr "Отстрани"
+
+msgid "Bottom"
+msgstr "Долу"
+
+msgid "Top"
+msgstr "Горе"
+
+msgid "Apply"
+msgstr "Прилагане"
+
+msgid "Preferred Alignment"
+msgstr "Предпочитано подравняване"
+
+msgid "Portrait Position"
+msgstr "Портретна позиция"
+
+msgid "Enable Glimpse"
+msgstr "Разрешаване на Glimpse"
+
+msgid ""
+"Tip: open Glimpse instantly with a gesture.\n"
+"\n"
+"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n"
+"\n"
+"(This tip is shown only once.)"
+msgstr ""
+"Съвет: отворете Glimpse веднага с жест.\n"
+"\n"
+"Задайте един в Настройки → Докосвания и жестове → Мениджър на жестове → изберете жест → Четец → 'Отваряне на Glimpse'.\n"
+"\n"
+"(Този съвет се показва само веднъж.)"
+
+msgid "Mode: Show all images"
+msgstr "Режим: Показване на всички изображения"
+
+msgid "Mode: Show images up to current chapter"
+msgstr "Режим: Показване на изображения до текущата глава"
+
+msgid "Show images up to current chapter"
+msgstr "Показване на изображения до текущата глава"
+
+msgid ""
+"Images that appear beyond your current position stay hidden, so you can't "
+"spoil yourself. Granularity is per chapter: images in the chapter you are "
+"currently reading are shown."
+msgstr ""
+"Изображенията, които се появяват след текущата ви позиция, остават скрити, "
+"за да не си разваляте изненадата. Детайлността е по глави: показват се "
+"изображенията в главата, която четете в момента."
+
+msgid "Show all images"
+msgstr "Показване на всички изображения"
+
+msgid ""
+"Show reference images from anywhere in the book, including parts you haven't"
+" reached yet."
+msgstr ""
+"Показване на справочни изображения от която и да е част на книгата, "
+"включително части, до които още не сте стигнали."
+
+msgid "Include Bookmarks in Gallery"
+msgstr "Включване на отметки в галерията"
+
+msgid "Quick Actions"
+msgstr "Бързи действия"
+
+msgid "Settings"
+msgstr "Настройки"
+
+msgid "Gestures"
+msgstr "Жестове"
+
+msgid "Double-tap for maximum zoom"
+msgstr "Двойно докосване за максимален мащаб"
+
+msgid "Swipe left/right to navigate"
+msgstr "Плъзнете наляво/надясно за навигация"
+
+msgid "Pinch to zoom in/out"
+msgstr "Щипнете за увеличаване/намаляване"
+
+msgid "Layout: %1 · %2"
+msgstr "Оформление: %1 · %2"
+
+msgid "Show Nav Buttons"
+msgstr "Показване на бутони за навигация"
+
+msgid "Navigation Loops Around"
+msgstr "Циклична навигация"
+
+msgid "Show Zoom Controls"
+msgstr "Показване на контроли за мащаб"
+
+msgid "Show Mini Map"
+msgstr "Показване на мини карта"
+
+msgid "Invert Images in Night Mode"
+msgstr "Инвертиране на изображенията в нощен режим"
+
+msgid "Show image captions"
+msgstr "Показване на надписи на изображения"
+
+msgid "Show bookmark label in corner"
+msgstr "Показване на етикет на отметка в ъгъла"
+
+msgid "Maximum zoom: %1%"
+msgstr "Максимален мащаб: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (препоръчано)"
+
+msgid "%1%"
+msgstr "%1%"
+
+msgid "Enable top menu tap zone"
+msgstr "Разрешаване на зона за докосване на горното меню"
+
+msgid "Advanced"
+msgstr "Разширени"
+
+msgid "Disable irrelevant image filtering"
+msgstr "Изключване на филтрирането на неуместни изображения"
+
+msgid "Suppress \"format not supported\" notice"
+msgstr "Скриване на известието \"форматът не се поддържа\""
+
+msgid "Disable shadows"
+msgstr "Изключване на сенките"
+
+msgid "Fast image switching"
+msgstr "Бързо превключване на изображения"
+
+msgid "Rescan this book"
+msgstr "Повторно сканиране на тази книга"
+
+msgid "Found %1 image(s)."
+msgstr "Намерени са %1 изображения."
+
+msgid "Scan failed."
+msgstr "Сканирането е неуспешно."
+
+msgid "Updates"
+msgstr "Актуализации"
+
+msgid "Check for updates (v%1)"
+msgstr "Проверка за актуализации (v%1)"
+
+msgid "Include pre-release versions"
+msgstr "Включване на предварителни издания"

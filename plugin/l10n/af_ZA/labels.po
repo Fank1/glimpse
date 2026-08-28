@@ -1,0 +1,414 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Erik Fanki
+# This file is distributed under the same license as the Glimpse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Glimpse\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"PO-Revision-Date: 2026-08-25 00:00+0000\n"
+"Last-Translator: AI seed <noreply@glimpse>\n"
+"Language-Team: af_ZA\n"
+"Language: af_ZA\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Ignore Image"
+msgstr "Ignoreer prent"
+
+msgid "Mode switch"
+msgstr "Moduswissel"
+
+msgid "Rotate image"
+msgstr "Roteer prent"
+
+msgid "Show in Book"
+msgstr "Wys in boek"
+
+msgid "Nav Buttons Toggle"
+msgstr "Navigasieknoppies"
+
+msgid "Zoom Controls Toggle"
+msgstr "Zoemkontroles"
+
+msgid "Mini Map Toggle"
+msgstr "Minikaart"
+
+msgid "Image Captions Toggle"
+msgstr "Prentonderskrifte"
+
+msgid "Include Bookmarks Toggle"
+msgstr "Sluit boekmerke in"
+
+msgid "Invert in Night Mode Toggle"
+msgstr "Keer om in nagmodus"
+
+msgid "Layout"
+msgstr "Uitleg"
+
+msgid "Page %1 (%2)"
+msgstr "Bladsy %1 (%2)"
+
+msgid "Page %1"
+msgstr "Bladsy %1"
+
+msgid "Gallery"
+msgstr "Galery"
+
+msgid "Ignored"
+msgstr "Geïgnoreer"
+
+msgid "Reset"
+msgstr "Herstel"
+
+msgid "Remove bookmark"
+msgstr "Verwyder boekmerk"
+
+msgid "Add back to Gallery"
+msgstr "Voeg terug by galery"
+
+msgid "Ignore this image"
+msgstr "Ignoreer hierdie prent"
+
+msgid "Page %1 of %2"
+msgstr "Bladsy %1 van %2"
+
+msgid "1 image"
+msgstr "1 prent"
+
+msgid "%1 images"
+msgstr "%1 prente"
+
+msgid "1 bookmark"
+msgstr "1 boekmerk"
+
+msgid "%1 bookmarks"
+msgstr "%1 boekmerke"
+
+msgid "Mode: All images"
+msgstr "Modus: Alle prente"
+
+msgid "Mode: Spoiler-free"
+msgstr "Modus: Bederfvry"
+
+msgid "Reset Rotation"
+msgstr "Herstel rotasie"
+
+msgid "Nav Buttons"
+msgstr "Navigasieknoppies"
+
+msgid "Zoom Controls"
+msgstr "Zoemkontroles"
+
+msgid "Mini Map"
+msgstr "Minikaart"
+
+msgid "Image Captions"
+msgstr "Prentonderskrifte"
+
+msgid "Include Bookmarks"
+msgstr "Sluit boekmerke in"
+
+msgid "Invert in Night Mode"
+msgstr "Keer om in nagmodus"
+
+msgid "Image ignored."
+msgstr "Prent geïgnoreer."
+
+msgid "Bookmark removed."
+msgstr "Boekmerk verwyder."
+
+msgid "Open Glimpse"
+msgstr "Open Glimpse"
+
+msgid "No book is open."
+msgstr "Geen boek is oop nie."
+
+msgid ""
+"Glimpse failed to load its scanner module. Try reinstalling the plugin."
+msgstr ""
+"Glimpse kon nie sy skandeermodule laai nie. Probeer om die inprop te "
+"herinstalleer."
+
+msgid ""
+"Glimpse works with EPUB books only (this document format is not supported)."
+msgstr ""
+"Glimpse werk net met EPUB-boeke (hierdie dokumentformaat word nie ondersteun"
+" nie)."
+
+msgid "Scanning book for images…"
+msgstr "Skandeer boek vir prente…"
+
+msgid "Glimpse works with EPUB books only."
+msgstr "Glimpse werk net met EPUB-boeke."
+
+msgid "Could not scan this book for images."
+msgstr "Kon nie hierdie boek vir prente skandeer nie."
+
+msgid "No images up to here yet – 1 further in the book."
+msgstr "Nog geen prente tot hier nie – 1 verder in die boek."
+
+msgid "No images up to here yet – %1 further in the book."
+msgstr "Nog geen prente tot hier nie – %1 verder in die boek."
+
+msgid "Show whole book"
+msgstr "Wys hele boek"
+
+msgid "Close"
+msgstr "Sluit"
+
+msgid "No images to show – 1 was filtered out as irrelevant."
+msgstr "Geen prente om te wys nie – 1 is as irrelevant uitgefiltreer."
+
+msgid "No images to show – %1 were filtered out as irrelevant."
+msgstr "Geen prente om te wys nie – %1 is as irrelevant uitgefiltreer."
+
+msgid "Review filtered-out"
+msgstr "Hersien uitgefiltreerdes"
+
+msgid "No images to show."
+msgstr "Geen prente om te wys nie."
+
+msgid "Mode: Images up to here"
+msgstr "Modus: Prente tot hier"
+
+msgid "Bookmarked pages hidden"
+msgstr "Boekgemerkte bladsye versteek"
+
+msgid "Bookmarked pages shown"
+msgstr "Boekgemerkte bladsye gewys"
+
+msgid "Moved to Ignored"
+msgstr "Geskuif na Geïgnoreer"
+
+msgid "Added to Gallery"
+msgstr "By galery gevoeg"
+
+msgid "Cancel"
+msgstr "Kanselleer"
+
+msgid "Checking for updates…"
+msgstr "Kontroleer vir opdaterings…"
+
+msgid "Update check failed:"
+msgstr "Opdateringkontrole het misluk:"
+
+msgid "Could not read the latest release info."
+msgstr "Kon nie die jongste vrystellinginligting lees nie."
+
+msgid "You're up to date (v%1)."
+msgstr "Jy is op datum (v%1)."
+
+msgid "No downloadable release package found."
+msgstr "Geen aflaaibare vrystellingpakket gevind nie."
+
+msgid ""
+"Update available: %1\n"
+"(installed: v%2)\n"
+"\n"
+"Download and install now?"
+msgstr ""
+"Opdatering beskikbaar: %1\n"
+"(geïnstalleer: v%2)\n"
+"\n"
+"Laai af en installeer nou?"
+
+msgid "Update"
+msgstr "Opdateer"
+
+msgid "Updating to %1…"
+msgstr "Opdateer na %1…"
+
+msgid ""
+"Updated to %1.\n"
+"Restart KOReader now to load it?"
+msgstr ""
+"Opgedateer na %1.\n"
+"Herbegin KOReader nou om dit te laai?"
+
+msgid "Restart"
+msgstr "Herbegin"
+
+msgid "Later"
+msgstr "Later"
+
+msgid "Update failed."
+msgstr "Opdatering het misluk."
+
+msgid "Glimpse"
+msgstr "Glimpse"
+
+msgid "Gesture to open: none set"
+msgstr "Gebaar om te open: geen gestel"
+
+msgid "Gesture to open: %1"
+msgstr "Gebaar om te open: %1"
+
+msgid "PORTRAIT"
+msgstr "STAANDE"
+
+msgid "LANDSCAPE"
+msgstr "LIGGENDE"
+
+msgid "Left"
+msgstr "Links"
+
+msgid "Right"
+msgstr "Regs"
+
+msgid "Side"
+msgstr "Kant"
+
+msgid "Bottom"
+msgstr "Onder"
+
+msgid "Top"
+msgstr "Bo"
+
+msgid "Apply"
+msgstr "Pas toe"
+
+msgid "Preferred Alignment"
+msgstr "Voorkeurbelyning"
+
+msgid "Portrait Position"
+msgstr "Staande posisie"
+
+msgid "Enable Glimpse"
+msgstr "Aktiveer Glimpse"
+
+msgid ""
+"Tip: open Glimpse instantly with a gesture.\n"
+"\n"
+"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n"
+"\n"
+"(This tip is shown only once.)"
+msgstr ""
+"Wenk: open Glimpse dadelik met 'n gebaar.\n"
+"\n"
+"Stel een onder Instellings → Tikke en gebare → Gebaarbestuurder → kies 'n gebaar → Leser → 'Open Glimpse'.\n"
+"\n"
+"(Hierdie wenk word net een keer gewys.)"
+
+msgid "Mode: Show all images"
+msgstr "Modus: Wys alle prente"
+
+msgid "Mode: Show images up to current chapter"
+msgstr "Modus: Wys prente tot huidige hoofstuk"
+
+msgid "Show images up to current chapter"
+msgstr "Wys prente tot huidige hoofstuk"
+
+msgid ""
+"Images that appear beyond your current position stay hidden, so you can't "
+"spoil yourself. Granularity is per chapter: images in the chapter you are "
+"currently reading are shown."
+msgstr ""
+"Prente wat verby jou huidige posisie verskyn, bly versteek, sodat jy nie vir"
+" jouself bederf nie. Granulariteit is per hoofstuk: prente in die hoofstuk "
+"wat jy tans lees, word gewys."
+
+msgid "Show all images"
+msgstr "Wys alle prente"
+
+msgid ""
+"Show reference images from anywhere in the book, including parts you haven't"
+" reached yet."
+msgstr ""
+"Wys verwysingsprente van enige plek in die boek, ook dele wat jy nog nie "
+"bereik het nie."
+
+msgid "Include Bookmarks in Gallery"
+msgstr "Sluit boekmerke in galery in"
+
+msgid "Quick Actions"
+msgstr "Vinnige aksies"
+
+msgid "Settings"
+msgstr "Instellings"
+
+msgid "Gestures"
+msgstr "Gebare"
+
+msgid "Double-tap for maximum zoom"
+msgstr "Dubbeltik vir maksimum zoem"
+
+msgid "Swipe left/right to navigate"
+msgstr "Swiep links/regs om te navigeer"
+
+msgid "Pinch to zoom in/out"
+msgstr "Knyp om in/uit te zoem"
+
+msgid "Layout: %1 · %2"
+msgstr "Uitleg: %1 · %2"
+
+msgid "Show Nav Buttons"
+msgstr "Wys navigasieknoppies"
+
+msgid "Navigation Loops Around"
+msgstr "Sirkelnavigasie"
+
+msgid "Show Zoom Controls"
+msgstr "Wys zoemkontroles"
+
+msgid "Show Mini Map"
+msgstr "Wys minikaart"
+
+msgid "Invert Images in Night Mode"
+msgstr "Keer prente om in nagmodus"
+
+msgid "Show image captions"
+msgstr "Wys prentonderskrifte"
+
+msgid "Show bookmark label in corner"
+msgstr "Wys boekmerketiket in hoek"
+
+msgid "Maximum zoom: %1%"
+msgstr "Maksimum zoem: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (aanbeveel)"
+
+msgid "%1%"
+msgstr "%1%"
+
+msgid "Enable top menu tap zone"
+msgstr "Aktiveer boonste kieslys-tikstreek"
+
+msgid "Advanced"
+msgstr "Gevorderd"
+
+msgid "Disable irrelevant image filtering"
+msgstr "Deaktiveer irrelevante prentfiltrering"
+
+msgid "Suppress \"format not supported\" notice"
+msgstr "Onderdruk \"formaat nie ondersteun\"-kennisgewing"
+
+msgid "Disable shadows"
+msgstr "Deaktiveer skaduwees"
+
+msgid "Fast image switching"
+msgstr "Vinnige prentwisseling"
+
+msgid "Rescan this book"
+msgstr "Herskandeer hierdie boek"
+
+msgid "Found %1 image(s)."
+msgstr "%1 prent(e) gevind."
+
+msgid "Scan failed."
+msgstr "Skandering het misluk."
+
+msgid "Updates"
+msgstr "Opdaterings"
+
+msgid "Check for updates (v%1)"
+msgstr "Kontroleer vir opdaterings (v%1)"
+
+msgid "Include pre-release versions"
+msgstr "Sluit voorvrystellings in"

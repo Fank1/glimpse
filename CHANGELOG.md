@@ -1,9 +1,6 @@
 # Changelog
 
-## Unreleased (in pre-release testing, for the next public release)
-
-Everything below has shipped only in pre-release builds so far. Fold it into
-the notes of the next public release.
+## 1.5.0
 
 **↔️ Choose where Glimpse opens (Settings → Layout)**
 - **Pick a side, or a top/bottom band.** The Layout modal now has two settings: *Portrait Position* (Side · Bottom · Top) and *Preferred Alignment* (Left · Right). In portrait you can have the panel slide in from the left or right edge, or open as a band across the top or bottom half of the screen. In landscape it always uses your preferred side, so a rotate never leaves it stuck top or bottom.

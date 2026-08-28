@@ -1,0 +1,408 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Erik Fanki
+# This file is distributed under the same license as the Glimpse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Glimpse\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"PO-Revision-Date: 2026-08-25 00:00+0000\n"
+"Last-Translator: AI seed <noreply@glimpse>\n"
+"Language-Team: th\n"
+"Language: th\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Ignore Image"
+msgstr "ละเว้นรูปภาพ"
+
+msgid "Mode switch"
+msgstr "สลับโหมด"
+
+msgid "Rotate image"
+msgstr "หมุนรูปภาพ"
+
+msgid "Show in Book"
+msgstr "แสดงในหนังสือ"
+
+msgid "Nav Buttons Toggle"
+msgstr "ปุ่มนำทาง"
+
+msgid "Zoom Controls Toggle"
+msgstr "ตัวควบคุมการซูม"
+
+msgid "Mini Map Toggle"
+msgstr "แผนที่ย่อ"
+
+msgid "Image Captions Toggle"
+msgstr "คำบรรยายรูปภาพ"
+
+msgid "Include Bookmarks Toggle"
+msgstr "รวมบุ๊กมาร์ก"
+
+msgid "Invert in Night Mode Toggle"
+msgstr "กลับสีในโหมดกลางคืน"
+
+msgid "Layout"
+msgstr "เค้าโครง"
+
+msgid "Page %1 (%2)"
+msgstr "หน้า %1 (%2)"
+
+msgid "Page %1"
+msgstr "หน้า %1"
+
+msgid "Gallery"
+msgstr "แกลเลอรี"
+
+msgid "Ignored"
+msgstr "ที่ละเว้น"
+
+msgid "Reset"
+msgstr "รีเซ็ต"
+
+msgid "Remove bookmark"
+msgstr "ลบบุ๊กมาร์ก"
+
+msgid "Add back to Gallery"
+msgstr "เพิ่มกลับไปยังแกลเลอรี"
+
+msgid "Ignore this image"
+msgstr "ละเว้นรูปภาพนี้"
+
+msgid "Page %1 of %2"
+msgstr "หน้า %1 จาก %2"
+
+msgid "1 image"
+msgstr "1 รูป"
+
+msgid "%1 images"
+msgstr "%1 รูป"
+
+msgid "1 bookmark"
+msgstr "1 บุ๊กมาร์ก"
+
+msgid "%1 bookmarks"
+msgstr "%1 บุ๊กมาร์ก"
+
+msgid "Mode: All images"
+msgstr "โหมด: รูปภาพทั้งหมด"
+
+msgid "Mode: Spoiler-free"
+msgstr "โหมด: ปลอดสปอยล์"
+
+msgid "Reset Rotation"
+msgstr "รีเซ็ตการหมุน"
+
+msgid "Nav Buttons"
+msgstr "ปุ่มนำทาง"
+
+msgid "Zoom Controls"
+msgstr "ตัวควบคุมการซูม"
+
+msgid "Mini Map"
+msgstr "แผนที่ย่อ"
+
+msgid "Image Captions"
+msgstr "คำบรรยายรูปภาพ"
+
+msgid "Include Bookmarks"
+msgstr "รวมบุ๊กมาร์ก"
+
+msgid "Invert in Night Mode"
+msgstr "กลับสีในโหมดกลางคืน"
+
+msgid "Image ignored."
+msgstr "ละเว้นรูปภาพแล้ว"
+
+msgid "Bookmark removed."
+msgstr "ลบบุ๊กมาร์กแล้ว"
+
+msgid "Open Glimpse"
+msgstr "เปิด Glimpse"
+
+msgid "No book is open."
+msgstr "ไม่มีหนังสือที่เปิดอยู่"
+
+msgid ""
+"Glimpse failed to load its scanner module. Try reinstalling the plugin."
+msgstr "Glimpse โหลดโมดูลสแกนไม่สำเร็จ ลองติดตั้งปลั๊กอินใหม่"
+
+msgid ""
+"Glimpse works with EPUB books only (this document format is not supported)."
+msgstr "Glimpse ใช้ได้กับหนังสือ EPUB เท่านั้น (ไม่รองรับรูปแบบเอกสารนี้)"
+
+msgid "Scanning book for images…"
+msgstr "กำลังสแกนหนังสือเพื่อหารูปภาพ…"
+
+msgid "Glimpse works with EPUB books only."
+msgstr "Glimpse ใช้ได้กับหนังสือ EPUB เท่านั้น"
+
+msgid "Could not scan this book for images."
+msgstr "ไม่สามารถสแกนหารูปภาพในหนังสือเล่มนี้ได้"
+
+msgid "No images up to here yet – 1 further in the book."
+msgstr "ยังไม่มีรูปภาพจนถึงตรงนี้ – อีก 1 รูปข้างหน้าในหนังสือ"
+
+msgid "No images up to here yet – %1 further in the book."
+msgstr "ยังไม่มีรูปภาพจนถึงตรงนี้ – อีก %1 รูปข้างหน้าในหนังสือ"
+
+msgid "Show whole book"
+msgstr "แสดงทั้งเล่ม"
+
+msgid "Close"
+msgstr "ปิด"
+
+msgid "No images to show – 1 was filtered out as irrelevant."
+msgstr "ไม่มีรูปภาพให้แสดง – 1 รูปถูกกรองออกว่าไม่เกี่ยวข้อง"
+
+msgid "No images to show – %1 were filtered out as irrelevant."
+msgstr "ไม่มีรูปภาพให้แสดง – %1 รูปถูกกรองออกว่าไม่เกี่ยวข้อง"
+
+msgid "Review filtered-out"
+msgstr "ตรวจดูรูปที่ถูกกรองออก"
+
+msgid "No images to show."
+msgstr "ไม่มีรูปภาพให้แสดง"
+
+msgid "Mode: Images up to here"
+msgstr "โหมด: รูปภาพจนถึงตรงนี้"
+
+msgid "Bookmarked pages hidden"
+msgstr "ซ่อนหน้าที่มีบุ๊กมาร์ก"
+
+msgid "Bookmarked pages shown"
+msgstr "แสดงหน้าที่มีบุ๊กมาร์ก"
+
+msgid "Moved to Ignored"
+msgstr "ย้ายไปยังที่ละเว้น"
+
+msgid "Added to Gallery"
+msgstr "เพิ่มไปยังแกลเลอรีแล้ว"
+
+msgid "Cancel"
+msgstr "ยกเลิก"
+
+msgid "Checking for updates…"
+msgstr "กำลังตรวจสอบการอัปเดต…"
+
+msgid "Update check failed:"
+msgstr "การตรวจสอบการอัปเดตล้มเหลว:"
+
+msgid "Could not read the latest release info."
+msgstr "ไม่สามารถอ่านข้อมูลรุ่นล่าสุดได้"
+
+msgid "You're up to date (v%1)."
+msgstr "คุณเป็นเวอร์ชันล่าสุดแล้ว (v%1)"
+
+msgid "No downloadable release package found."
+msgstr "ไม่พบแพ็กเกจรุ่นที่ดาวน์โหลดได้"
+
+msgid ""
+"Update available: %1\n"
+"(installed: v%2)\n"
+"\n"
+"Download and install now?"
+msgstr ""
+"มีการอัปเดต: %1\n"
+"(ติดตั้งแล้ว: v%2)\n"
+"\n"
+"ดาวน์โหลดและติดตั้งตอนนี้เลยไหม?"
+
+msgid "Update"
+msgstr "อัปเดต"
+
+msgid "Updating to %1…"
+msgstr "กำลังอัปเดตเป็น %1…"
+
+msgid ""
+"Updated to %1.\n"
+"Restart KOReader now to load it?"
+msgstr ""
+"อัปเดตเป็น %1 แล้ว\n"
+"รีสตาร์ท KOReader ตอนนี้เพื่อโหลดไหม?"
+
+msgid "Restart"
+msgstr "รีสตาร์ท"
+
+msgid "Later"
+msgstr "ภายหลัง"
+
+msgid "Update failed."
+msgstr "การอัปเดตล้มเหลว"
+
+msgid "Glimpse"
+msgstr "Glimpse"
+
+msgid "Gesture to open: none set"
+msgstr "ท่าทางเพื่อเปิด: ยังไม่ตั้ง"
+
+msgid "Gesture to open: %1"
+msgstr "ท่าทางเพื่อเปิด: %1"
+
+msgid "PORTRAIT"
+msgstr "แนวตั้ง"
+
+msgid "LANDSCAPE"
+msgstr "แนวนอน"
+
+msgid "Left"
+msgstr "ซ้าย"
+
+msgid "Right"
+msgstr "ขวา"
+
+msgid "Side"
+msgstr "ด้านข้าง"
+
+msgid "Bottom"
+msgstr "ด้านล่าง"
+
+msgid "Top"
+msgstr "ด้านบน"
+
+msgid "Apply"
+msgstr "นำไปใช้"
+
+msgid "Preferred Alignment"
+msgstr "การจัดแนวที่ต้องการ"
+
+msgid "Portrait Position"
+msgstr "ตำแหน่งแนวตั้ง"
+
+msgid "Enable Glimpse"
+msgstr "เปิดใช้งาน Glimpse"
+
+msgid ""
+"Tip: open Glimpse instantly with a gesture.\n"
+"\n"
+"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n"
+"\n"
+"(This tip is shown only once.)"
+msgstr ""
+"เคล็ดลับ: เปิด Glimpse ทันทีด้วยท่าทาง\n"
+"\n"
+"ตั้งค่าได้ที่ การตั้งค่า → การแตะและท่าทาง → ตัวจัดการท่าทาง → เลือกท่าทาง → ตัวอ่าน → 'เปิด Glimpse'\n"
+"\n"
+"(เคล็ดลับนี้แสดงเพียงครั้งเดียว)"
+
+msgid "Mode: Show all images"
+msgstr "โหมด: แสดงรูปภาพทั้งหมด"
+
+msgid "Mode: Show images up to current chapter"
+msgstr "โหมด: แสดงรูปภาพจนถึงบทปัจจุบัน"
+
+msgid "Show images up to current chapter"
+msgstr "แสดงรูปภาพจนถึงบทปัจจุบัน"
+
+msgid ""
+"Images that appear beyond your current position stay hidden, so you can't "
+"spoil yourself. Granularity is per chapter: images in the chapter you are "
+"currently reading are shown."
+msgstr ""
+"รูปภาพที่ปรากฏเลยตำแหน่งปัจจุบันของคุณจะถูกซ่อนไว้ "
+"เพื่อไม่ให้คุณสปอยล์ตัวเอง ความละเอียดเป็นรายบท: "
+"รูปภาพในบทที่คุณกำลังอ่านอยู่จะถูกแสดง"
+
+msgid "Show all images"
+msgstr "แสดงรูปภาพทั้งหมด"
+
+msgid ""
+"Show reference images from anywhere in the book, including parts you haven't"
+" reached yet."
+msgstr "แสดงรูปภาพอ้างอิงจากที่ใดก็ได้ในหนังสือ รวมถึงส่วนที่คุณยังอ่านไม่ถึง"
+
+msgid "Include Bookmarks in Gallery"
+msgstr "รวมบุ๊กมาร์กในแกลเลอรี"
+
+msgid "Quick Actions"
+msgstr "การกระทำด่วน"
+
+msgid "Settings"
+msgstr "การตั้งค่า"
+
+msgid "Gestures"
+msgstr "ท่าทาง"
+
+msgid "Double-tap for maximum zoom"
+msgstr "แตะสองครั้งเพื่อซูมสูงสุด"
+
+msgid "Swipe left/right to navigate"
+msgstr "ปัดซ้าย/ขวาเพื่อนำทาง"
+
+msgid "Pinch to zoom in/out"
+msgstr "หนีบนิ้วเพื่อซูมเข้า/ออก"
+
+msgid "Layout: %1 · %2"
+msgstr "เค้าโครง: %1 · %2"
+
+msgid "Show Nav Buttons"
+msgstr "แสดงปุ่มนำทาง"
+
+msgid "Navigation Loops Around"
+msgstr "การนำทางแบบวนรอบ"
+
+msgid "Show Zoom Controls"
+msgstr "แสดงตัวควบคุมการซูม"
+
+msgid "Show Mini Map"
+msgstr "แสดงแผนที่ย่อ"
+
+msgid "Invert Images in Night Mode"
+msgstr "กลับสีรูปภาพในโหมดกลางคืน"
+
+msgid "Show image captions"
+msgstr "แสดงคำบรรยายรูปภาพ"
+
+msgid "Show bookmark label in corner"
+msgstr "แสดงป้ายบุ๊กมาร์กที่มุม"
+
+msgid "Maximum zoom: %1%"
+msgstr "ซูมสูงสุด: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (แนะนำ)"
+
+msgid "%1%"
+msgstr "%1%"
+
+msgid "Enable top menu tap zone"
+msgstr "เปิดใช้งานพื้นที่แตะเมนูด้านบน"
+
+msgid "Advanced"
+msgstr "ขั้นสูง"
+
+msgid "Disable irrelevant image filtering"
+msgstr "ปิดการกรองรูปภาพที่ไม่เกี่ยวข้อง"
+
+msgid "Suppress \"format not supported\" notice"
+msgstr "ระงับการแจ้งเตือน \"ไม่รองรับรูปแบบ\""
+
+msgid "Disable shadows"
+msgstr "ปิดเงา"
+
+msgid "Fast image switching"
+msgstr "สลับรูปภาพอย่างรวดเร็ว"
+
+msgid "Rescan this book"
+msgstr "สแกนหนังสือเล่มนี้ใหม่"
+
+msgid "Found %1 image(s)."
+msgstr "พบ %1 รูป"
+
+msgid "Scan failed."
+msgstr "การสแกนล้มเหลว"
+
+msgid "Updates"
+msgstr "การอัปเดต"
+
+msgid "Check for updates (v%1)"
+msgstr "ตรวจสอบการอัปเดต (v%1)"
+
+msgid "Include pre-release versions"
+msgstr "รวมเวอร์ชันก่อนวางจำหน่าย"

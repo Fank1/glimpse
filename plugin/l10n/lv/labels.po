@@ -1,0 +1,414 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Erik Fanki
+# This file is distributed under the same license as the Glimpse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Glimpse\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"PO-Revision-Date: 2026-08-25 00:00+0000\n"
+"Last-Translator: AI seed <noreply@glimpse>\n"
+"Language-Team: lv\n"
+"Language: lv\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Ignore Image"
+msgstr "Ignorēt attēlu"
+
+msgid "Mode switch"
+msgstr "Režīma pārslēgšana"
+
+msgid "Rotate image"
+msgstr "Pagriezt attēlu"
+
+msgid "Show in Book"
+msgstr "Rādīt grāmatā"
+
+msgid "Nav Buttons Toggle"
+msgstr "Navigācijas pogas"
+
+msgid "Zoom Controls Toggle"
+msgstr "Tuvinājuma vadīklas"
+
+msgid "Mini Map Toggle"
+msgstr "Minikarte"
+
+msgid "Image Captions Toggle"
+msgstr "Attēlu paraksti"
+
+msgid "Include Bookmarks Toggle"
+msgstr "Iekļaut grāmatzīmes"
+
+msgid "Invert in Night Mode Toggle"
+msgstr "Invertēt nakts režīmā"
+
+msgid "Layout"
+msgstr "Izkārtojums"
+
+msgid "Page %1 (%2)"
+msgstr "%1. lappuse (%2)"
+
+msgid "Page %1"
+msgstr "%1. lappuse"
+
+msgid "Gallery"
+msgstr "Galerija"
+
+msgid "Ignored"
+msgstr "Ignorētie"
+
+msgid "Reset"
+msgstr "Atiestatīt"
+
+msgid "Remove bookmark"
+msgstr "Noņemt grāmatzīmi"
+
+msgid "Add back to Gallery"
+msgstr "Pievienot atpakaļ galerijai"
+
+msgid "Ignore this image"
+msgstr "Ignorēt šo attēlu"
+
+msgid "Page %1 of %2"
+msgstr "%1. lappuse no %2"
+
+msgid "1 image"
+msgstr "1 attēls"
+
+msgid "%1 images"
+msgstr "%1 attēli"
+
+msgid "1 bookmark"
+msgstr "1 grāmatzīme"
+
+msgid "%1 bookmarks"
+msgstr "%1 grāmatzīmes"
+
+msgid "Mode: All images"
+msgstr "Režīms: Visi attēli"
+
+msgid "Mode: Spoiler-free"
+msgstr "Režīms: Bez spoileriem"
+
+msgid "Reset Rotation"
+msgstr "Atiestatīt pagriešanu"
+
+msgid "Nav Buttons"
+msgstr "Navigācijas pogas"
+
+msgid "Zoom Controls"
+msgstr "Tuvinājuma vadīklas"
+
+msgid "Mini Map"
+msgstr "Minikarte"
+
+msgid "Image Captions"
+msgstr "Attēlu paraksti"
+
+msgid "Include Bookmarks"
+msgstr "Iekļaut grāmatzīmes"
+
+msgid "Invert in Night Mode"
+msgstr "Invertēt nakts režīmā"
+
+msgid "Image ignored."
+msgstr "Attēls ignorēts."
+
+msgid "Bookmark removed."
+msgstr "Grāmatzīme noņemta."
+
+msgid "Open Glimpse"
+msgstr "Atvērt Glimpse"
+
+msgid "No book is open."
+msgstr "Neviena grāmata nav atvērta."
+
+msgid ""
+"Glimpse failed to load its scanner module. Try reinstalling the plugin."
+msgstr ""
+"Glimpse neizdevās ielādēt savu skenēšanas moduli. Mēģiniet pārinstalēt "
+"spraudni."
+
+msgid ""
+"Glimpse works with EPUB books only (this document format is not supported)."
+msgstr ""
+"Glimpse darbojas tikai ar EPUB grāmatām (šis dokumenta formāts netiek "
+"atbalstīts)."
+
+msgid "Scanning book for images…"
+msgstr "Skenē grāmatu, meklējot attēlus…"
+
+msgid "Glimpse works with EPUB books only."
+msgstr "Glimpse darbojas tikai ar EPUB grāmatām."
+
+msgid "Could not scan this book for images."
+msgstr "Neizdevās skenēt šo grāmatu attēlu meklēšanai."
+
+msgid "No images up to here yet – 1 further in the book."
+msgstr "Līdz šejienei attēlu vēl nav – vēl 1 tālāk grāmatā."
+
+msgid "No images up to here yet – %1 further in the book."
+msgstr "Līdz šejienei attēlu vēl nav – vēl %1 tālāk grāmatā."
+
+msgid "Show whole book"
+msgstr "Rādīt visu grāmatu"
+
+msgid "Close"
+msgstr "Aizvērt"
+
+msgid "No images to show – 1 was filtered out as irrelevant."
+msgstr "Nav attēlu, ko rādīt – 1 tika atfiltrēts kā nesvarīgs."
+
+msgid "No images to show – %1 were filtered out as irrelevant."
+msgstr "Nav attēlu, ko rādīt – %1 tika atfiltrēti kā nesvarīgi."
+
+msgid "Review filtered-out"
+msgstr "Pārskatīt atfiltrētos"
+
+msgid "No images to show."
+msgstr "Nav attēlu, ko rādīt."
+
+msgid "Mode: Images up to here"
+msgstr "Režīms: Attēli līdz šejienei"
+
+msgid "Bookmarked pages hidden"
+msgstr "Grāmatzīmju lappuses paslēptas"
+
+msgid "Bookmarked pages shown"
+msgstr "Grāmatzīmju lappuses parādītas"
+
+msgid "Moved to Ignored"
+msgstr "Pārvietots uz Ignorētie"
+
+msgid "Added to Gallery"
+msgstr "Pievienots galerijai"
+
+msgid "Cancel"
+msgstr "Atcelt"
+
+msgid "Checking for updates…"
+msgstr "Pārbauda atjauninājumus…"
+
+msgid "Update check failed:"
+msgstr "Atjauninājumu pārbaude neizdevās:"
+
+msgid "Could not read the latest release info."
+msgstr "Neizdevās nolasīt jaunākā laidiena informāciju."
+
+msgid "You're up to date (v%1)."
+msgstr "Jums ir jaunākā versija (v%1)."
+
+msgid "No downloadable release package found."
+msgstr "Nav atrasta lejupielādējama laidiena pakotne."
+
+msgid ""
+"Update available: %1\n"
+"(installed: v%2)\n"
+"\n"
+"Download and install now?"
+msgstr ""
+"Pieejams atjauninājums: %1\n"
+"(instalēts: v%2)\n"
+"\n"
+"Lejupielādēt un instalēt tagad?"
+
+msgid "Update"
+msgstr "Atjaunināt"
+
+msgid "Updating to %1…"
+msgstr "Atjaunina uz %1…"
+
+msgid ""
+"Updated to %1.\n"
+"Restart KOReader now to load it?"
+msgstr ""
+"Atjaunināts uz %1.\n"
+"Restartēt KOReader tagad, lai to ielādētu?"
+
+msgid "Restart"
+msgstr "Restartēt"
+
+msgid "Later"
+msgstr "Vēlāk"
+
+msgid "Update failed."
+msgstr "Atjaunināšana neizdevās."
+
+msgid "Glimpse"
+msgstr "Glimpse"
+
+msgid "Gesture to open: none set"
+msgstr "Atvēršanas žests: nav iestatīts"
+
+msgid "Gesture to open: %1"
+msgstr "Atvēršanas žests: %1"
+
+msgid "PORTRAIT"
+msgstr "PORTRETS"
+
+msgid "LANDSCAPE"
+msgstr "AINAVA"
+
+msgid "Left"
+msgstr "Kreisā"
+
+msgid "Right"
+msgstr "Labā"
+
+msgid "Side"
+msgstr "Sāns"
+
+msgid "Bottom"
+msgstr "Apakšā"
+
+msgid "Top"
+msgstr "Augšā"
+
+msgid "Apply"
+msgstr "Lietot"
+
+msgid "Preferred Alignment"
+msgstr "Vēlamā līdzināšana"
+
+msgid "Portrait Position"
+msgstr "Portreta pozīcija"
+
+msgid "Enable Glimpse"
+msgstr "Iespējot Glimpse"
+
+msgid ""
+"Tip: open Glimpse instantly with a gesture.\n"
+"\n"
+"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n"
+"\n"
+"(This tip is shown only once.)"
+msgstr ""
+"Padoms: atveriet Glimpse uzreiz ar žestu.\n"
+"\n"
+"Iestatiet to: Iestatījumi → Pieskārieni un žesti → Žestu pārvaldnieks → izvēlieties žestu → Lasītājs → 'Atvērt Glimpse'.\n"
+"\n"
+"(Šis padoms tiek rādīts tikai vienreiz.)"
+
+msgid "Mode: Show all images"
+msgstr "Režīms: Rādīt visus attēlus"
+
+msgid "Mode: Show images up to current chapter"
+msgstr "Režīms: Rādīt attēlus līdz pašreizējai nodaļai"
+
+msgid "Show images up to current chapter"
+msgstr "Rādīt attēlus līdz pašreizējai nodaļai"
+
+msgid ""
+"Images that appear beyond your current position stay hidden, so you can't "
+"spoil yourself. Granularity is per chapter: images in the chapter you are "
+"currently reading are shown."
+msgstr ""
+"Attēli, kas parādās aiz jūsu pašreizējās pozīcijas, paliek paslēpti, lai jūs"
+" sev neatklātu sižetu. Detalizācija ir pa nodaļām: pašlaik lasāmās nodaļas "
+"attēli tiek rādīti."
+
+msgid "Show all images"
+msgstr "Rādīt visus attēlus"
+
+msgid ""
+"Show reference images from anywhere in the book, including parts you haven't"
+" reached yet."
+msgstr ""
+"Rādīt atsauces attēlus no jebkuras grāmatas vietas, ieskaitot daļas, kuras "
+"vēl neesat sasnieguši."
+
+msgid "Include Bookmarks in Gallery"
+msgstr "Iekļaut grāmatzīmes galerijā"
+
+msgid "Quick Actions"
+msgstr "Ātrās darbības"
+
+msgid "Settings"
+msgstr "Iestatījumi"
+
+msgid "Gestures"
+msgstr "Žesti"
+
+msgid "Double-tap for maximum zoom"
+msgstr "Dubultskāriens maksimālajam tuvinājumam"
+
+msgid "Swipe left/right to navigate"
+msgstr "Velciet pa kreisi/labi, lai navigētu"
+
+msgid "Pinch to zoom in/out"
+msgstr "Savelciet, lai tuvinātu/tālinātu"
+
+msgid "Layout: %1 · %2"
+msgstr "Izkārtojums: %1 · %2"
+
+msgid "Show Nav Buttons"
+msgstr "Rādīt navigācijas pogas"
+
+msgid "Navigation Loops Around"
+msgstr "Cikliska navigācija"
+
+msgid "Show Zoom Controls"
+msgstr "Rādīt tuvinājuma vadīklas"
+
+msgid "Show Mini Map"
+msgstr "Rādīt minikarti"
+
+msgid "Invert Images in Night Mode"
+msgstr "Invertēt attēlus nakts režīmā"
+
+msgid "Show image captions"
+msgstr "Rādīt attēlu parakstus"
+
+msgid "Show bookmark label in corner"
+msgstr "Rādīt grāmatzīmes etiķeti stūrī"
+
+msgid "Maximum zoom: %1%"
+msgstr "Maksimālais tuvinājums: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (ieteicams)"
+
+msgid "%1%"
+msgstr "%1%"
+
+msgid "Enable top menu tap zone"
+msgstr "Iespējot augšējās izvēlnes skāriena zonu"
+
+msgid "Advanced"
+msgstr "Papildu"
+
+msgid "Disable irrelevant image filtering"
+msgstr "Atspējot nesvarīgu attēlu filtrēšanu"
+
+msgid "Suppress \"format not supported\" notice"
+msgstr "Apslāpēt paziņojumu \"formāts netiek atbalstīts\""
+
+msgid "Disable shadows"
+msgstr "Atspējot ēnas"
+
+msgid "Fast image switching"
+msgstr "Ātra attēlu pārslēgšana"
+
+msgid "Rescan this book"
+msgstr "Atkārtoti skenēt šo grāmatu"
+
+msgid "Found %1 image(s)."
+msgstr "Atrasti %1 attēli."
+
+msgid "Scan failed."
+msgstr "Skenēšana neizdevās."
+
+msgid "Updates"
+msgstr "Atjauninājumi"
+
+msgid "Check for updates (v%1)"
+msgstr "Pārbaudīt atjauninājumus (v%1)"
+
+msgid "Include pre-release versions"
+msgstr "Iekļaut priekšlaidienus"

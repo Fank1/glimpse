@@ -1,0 +1,409 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Erik Fanki
+# This file is distributed under the same license as the Glimpse package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Glimpse\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"PO-Revision-Date: 2026-08-25 00:00+0000\n"
+"Last-Translator: AI seed <noreply@glimpse>\n"
+"Language-Team: ar\n"
+"Language: ar\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Ignore Image"
+msgstr "تجاهل الصورة"
+
+msgid "Mode switch"
+msgstr "تبديل الوضع"
+
+msgid "Rotate image"
+msgstr "تدوير الصورة"
+
+msgid "Show in Book"
+msgstr "إظهار في الكتاب"
+
+msgid "Nav Buttons Toggle"
+msgstr "أزرار التنقل"
+
+msgid "Zoom Controls Toggle"
+msgstr "عناصر التحكم في التكبير"
+
+msgid "Mini Map Toggle"
+msgstr "الخريطة المصغرة"
+
+msgid "Image Captions Toggle"
+msgstr "تسميات الصور"
+
+msgid "Include Bookmarks Toggle"
+msgstr "تضمين الإشارات المرجعية"
+
+msgid "Invert in Night Mode Toggle"
+msgstr "العكس في الوضع الليلي"
+
+msgid "Layout"
+msgstr "التخطيط"
+
+msgid "Page %1 (%2)"
+msgstr "الصفحة %1 (%2)"
+
+msgid "Page %1"
+msgstr "الصفحة %1"
+
+msgid "Gallery"
+msgstr "المعرض"
+
+msgid "Ignored"
+msgstr "المتجاهَلة"
+
+msgid "Reset"
+msgstr "إعادة تعيين"
+
+msgid "Remove bookmark"
+msgstr "إزالة الإشارة المرجعية"
+
+msgid "Add back to Gallery"
+msgstr "إضافة مرة أخرى إلى المعرض"
+
+msgid "Ignore this image"
+msgstr "تجاهل هذه الصورة"
+
+msgid "Page %1 of %2"
+msgstr "الصفحة %1 من %2"
+
+msgid "1 image"
+msgstr "صورة واحدة"
+
+msgid "%1 images"
+msgstr "%1 صورة"
+
+msgid "1 bookmark"
+msgstr "إشارة مرجعية واحدة"
+
+msgid "%1 bookmarks"
+msgstr "%1 إشارة مرجعية"
+
+msgid "Mode: All images"
+msgstr "الوضع: كل الصور"
+
+msgid "Mode: Spoiler-free"
+msgstr "الوضع: خالٍ من الحرق"
+
+msgid "Reset Rotation"
+msgstr "إعادة تعيين التدوير"
+
+msgid "Nav Buttons"
+msgstr "أزرار التنقل"
+
+msgid "Zoom Controls"
+msgstr "عناصر التحكم في التكبير"
+
+msgid "Mini Map"
+msgstr "الخريطة المصغرة"
+
+msgid "Image Captions"
+msgstr "تسميات الصور"
+
+msgid "Include Bookmarks"
+msgstr "تضمين الإشارات المرجعية"
+
+msgid "Invert in Night Mode"
+msgstr "العكس في الوضع الليلي"
+
+msgid "Image ignored."
+msgstr "تم تجاهل الصورة."
+
+msgid "Bookmark removed."
+msgstr "تمت إزالة الإشارة المرجعية."
+
+msgid "Open Glimpse"
+msgstr "فتح Glimpse"
+
+msgid "No book is open."
+msgstr "لا يوجد كتاب مفتوح."
+
+msgid ""
+"Glimpse failed to load its scanner module. Try reinstalling the plugin."
+msgstr "فشل Glimpse في تحميل وحدة المسح الخاصة به. حاول إعادة تثبيت الإضافة."
+
+msgid ""
+"Glimpse works with EPUB books only (this document format is not supported)."
+msgstr "يعمل Glimpse مع كتب EPUB فقط (تنسيق المستند هذا غير مدعوم)."
+
+msgid "Scanning book for images…"
+msgstr "جارٍ مسح الكتاب بحثًا عن الصور…"
+
+msgid "Glimpse works with EPUB books only."
+msgstr "يعمل Glimpse مع كتب EPUB فقط."
+
+msgid "Could not scan this book for images."
+msgstr "تعذّر مسح هذا الكتاب بحثًا عن الصور."
+
+msgid "No images up to here yet – 1 further in the book."
+msgstr "لا توجد صور حتى هنا بعد – صورة واحدة أخرى لاحقًا في الكتاب."
+
+msgid "No images up to here yet – %1 further in the book."
+msgstr "لا توجد صور حتى هنا بعد – %1 صورة أخرى لاحقًا في الكتاب."
+
+msgid "Show whole book"
+msgstr "إظهار الكتاب كاملًا"
+
+msgid "Close"
+msgstr "إغلاق"
+
+msgid "No images to show – 1 was filtered out as irrelevant."
+msgstr "لا توجد صور لعرضها – تمت تصفية صورة واحدة باعتبارها غير ذات صلة."
+
+msgid "No images to show – %1 were filtered out as irrelevant."
+msgstr "لا توجد صور لعرضها – تمت تصفية %1 صورة باعتبارها غير ذات صلة."
+
+msgid "Review filtered-out"
+msgstr "مراجعة المُصفّاة"
+
+msgid "No images to show."
+msgstr "لا توجد صور لعرضها."
+
+msgid "Mode: Images up to here"
+msgstr "الوضع: الصور حتى هنا"
+
+msgid "Bookmarked pages hidden"
+msgstr "الصفحات المؤشَّرة مخفية"
+
+msgid "Bookmarked pages shown"
+msgstr "الصفحات المؤشَّرة معروضة"
+
+msgid "Moved to Ignored"
+msgstr "نُقلت إلى المتجاهَلة"
+
+msgid "Added to Gallery"
+msgstr "أُضيفت إلى المعرض"
+
+msgid "Cancel"
+msgstr "إلغاء"
+
+msgid "Checking for updates…"
+msgstr "جارٍ التحقق من التحديثات…"
+
+msgid "Update check failed:"
+msgstr "فشل التحقق من التحديثات:"
+
+msgid "Could not read the latest release info."
+msgstr "تعذّرت قراءة معلومات آخر إصدار."
+
+msgid "You're up to date (v%1)."
+msgstr "أنت محدَّث (v%1)."
+
+msgid "No downloadable release package found."
+msgstr "لم يُعثر على حزمة إصدار قابلة للتنزيل."
+
+msgid ""
+"Update available: %1\n"
+"(installed: v%2)\n"
+"\n"
+"Download and install now?"
+msgstr ""
+"يتوفر تحديث: %1\n"
+"(المثبَّت: v%2)\n"
+"\n"
+"تنزيله وتثبيته الآن؟"
+
+msgid "Update"
+msgstr "تحديث"
+
+msgid "Updating to %1…"
+msgstr "جارٍ التحديث إلى %1…"
+
+msgid ""
+"Updated to %1.\n"
+"Restart KOReader now to load it?"
+msgstr ""
+"تم التحديث إلى %1.\n"
+"إعادة تشغيل KOReader الآن لتحميله؟"
+
+msgid "Restart"
+msgstr "إعادة التشغيل"
+
+msgid "Later"
+msgstr "لاحقًا"
+
+msgid "Update failed."
+msgstr "فشل التحديث."
+
+msgid "Glimpse"
+msgstr "Glimpse"
+
+msgid "Gesture to open: none set"
+msgstr "إيماءة الفتح: لا شيء"
+
+msgid "Gesture to open: %1"
+msgstr "إيماءة الفتح: %1"
+
+msgid "PORTRAIT"
+msgstr "عمودي"
+
+msgid "LANDSCAPE"
+msgstr "أفقي"
+
+msgid "Left"
+msgstr "يسار"
+
+msgid "Right"
+msgstr "يمين"
+
+msgid "Side"
+msgstr "جانبي"
+
+msgid "Bottom"
+msgstr "أسفل"
+
+msgid "Top"
+msgstr "أعلى"
+
+msgid "Apply"
+msgstr "تطبيق"
+
+msgid "Preferred Alignment"
+msgstr "المحاذاة المفضّلة"
+
+msgid "Portrait Position"
+msgstr "الوضع العمودي"
+
+msgid "Enable Glimpse"
+msgstr "تفعيل Glimpse"
+
+msgid ""
+"Tip: open Glimpse instantly with a gesture.\n"
+"\n"
+"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n"
+"\n"
+"(This tip is shown only once.)"
+msgstr ""
+"تلميح: افتح Glimpse فورًا بإيماءة.\n"
+"\n"
+"عيّن واحدة في الإعدادات → النقرات والإيماءات → مدير الإيماءات → اختر إيماءة → القارئ → 'فتح Glimpse'.\n"
+"\n"
+"(يُعرض هذا التلميح مرة واحدة فقط.)"
+
+msgid "Mode: Show all images"
+msgstr "الوضع: إظهار كل الصور"
+
+msgid "Mode: Show images up to current chapter"
+msgstr "الوضع: إظهار الصور حتى الفصل الحالي"
+
+msgid "Show images up to current chapter"
+msgstr "إظهار الصور حتى الفصل الحالي"
+
+msgid ""
+"Images that appear beyond your current position stay hidden, so you can't "
+"spoil yourself. Granularity is per chapter: images in the chapter you are "
+"currently reading are shown."
+msgstr ""
+"الصور التي تظهر بعد موضعك الحالي تبقى مخفية، حتى لا تحرق الأحداث لنفسك. "
+"الدقة حسب الفصل: تُعرض صور الفصل الذي تقرؤه حاليًا."
+
+msgid "Show all images"
+msgstr "إظهار كل الصور"
+
+msgid ""
+"Show reference images from anywhere in the book, including parts you haven't"
+" reached yet."
+msgstr ""
+"إظهار الصور المرجعية من أي مكان في الكتاب، بما في ذلك الأجزاء التي لم تصل "
+"إليها بعد."
+
+msgid "Include Bookmarks in Gallery"
+msgstr "تضمين الإشارات المرجعية في المعرض"
+
+msgid "Quick Actions"
+msgstr "إجراءات سريعة"
+
+msgid "Settings"
+msgstr "الإعدادات"
+
+msgid "Gestures"
+msgstr "الإيماءات"
+
+msgid "Double-tap for maximum zoom"
+msgstr "نقر مزدوج لأقصى تكبير"
+
+msgid "Swipe left/right to navigate"
+msgstr "اسحب يسارًا/يمينًا للتنقل"
+
+msgid "Pinch to zoom in/out"
+msgstr "اقرص للتكبير/التصغير"
+
+msgid "Layout: %1 · %2"
+msgstr "التخطيط: %1 · %2"
+
+msgid "Show Nav Buttons"
+msgstr "إظهار أزرار التنقل"
+
+msgid "Navigation Loops Around"
+msgstr "تنقل دائري"
+
+msgid "Show Zoom Controls"
+msgstr "إظهار عناصر التحكم في التكبير"
+
+msgid "Show Mini Map"
+msgstr "إظهار الخريطة المصغرة"
+
+msgid "Invert Images in Night Mode"
+msgstr "عكس الصور في الوضع الليلي"
+
+msgid "Show image captions"
+msgstr "إظهار تسميات الصور"
+
+msgid "Show bookmark label in corner"
+msgstr "إظهار تسمية الإشارة المرجعية في الزاوية"
+
+msgid "Maximum zoom: %1%"
+msgstr "أقصى تكبير: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (موصى به)"
+
+msgid "%1%"
+msgstr "%1%"
+
+msgid "Enable top menu tap zone"
+msgstr "تفعيل منطقة نقر القائمة العلوية"
+
+msgid "Advanced"
+msgstr "متقدم"
+
+msgid "Disable irrelevant image filtering"
+msgstr "تعطيل تصفية الصور غير ذات الصلة"
+
+msgid "Suppress \"format not supported\" notice"
+msgstr "كتم إشعار \"التنسيق غير مدعوم\""
+
+msgid "Disable shadows"
+msgstr "تعطيل الظلال"
+
+msgid "Fast image switching"
+msgstr "تبديل سريع للصور"
+
+msgid "Rescan this book"
+msgstr "إعادة مسح هذا الكتاب"
+
+msgid "Found %1 image(s)."
+msgstr "تم العثور على %1 صورة."
+
+msgid "Scan failed."
+msgstr "فشل المسح."
+
+msgid "Updates"
+msgstr "التحديثات"
+
+msgid "Check for updates (v%1)"
+msgstr "التحقق من التحديثات (v%1)"
+
+msgid "Include pre-release versions"
+msgstr "تضمين إصدارات ما قبل الإطلاق"

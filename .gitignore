@@ -23,3 +23,6 @@ figma-*.png
 
 # Compiled translation catalogues — rebuilt from .po at release time
 plugin/l10n/*/*.mo
+
+# Local Crowdin project id (see ~/.config/crowdin/token.env for the token)
+.crowdin.env
