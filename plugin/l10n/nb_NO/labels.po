@@ -1,22 +1,21 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR Erik Fanki
-# This file is distributed under the same license as the Glimpse package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Glimpse\n"
+"Project-Id-Version: glimpse-plugin\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
-"PO-Revision-Date: 2026-08-25 00:00+0000\n"
-"Last-Translator: AI seed <noreply@glimpse>\n"
-"Language-Team: nb_NO\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
+"PO-Revision-Date: 2026-08-29 10:09\n"
+"Last-Translator: \n"
+"Language-Team: Norwegian Bokmal\n"
 "Language: nb_NO\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Crowdin-Project: glimpse-plugin\n"
+"X-Crowdin-Project-ID: 923235\n"
+"X-Crowdin-Language: nb\n"
+"X-Crowdin-File: /plugin/l10n/templates/glimpse-labels.pot\n"
+"X-Crowdin-File-ID: 18\n"
 
 msgid "Ignore Image"
 msgstr "Ignorer bilde"
@@ -75,9 +74,6 @@ msgstr "Legg tilbake i galleriet"
 msgid "Ignore this image"
 msgstr "Ignorer dette bildet"
 
-msgid "Page %1 of %2"
-msgstr "Side %1 av %2"
-
 msgid "1 image"
 msgstr "1 bilde"
 
@@ -89,6 +85,9 @@ msgstr "1 bokmerke"
 
 msgid "%1 bookmarks"
 msgstr "%1 bokmerker"
+
+msgid "Page %1 of %2"
+msgstr "Side %1 av %2"
 
 msgid "Mode: All images"
 msgstr "Modus: alle bilder"
@@ -129,16 +128,11 @@ msgstr "Åpne Glimpse"
 msgid "No book is open."
 msgstr "Ingen bok er åpen."
 
-msgid ""
-"Glimpse failed to load its scanner module. Try reinstalling the plugin."
-msgstr ""
-"Glimpse klarte ikke å laste inn skannermodulen. Prøv å installere utvidelsen"
-" på nytt."
+msgid "Glimpse failed to load its scanner module. Try reinstalling the plugin."
+msgstr "Glimpse klarte ikke å laste inn skannermodulen. Prøv å installere utvidelsen på nytt."
 
-msgid ""
-"Glimpse works with EPUB books only (this document format is not supported)."
-msgstr ""
-"Glimpse fungerer bare med EPUB-bøker (dette dokumentformatet støttes ikke)."
+msgid "Glimpse works with EPUB books only (this document format is not supported)."
+msgstr "Glimpse fungerer bare med EPUB-bøker (dette dokumentformatet støttes ikke)."
 
 msgid "Scanning book for images…"
 msgstr "Søker etter bilder i boken…"
@@ -206,15 +200,11 @@ msgstr "Du er oppdatert (v%1)."
 msgid "No downloadable release package found."
 msgstr "Ingen nedlastbar utgivelsespakke funnet."
 
-msgid ""
-"Update available: %1\n"
-"(installed: v%2)\n"
-"\n"
+msgid "Update available: %1\n"
+"(installed: v%2)\n\n"
 "Download and install now?"
-msgstr ""
-"Oppdatering tilgjengelig: %1\n"
-"(installert: v%2)\n"
-"\n"
+msgstr "Oppdatering tilgjengelig: %1\n"
+"(installert: v%2)\n\n"
 "Vil du laste ned og installere nå?"
 
 msgid "Update"
@@ -223,11 +213,9 @@ msgstr "Oppdater"
 msgid "Updating to %1…"
 msgstr "Oppdaterer til %1…"
 
-msgid ""
-"Updated to %1.\n"
+msgid "Updated to %1.\n"
 "Restart KOReader now to load it?"
-msgstr ""
-"Oppdatert til %1.\n"
+msgstr "Oppdatert til %1.\n"
 "Vil du starte KOReader på nytt nå for å laste den inn?"
 
 msgid "Restart"
@@ -240,7 +228,7 @@ msgid "Update failed."
 msgstr "Oppdateringen mislyktes."
 
 msgid "Glimpse"
-msgstr "Glimpse"
+msgstr "Glass"
 
 msgid "Gesture to open: none set"
 msgstr "Bevegelse for å åpne: ingen angitt"
@@ -261,7 +249,7 @@ msgid "Right"
 msgstr "Høyre"
 
 msgid "Side"
-msgstr "Side"
+msgstr "Farge"
 
 msgid "Bottom"
 msgstr "Nederst"
@@ -281,17 +269,11 @@ msgstr "Posisjon i stående format"
 msgid "Enable Glimpse"
 msgstr "Aktiver Glimpse"
 
-msgid ""
-"Tip: open Glimpse instantly with a gesture.\n"
-"\n"
-"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n"
-"\n"
+msgid "Tip: open Glimpse instantly with a gesture.\n\n"
+"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n\n"
 "(This tip is shown only once.)"
-msgstr ""
-"Tips: åpne Glimpse umiddelbart med en bevegelse.\n"
-"\n"
-"Angi en under Innstillinger → Trykk og bevegelser → Bevegelsesbehandler → velg en bevegelse → Leser → 'Åpne Glimpse'.\n"
-"\n"
+msgstr "Tips: åpne Glimpse umiddelbart med en bevegelse.\n\n"
+"Angi en under Innstillinger → Trykk og bevegelser → Bevegelsesbehandler → velg en bevegelse → Leser → 'Åpne Glimpse'.\n\n"
 "(Dette tipset vises bare én gang.)"
 
 msgid "Mode: Show all images"
@@ -303,21 +285,13 @@ msgstr "Modus: vis bilder frem til gjeldende kapittel"
 msgid "Show images up to current chapter"
 msgstr "Vis bilder frem til gjeldende kapittel"
 
-msgid ""
-"Images that appear beyond your current position stay hidden, so you can't "
-"spoil yourself. Granularity is per chapter: images in the chapter you are "
-"currently reading are shown."
-msgstr ""
-"Bilder som dukker opp forbi din nåværende posisjon, forblir skjult, så du "
-"ikke røper noe for deg selv. Granulariteten er per kapittel: bilder i "
-"kapittelet du leser nå, vises."
+msgid "Images that appear beyond your current position stay hidden, so you can't spoil yourself. Granularity is per chapter: images in the chapter you are currently reading are shown."
+msgstr "Bilder som dukker opp forbi din nåværende posisjon, forblir skjult, så du ikke røper noe for deg selv. Granulariteten er per kapittel: bilder i kapittelet du leser nå, vises."
 
 msgid "Show all images"
 msgstr "Vis alle bilder"
 
-msgid ""
-"Show reference images from anywhere in the book, including parts you haven't"
-" reached yet."
+msgid "Show reference images from anywhere in the book, including parts you haven't reached yet."
 msgstr "Vis referansebilder fra hele boken, også deler du ennå ikke har nådd."
 
 msgid "Include Bookmarks in Gallery"
@@ -344,18 +318,26 @@ msgstr "Knip for å zoome inn/ut"
 msgid "Layout: %1 · %2"
 msgstr "Oppsett: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "Vis navigasjonsknapper"
+msgid "Maximum zoom: %1%"
+msgstr "Maksimal zoom: %1 %"
+
+msgid "%1% (recommended)"
+msgstr "%1 % (anbefalt)"
+
+msgid "%1%"
+msgstr "%1 %"
 
 msgid "Navigation Loops Around"
 msgstr "Syklisk navigasjon"
 
+msgid "Show Nav Buttons"
+msgstr "Vis navigasjonsknapper"
+
 msgid "Show Zoom Controls"
 msgstr "Vis zoomkontroller"
 
-#, fuzzy
 msgid "Show Mini Map"
-msgstr "Vis i boken"
+msgstr "Vis Mini kart"
 
 msgid "Invert Images in Night Mode"
 msgstr "Inverter bilder i nattmodus"
@@ -366,20 +348,14 @@ msgstr "Vis bildetekster"
 msgid "Show bookmark label in corner"
 msgstr "Vis bokmerkeetikett i hjørnet"
 
-msgid "Maximum zoom: %1%"
-msgstr "Maksimal zoom: %1 %"
-
-msgid "%1% (recommended)"
-msgstr "%1 % (anbefalt)"
-
-msgid "%1%"
-msgstr "%1 %"
-
-msgid "Enable top menu tap zone"
-msgstr "Aktiver trykksone for toppmeny"
+msgid "Numbered indicator instead of dots"
+msgstr "Nummerert indikator i stedet for prikker"
 
 msgid "Advanced"
 msgstr "Avansert"
+
+msgid "Respect KOReader top menu activation"
+msgstr "Respekter KOKOLAGer-menyaktiveringen"
 
 msgid "Disable irrelevant image filtering"
 msgstr "Deaktiver filtrering av irrelevante bilder"
@@ -410,3 +386,4 @@ msgstr "Søk etter oppdateringer (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "Inkluder forhåndsversjoner"
+

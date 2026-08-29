@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: gl\n"
@@ -75,9 +75,6 @@ msgstr "Engadir de novo á galería"
 msgid "Ignore this image"
 msgstr "Ignorar esta imaxe"
 
-msgid "Page %1 of %2"
-msgstr "Páxina %1 de %2"
-
 msgid "1 image"
 msgstr "1 imaxe"
 
@@ -89,6 +86,9 @@ msgstr "1 marcador"
 
 msgid "%1 bookmarks"
 msgstr "%1 marcadores"
+
+msgid "Page %1 of %2"
+msgstr "Páxina %1 de %2"
 
 msgid "Mode: All images"
 msgstr "Modo: Todas as imaxes"
@@ -347,11 +347,20 @@ msgstr "Peliscar para achegar/afastar"
 msgid "Layout: %1 · %2"
 msgstr "Deseño: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "Mostrar botóns de navegación"
+msgid "Maximum zoom: %1%"
+msgstr "Zoom máximo: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (recomendado)"
+
+msgid "%1%"
+msgstr "%1%"
 
 msgid "Navigation Loops Around"
 msgstr "Navegación circular"
+
+msgid "Show Nav Buttons"
+msgstr "Mostrar botóns de navegación"
 
 msgid "Show Zoom Controls"
 msgstr "Mostrar controis de zoom"
@@ -368,20 +377,14 @@ msgstr "Mostrar lendas de imaxe"
 msgid "Show bookmark label in corner"
 msgstr "Mostrar etiqueta de marcador na esquina"
 
-msgid "Maximum zoom: %1%"
-msgstr "Zoom máximo: %1%"
-
-msgid "%1% (recommended)"
-msgstr "%1% (recomendado)"
-
-msgid "%1%"
-msgstr "%1%"
-
-msgid "Enable top menu tap zone"
-msgstr "Activar zona de toque do menú superior"
+msgid "Numbered indicator instead of dots"
+msgstr "Indicador numérico en vez de puntos"
 
 msgid "Advanced"
 msgstr "Avanzado"
+
+msgid "Respect KOReader top menu activation"
+msgstr "Respectar a activación do menú superior de KOReader"
 
 msgid "Disable irrelevant image filtering"
 msgstr "Desactivar o filtrado de imaxes irrelevantes"
@@ -412,3 +415,6 @@ msgstr "Buscar actualizacións (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "Incluír versións de proba"
+
+#~ msgid "Enable top menu tap zone"
+#~ msgstr "Activar zona de toque do menú superior"

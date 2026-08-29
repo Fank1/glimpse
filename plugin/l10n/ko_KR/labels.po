@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: ko_KR\n"
@@ -75,9 +75,6 @@ msgstr "갤러리에 다시 추가"
 msgid "Ignore this image"
 msgstr "이 이미지 무시"
 
-msgid "Page %1 of %2"
-msgstr "%2페이지 중 %1페이지"
-
 msgid "1 image"
 msgstr "이미지 1개"
 
@@ -89,6 +86,9 @@ msgstr "북마크 1개"
 
 msgid "%1 bookmarks"
 msgstr "북마크 %1개"
+
+msgid "Page %1 of %2"
+msgstr "%2페이지 중 %1페이지"
 
 msgid "Mode: All images"
 msgstr "모드: 모든 이미지"
@@ -340,11 +340,20 @@ msgstr "핀치하여 확대/축소"
 msgid "Layout: %1 · %2"
 msgstr "레이아웃: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "탐색 버튼 표시"
+msgid "Maximum zoom: %1%"
+msgstr "최대 확대: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (권장)"
+
+msgid "%1%"
+msgstr "%1%"
 
 msgid "Navigation Loops Around"
 msgstr "순환 탐색"
+
+msgid "Show Nav Buttons"
+msgstr "탐색 버튼 표시"
 
 msgid "Show Zoom Controls"
 msgstr "확대/축소 컨트롤 표시"
@@ -362,20 +371,14 @@ msgstr "이미지 설명 표시"
 msgid "Show bookmark label in corner"
 msgstr "모서리에 북마크 라벨 표시"
 
-msgid "Maximum zoom: %1%"
-msgstr "최대 확대: %1%"
-
-msgid "%1% (recommended)"
-msgstr "%1% (권장)"
-
-msgid "%1%"
-msgstr "%1%"
-
-msgid "Enable top menu tap zone"
-msgstr "상단 메뉴 탭 영역 사용"
+msgid "Numbered indicator instead of dots"
+msgstr "점 대신 숫자 표시기"
 
 msgid "Advanced"
 msgstr "고급"
+
+msgid "Respect KOReader top menu activation"
+msgstr "KOReader 상단 메뉴 활성화 방식 따르기"
 
 msgid "Disable irrelevant image filtering"
 msgstr "관련 없는 이미지 필터링 사용 안 함"
@@ -406,3 +409,6 @@ msgstr "업데이트 확인 (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "사전 릴리스 버전 포함"
+
+#~ msgid "Enable top menu tap zone"
+#~ msgstr "상단 메뉴 탭 영역 사용"

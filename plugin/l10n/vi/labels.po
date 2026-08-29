@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: vi\n"
@@ -75,9 +75,6 @@ msgstr "Thêm lại vào Thư viện"
 msgid "Ignore this image"
 msgstr "Bỏ qua ảnh này"
 
-msgid "Page %1 of %2"
-msgstr "Trang %1 trên %2"
-
 msgid "1 image"
 msgstr "1 ảnh"
 
@@ -89,6 +86,9 @@ msgstr "1 dấu trang"
 
 msgid "%1 bookmarks"
 msgstr "%1 dấu trang"
+
+msgid "Page %1 of %2"
+msgstr "Trang %1 trên %2"
 
 msgid "Mode: All images"
 msgstr "Chế độ: Tất cả ảnh"
@@ -346,11 +346,20 @@ msgstr "Chụm để thu phóng"
 msgid "Layout: %1 · %2"
 msgstr "Bố cục: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "Hiển thị Nút Điều hướng"
+msgid "Maximum zoom: %1%"
+msgstr "Thu phóng tối đa: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (khuyến nghị)"
+
+msgid "%1%"
+msgstr "%1%"
 
 msgid "Navigation Loops Around"
 msgstr "Điều hướng Vòng lặp"
+
+msgid "Show Nav Buttons"
+msgstr "Hiển thị Nút Điều hướng"
 
 msgid "Show Zoom Controls"
 msgstr "Hiển thị Điều khiển Thu phóng"
@@ -367,20 +376,14 @@ msgstr "Hiển thị chú thích ảnh"
 msgid "Show bookmark label in corner"
 msgstr "Hiển thị nhãn dấu trang ở góc"
 
-msgid "Maximum zoom: %1%"
-msgstr "Thu phóng tối đa: %1%"
-
-msgid "%1% (recommended)"
-msgstr "%1% (khuyến nghị)"
-
-msgid "%1%"
-msgstr "%1%"
-
-msgid "Enable top menu tap zone"
-msgstr "Bật vùng chạm menu trên cùng"
+msgid "Numbered indicator instead of dots"
+msgstr "Chỉ báo dạng số thay cho các chấm"
 
 msgid "Advanced"
 msgstr "Nâng cao"
+
+msgid "Respect KOReader top menu activation"
+msgstr "Tôn trọng cách kích hoạt menu trên của KOReader"
 
 msgid "Disable irrelevant image filtering"
 msgstr "Tắt lọc ảnh không liên quan"
@@ -411,3 +414,6 @@ msgstr "Kiểm tra cập nhật (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "Bao gồm các bản tiền phát hành"
+
+#~ msgid "Enable top menu tap zone"
+#~ msgstr "Bật vùng chạm menu trên cùng"

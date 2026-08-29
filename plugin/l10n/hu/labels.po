@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: hu\n"
@@ -75,9 +75,6 @@ msgstr "Vissza a galériába"
 msgid "Ignore this image"
 msgstr "Kép mellőzése"
 
-msgid "Page %1 of %2"
-msgstr "%1. oldal / %2"
-
 msgid "1 image"
 msgstr "1 kép"
 
@@ -89,6 +86,9 @@ msgstr "1 könyvjelző"
 
 msgid "%1 bookmarks"
 msgstr "%1 könyvjelző"
+
+msgid "Page %1 of %2"
+msgstr "%1. oldal / %2"
 
 msgid "Mode: All images"
 msgstr "Mód: Minden kép"
@@ -347,11 +347,20 @@ msgstr "Csippentés a nagyításhoz/kicsinyítéshez"
 msgid "Layout: %1 · %2"
 msgstr "Elrendezés: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "Navigációs gombok megjelenítése"
+msgid "Maximum zoom: %1%"
+msgstr "Maximális nagyítás: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (ajánlott)"
+
+msgid "%1%"
+msgstr "%1%"
 
 msgid "Navigation Loops Around"
 msgstr "Körkörös navigáció"
+
+msgid "Show Nav Buttons"
+msgstr "Navigációs gombok megjelenítése"
 
 msgid "Show Zoom Controls"
 msgstr "Nagyítási vezérlők megjelenítése"
@@ -368,20 +377,14 @@ msgstr "Képfeliratok megjelenítése"
 msgid "Show bookmark label in corner"
 msgstr "Könyvjelző címke megjelenítése a sarokban"
 
-msgid "Maximum zoom: %1%"
-msgstr "Maximális nagyítás: %1%"
-
-msgid "%1% (recommended)"
-msgstr "%1% (ajánlott)"
-
-msgid "%1%"
-msgstr "%1%"
-
-msgid "Enable top menu tap zone"
-msgstr "Felső menü koppintási zóna engedélyezése"
+msgid "Numbered indicator instead of dots"
+msgstr "Számjelző a pontok helyett"
 
 msgid "Advanced"
 msgstr "Speciális"
+
+msgid "Respect KOReader top menu activation"
+msgstr "A KOReader felső menüjének aktiválását tiszteletben tartva"
 
 msgid "Disable irrelevant image filtering"
 msgstr "Lényegtelen képek szűrésének letiltása"
@@ -412,3 +415,6 @@ msgstr "Frissítések keresése (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "Előzetes kiadások beszámítása"
+
+#~ msgid "Enable top menu tap zone"
+#~ msgstr "Felső menü koppintási zóna engedélyezése"

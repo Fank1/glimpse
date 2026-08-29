@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: zh_TW\n"
@@ -75,9 +75,6 @@ msgstr "重新加入圖庫"
 msgid "Ignore this image"
 msgstr "忽略此圖片"
 
-msgid "Page %1 of %2"
-msgstr "第 %1 頁，共 %2 頁"
-
 msgid "1 image"
 msgstr "1 張圖片"
 
@@ -89,6 +86,9 @@ msgstr "1 個書籤"
 
 msgid "%1 bookmarks"
 msgstr "%1 個書籤"
+
+msgid "Page %1 of %2"
+msgstr "第 %1 頁，共 %2 頁"
 
 msgid "Mode: All images"
 msgstr "模式：全部圖片"
@@ -338,11 +338,20 @@ msgstr "捏合以放大/縮小"
 msgid "Layout: %1 · %2"
 msgstr "版面配置：%1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "顯示導覽按鈕"
+msgid "Maximum zoom: %1%"
+msgstr "最大縮放：%1%"
+
+msgid "%1% (recommended)"
+msgstr "%1%（建議）"
+
+msgid "%1%"
+msgstr "%1%"
 
 msgid "Navigation Loops Around"
 msgstr "循環導覽"
+
+msgid "Show Nav Buttons"
+msgstr "顯示導覽按鈕"
 
 msgid "Show Zoom Controls"
 msgstr "顯示縮放控制項"
@@ -360,20 +369,14 @@ msgstr "顯示圖片說明"
 msgid "Show bookmark label in corner"
 msgstr "在角落顯示書籤標籤"
 
-msgid "Maximum zoom: %1%"
-msgstr "最大縮放：%1%"
-
-msgid "%1% (recommended)"
-msgstr "%1%（建議）"
-
-msgid "%1%"
-msgstr "%1%"
-
-msgid "Enable top menu tap zone"
-msgstr "啟用頂部選單點按區"
+msgid "Numbered indicator instead of dots"
+msgstr "以數字指示取代圓點"
 
 msgid "Advanced"
 msgstr "進階"
+
+msgid "Respect KOReader top menu activation"
+msgstr "沿用 KOReader 的頂部選單啟用方式"
 
 msgid "Disable irrelevant image filtering"
 msgstr "停用無關圖片過濾"
@@ -404,3 +407,6 @@ msgstr "檢查更新（v%1）"
 
 msgid "Include pre-release versions"
 msgstr "包含預先發行版本"
+
+#~ msgid "Enable top menu tap zone"
+#~ msgstr "啟用頂部選單點按區"

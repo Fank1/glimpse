@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: en_GB\n"
@@ -75,9 +75,6 @@ msgstr "Add back to Gallery"
 msgid "Ignore this image"
 msgstr "Ignore this image"
 
-msgid "Page %1 of %2"
-msgstr "Page %1 of %2"
-
 msgid "1 image"
 msgstr "1 image"
 
@@ -89,6 +86,9 @@ msgstr "1 bookmark"
 
 msgid "%1 bookmarks"
 msgstr "%1 bookmarks"
+
+msgid "Page %1 of %2"
+msgstr "Page %1 of %2"
 
 msgid "Mode: All images"
 msgstr "Mode: All images"
@@ -129,8 +129,7 @@ msgstr "Open Glimpse"
 msgid "No book is open."
 msgstr "No book is open."
 
-msgid ""
-"Glimpse failed to load its scanner module. Try reinstalling the plugin."
+msgid "Glimpse failed to load its scanner module. Try reinstalling the plugin."
 msgstr ""
 "Glimpse failed to load its scanner module. Try reinstalling the plugin."
 
@@ -283,13 +282,15 @@ msgstr "Enable Glimpse"
 msgid ""
 "Tip: open Glimpse instantly with a gesture.\n"
 "\n"
-"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n"
+"Set one under Settings → Taps and gestures → Gesture manager → pick a "
+"gesture → Reader → 'Open Glimpse'.\n"
 "\n"
 "(This tip is shown only once.)"
 msgstr ""
 "Tip: open Glimpse instantly with a gesture.\n"
 "\n"
-"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n"
+"Set one under Settings → Taps and gestures → Gesture manager → pick a "
+"gesture → Reader → 'Open Glimpse'.\n"
 "\n"
 "(This tip is shown only once.)"
 
@@ -315,11 +316,11 @@ msgid "Show all images"
 msgstr "Show all images"
 
 msgid ""
-"Show reference images from anywhere in the book, including parts you haven't"
-" reached yet."
+"Show reference images from anywhere in the book, including parts you haven't "
+"reached yet."
 msgstr ""
-"Show reference images from anywhere in the book, including parts you haven't"
-" reached yet."
+"Show reference images from anywhere in the book, including parts you haven't "
+"reached yet."
 
 msgid "Include Bookmarks in Gallery"
 msgstr "Include Bookmarks in Gallery"
@@ -345,11 +346,20 @@ msgstr "Pinch to zoom in/out"
 msgid "Layout: %1 · %2"
 msgstr "Layout: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "Show Nav Buttons"
+msgid "Maximum zoom: %1%"
+msgstr "Maximum zoom: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (recommended)"
+
+msgid "%1%"
+msgstr "%1%"
 
 msgid "Navigation Loops Around"
 msgstr "Navigation Loops Around"
+
+msgid "Show Nav Buttons"
+msgstr "Show Nav Buttons"
 
 msgid "Show Zoom Controls"
 msgstr "Show Zoom Controls"
@@ -366,20 +376,14 @@ msgstr "Show image captions"
 msgid "Show bookmark label in corner"
 msgstr "Show bookmark label in corner"
 
-msgid "Maximum zoom: %1%"
-msgstr "Maximum zoom: %1%"
-
-msgid "%1% (recommended)"
-msgstr "%1% (recommended)"
-
-msgid "%1%"
-msgstr "%1%"
-
-msgid "Enable top menu tap zone"
-msgstr "Enable top menu tap zone"
+msgid "Numbered indicator instead of dots"
+msgstr ""
 
 msgid "Advanced"
 msgstr "Advanced"
+
+msgid "Respect KOReader top menu activation"
+msgstr ""
 
 msgid "Disable irrelevant image filtering"
 msgstr "Disable irrelevant image filtering"
@@ -410,3 +414,6 @@ msgstr "Check for updates (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "Include pre-release versions"
+
+#~ msgid "Enable top menu tap zone"
+#~ msgstr "Enable top menu tap zone"

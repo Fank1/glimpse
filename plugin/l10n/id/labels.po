@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: id\n"
@@ -75,9 +75,6 @@ msgstr "Tambahkan kembali ke Galeri"
 msgid "Ignore this image"
 msgstr "Abaikan gambar ini"
 
-msgid "Page %1 of %2"
-msgstr "Halaman %1 dari %2"
-
 msgid "1 image"
 msgstr "1 gambar"
 
@@ -89,6 +86,9 @@ msgstr "1 markah"
 
 msgid "%1 bookmarks"
 msgstr "%1 markah"
+
+msgid "Page %1 of %2"
+msgstr "Halaman %1 dari %2"
 
 msgid "Mode: All images"
 msgstr "Mode: Semua gambar"
@@ -345,11 +345,20 @@ msgstr "Cubit untuk memperbesar/memperkecil"
 msgid "Layout: %1 · %2"
 msgstr "Tata Letak: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "Tampilkan Tombol Navigasi"
+msgid "Maximum zoom: %1%"
+msgstr "Zoom maksimum: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (disarankan)"
+
+msgid "%1%"
+msgstr "%1%"
 
 msgid "Navigation Loops Around"
 msgstr "Navigasi Berputar"
+
+msgid "Show Nav Buttons"
+msgstr "Tampilkan Tombol Navigasi"
 
 msgid "Show Zoom Controls"
 msgstr "Tampilkan Kontrol Zoom"
@@ -366,20 +375,14 @@ msgstr "Tampilkan keterangan gambar"
 msgid "Show bookmark label in corner"
 msgstr "Tampilkan label markah di sudut"
 
-msgid "Maximum zoom: %1%"
-msgstr "Zoom maksimum: %1%"
-
-msgid "%1% (recommended)"
-msgstr "%1% (disarankan)"
-
-msgid "%1%"
-msgstr "%1%"
-
-msgid "Enable top menu tap zone"
-msgstr "Aktifkan zona ketuk menu atas"
+msgid "Numbered indicator instead of dots"
+msgstr "Indikator angka alih-alih titik"
 
 msgid "Advanced"
 msgstr "Lanjutan"
+
+msgid "Respect KOReader top menu activation"
+msgstr "Hormati aktivasi menu atas KOReader"
 
 msgid "Disable irrelevant image filtering"
 msgstr "Nonaktifkan penyaringan gambar tidak relevan"
@@ -410,3 +413,6 @@ msgstr "Periksa pembaruan (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "Sertakan versi pra-rilis"
+
+#~ msgid "Enable top menu tap zone"
+#~ msgstr "Aktifkan zona ketuk menu atas"

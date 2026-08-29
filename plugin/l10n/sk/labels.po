@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: sk\n"
@@ -75,9 +75,6 @@ msgstr "Pridať späť do galérie"
 msgid "Ignore this image"
 msgstr "Ignorovať tento obrázok"
 
-msgid "Page %1 of %2"
-msgstr "Strana %1 z %2"
-
 msgid "1 image"
 msgstr "1 obrázok"
 
@@ -89,6 +86,9 @@ msgstr "1 záložka"
 
 msgid "%1 bookmarks"
 msgstr "%1 záložiek"
+
+msgid "Page %1 of %2"
+msgstr "Strana %1 z %2"
 
 msgid "Mode: All images"
 msgstr "Režim: Všetky obrázky"
@@ -347,11 +347,20 @@ msgstr "Priblíženie/oddialenie stiahnutím prstov"
 msgid "Layout: %1 · %2"
 msgstr "Rozloženie: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "Zobraziť navigačné tlačidlá"
+msgid "Maximum zoom: %1%"
+msgstr "Maximálne priblíženie: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (odporúčané)"
+
+msgid "%1%"
+msgstr "%1%"
 
 msgid "Navigation Loops Around"
 msgstr "Cyklická navigácia"
+
+msgid "Show Nav Buttons"
+msgstr "Zobraziť navigačné tlačidlá"
 
 msgid "Show Zoom Controls"
 msgstr "Zobraziť ovládanie priblíženia"
@@ -368,20 +377,14 @@ msgstr "Zobraziť popisy obrázkov"
 msgid "Show bookmark label in corner"
 msgstr "Zobraziť štítok záložky v rohu"
 
-msgid "Maximum zoom: %1%"
-msgstr "Maximálne priblíženie: %1%"
-
-msgid "%1% (recommended)"
-msgstr "%1% (odporúčané)"
-
-msgid "%1%"
-msgstr "%1%"
-
-msgid "Enable top menu tap zone"
-msgstr "Povoliť dotykovú zónu horného menu"
+msgid "Numbered indicator instead of dots"
+msgstr "Číselný indikátor namiesto bodiek"
 
 msgid "Advanced"
 msgstr "Rozšírené"
+
+msgid "Respect KOReader top menu activation"
+msgstr "Rešpektovať aktiváciu horného menu KOReadera"
 
 msgid "Disable irrelevant image filtering"
 msgstr "Zakázať filtrovanie nepodstatných obrázkov"
@@ -412,3 +415,6 @@ msgstr "Skontrolovať aktualizácie (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "Zahrnúť predbežné vydania"
+
+#~ msgid "Enable top menu tap zone"
+#~ msgstr "Povoliť dotykovú zónu horného menu"

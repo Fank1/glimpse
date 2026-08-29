@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: tr\n"
@@ -75,9 +75,6 @@ msgstr "Galeriye geri ekle"
 msgid "Ignore this image"
 msgstr "Bu görseli yoksay"
 
-msgid "Page %1 of %2"
-msgstr "Sayfa %1 / %2"
-
 msgid "1 image"
 msgstr "1 görsel"
 
@@ -89,6 +86,9 @@ msgstr "1 yer imi"
 
 msgid "%1 bookmarks"
 msgstr "%1 yer imi"
+
+msgid "Page %1 of %2"
+msgstr "Sayfa %1 / %2"
 
 msgid "Mode: All images"
 msgstr "Mod: tüm görseller"
@@ -345,11 +345,20 @@ msgstr "Yakınlaştırmak/uzaklaştırmak için sıkıştırın"
 msgid "Layout: %1 · %2"
 msgstr "Yerleşim: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "Gezinme düğmelerini göster"
+msgid "Maximum zoom: %1%"
+msgstr "En yüksek yakınlaştırma: %%1"
+
+msgid "%1% (recommended)"
+msgstr "%%1 (önerilir)"
+
+msgid "%1%"
+msgstr "%%1"
 
 msgid "Navigation Loops Around"
 msgstr "Döngüsel gezinme"
+
+msgid "Show Nav Buttons"
+msgstr "Gezinme düğmelerini göster"
 
 msgid "Show Zoom Controls"
 msgstr "Yakınlaştırma denetimlerini göster"
@@ -367,20 +376,14 @@ msgstr "Görsel açıklamalarını göster"
 msgid "Show bookmark label in corner"
 msgstr "Yer imi etiketini köşede göster"
 
-msgid "Maximum zoom: %1%"
-msgstr "En yüksek yakınlaştırma: %%1"
-
-msgid "%1% (recommended)"
-msgstr "%%1 (önerilir)"
-
-msgid "%1%"
-msgstr "%%1"
-
-msgid "Enable top menu tap zone"
-msgstr "Üst menü dokunma bölgesini etkinleştir"
+msgid "Numbered indicator instead of dots"
+msgstr "Noktalar yerine sayısal gösterge"
 
 msgid "Advanced"
 msgstr "Gelişmiş"
+
+msgid "Respect KOReader top menu activation"
+msgstr "KOReader üst menü etkinleştirmesine uy"
 
 msgid "Disable irrelevant image filtering"
 msgstr "Alakasız görsel filtrelemesini devre dışı bırak"
@@ -411,3 +414,6 @@ msgstr "Güncellemeleri denetle (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "Ön sürümleri dahil et"
+
+#~ msgid "Enable top menu tap zone"
+#~ msgstr "Üst menü dokunma bölgesini etkinleştir"

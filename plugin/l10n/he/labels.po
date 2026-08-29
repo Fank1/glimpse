@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: he\n"
@@ -75,9 +75,6 @@ msgstr "הוסף חזרה לגלריה"
 msgid "Ignore this image"
 msgstr "התעלם מתמונה זו"
 
-msgid "Page %1 of %2"
-msgstr "עמוד %1 מתוך %2"
-
 msgid "1 image"
 msgstr "תמונה אחת"
 
@@ -89,6 +86,9 @@ msgstr "סימנייה אחת"
 
 msgid "%1 bookmarks"
 msgstr "%1 סימניות"
+
+msgid "Page %1 of %2"
+msgstr "עמוד %1 מתוך %2"
 
 msgid "Mode: All images"
 msgstr "מצב: כל התמונות"
@@ -340,11 +340,20 @@ msgstr "צבוט כדי להתקרב/להתרחק"
 msgid "Layout: %1 · %2"
 msgstr "פריסה: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "הצג כפתורי ניווט"
+msgid "Maximum zoom: %1%"
+msgstr "זום מרבי: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (מומלץ)"
+
+msgid "%1%"
+msgstr "%1%"
 
 msgid "Navigation Loops Around"
 msgstr "ניווט מעגלי"
+
+msgid "Show Nav Buttons"
+msgstr "הצג כפתורי ניווט"
 
 msgid "Show Zoom Controls"
 msgstr "הצג פקדי זום"
@@ -361,20 +370,14 @@ msgstr "הצג כיתובי תמונות"
 msgid "Show bookmark label in corner"
 msgstr "הצג תווית סימנייה בפינה"
 
-msgid "Maximum zoom: %1%"
-msgstr "זום מרבי: %1%"
-
-msgid "%1% (recommended)"
-msgstr "%1% (מומלץ)"
-
-msgid "%1%"
-msgstr "%1%"
-
-msgid "Enable top menu tap zone"
-msgstr "הפעל אזור הקשה לתפריט העליון"
+msgid "Numbered indicator instead of dots"
+msgstr "מחוון מספרי במקום נקודות"
 
 msgid "Advanced"
 msgstr "מתקדם"
+
+msgid "Respect KOReader top menu activation"
+msgstr "כבד את הפעלת התפריט העליון של KOReader"
 
 msgid "Disable irrelevant image filtering"
 msgstr "השבת סינון תמונות לא רלוונטיות"
@@ -405,3 +408,6 @@ msgstr "בדוק עדכונים (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "כלול גרסאות טרום-שחרור"
+
+#~ msgid "Enable top menu tap zone"
+#~ msgstr "הפעל אזור הקשה לתפריט העליון"

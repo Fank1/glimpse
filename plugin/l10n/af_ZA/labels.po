@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: af_ZA\n"
@@ -75,9 +75,6 @@ msgstr "Voeg terug by galery"
 msgid "Ignore this image"
 msgstr "Ignoreer hierdie prent"
 
-msgid "Page %1 of %2"
-msgstr "Bladsy %1 van %2"
-
 msgid "1 image"
 msgstr "1 prent"
 
@@ -89,6 +86,9 @@ msgstr "1 boekmerk"
 
 msgid "%1 bookmarks"
 msgstr "%1 boekmerke"
+
+msgid "Page %1 of %2"
+msgstr "Bladsy %1 van %2"
 
 msgid "Mode: All images"
 msgstr "Modus: Alle prente"
@@ -347,11 +347,20 @@ msgstr "Knyp om in/uit te zoem"
 msgid "Layout: %1 · %2"
 msgstr "Uitleg: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "Wys navigasieknoppies"
+msgid "Maximum zoom: %1%"
+msgstr "Maksimum zoem: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (aanbeveel)"
+
+msgid "%1%"
+msgstr "%1%"
 
 msgid "Navigation Loops Around"
 msgstr "Sirkelnavigasie"
+
+msgid "Show Nav Buttons"
+msgstr "Wys navigasieknoppies"
 
 msgid "Show Zoom Controls"
 msgstr "Wys zoemkontroles"
@@ -368,20 +377,14 @@ msgstr "Wys prentonderskrifte"
 msgid "Show bookmark label in corner"
 msgstr "Wys boekmerketiket in hoek"
 
-msgid "Maximum zoom: %1%"
-msgstr "Maksimum zoem: %1%"
-
-msgid "%1% (recommended)"
-msgstr "%1% (aanbeveel)"
-
-msgid "%1%"
-msgstr "%1%"
-
-msgid "Enable top menu tap zone"
-msgstr "Aktiveer boonste kieslys-tikstreek"
+msgid "Numbered indicator instead of dots"
+msgstr "Genommerde aanwyser in plaas van kolletjies"
 
 msgid "Advanced"
 msgstr "Gevorderd"
+
+msgid "Respect KOReader top menu activation"
+msgstr "Respekteer KOReader se boonste kieslys-aktivering"
 
 msgid "Disable irrelevant image filtering"
 msgstr "Deaktiveer irrelevante prentfiltrering"
@@ -412,3 +415,6 @@ msgstr "Kontroleer vir opdaterings (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "Sluit voorvrystellings in"
+
+#~ msgid "Enable top menu tap zone"
+#~ msgstr "Aktiveer boonste kieslys-tikstreek"

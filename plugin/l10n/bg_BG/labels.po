@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: bg_BG\n"
@@ -75,9 +75,6 @@ msgstr "Връщане в галерията"
 msgid "Ignore this image"
 msgstr "Игнориране на това изображение"
 
-msgid "Page %1 of %2"
-msgstr "Страница %1 от %2"
-
 msgid "1 image"
 msgstr "1 изображение"
 
@@ -89,6 +86,9 @@ msgstr "1 отметка"
 
 msgid "%1 bookmarks"
 msgstr "%1 отметки"
+
+msgid "Page %1 of %2"
+msgstr "Страница %1 от %2"
 
 msgid "Mode: All images"
 msgstr "Режим: Всички изображения"
@@ -346,11 +346,20 @@ msgstr "Щипнете за увеличаване/намаляване"
 msgid "Layout: %1 · %2"
 msgstr "Оформление: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "Показване на бутони за навигация"
+msgid "Maximum zoom: %1%"
+msgstr "Максимален мащаб: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (препоръчано)"
+
+msgid "%1%"
+msgstr "%1%"
 
 msgid "Navigation Loops Around"
 msgstr "Циклична навигация"
+
+msgid "Show Nav Buttons"
+msgstr "Показване на бутони за навигация"
 
 msgid "Show Zoom Controls"
 msgstr "Показване на контроли за мащаб"
@@ -367,20 +376,14 @@ msgstr "Показване на надписи на изображения"
 msgid "Show bookmark label in corner"
 msgstr "Показване на етикет на отметка в ъгъла"
 
-msgid "Maximum zoom: %1%"
-msgstr "Максимален мащаб: %1%"
-
-msgid "%1% (recommended)"
-msgstr "%1% (препоръчано)"
-
-msgid "%1%"
-msgstr "%1%"
-
-msgid "Enable top menu tap zone"
-msgstr "Разрешаване на зона за докосване на горното меню"
+msgid "Numbered indicator instead of dots"
+msgstr "Цифров индикатор вместо точки"
 
 msgid "Advanced"
 msgstr "Разширени"
+
+msgid "Respect KOReader top menu activation"
+msgstr "Зачитане на активирането на горното меню на KOReader"
 
 msgid "Disable irrelevant image filtering"
 msgstr "Изключване на филтрирането на неуместни изображения"
@@ -411,3 +414,6 @@ msgstr "Проверка за актуализации (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "Включване на предварителни издания"
+
+#~ msgid "Enable top menu tap zone"
+#~ msgstr "Разрешаване на зона за докосване на горното меню"

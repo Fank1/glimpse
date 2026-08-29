@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: hi\n"
@@ -75,9 +75,6 @@ msgstr "गैलरी में वापस जोड़ें"
 msgid "Ignore this image"
 msgstr "इस छवि को अनदेखा करें"
 
-msgid "Page %1 of %2"
-msgstr "%2 में से पृष्ठ %1"
-
 msgid "1 image"
 msgstr "1 छवि"
 
@@ -89,6 +86,9 @@ msgstr "1 बुकमार्क"
 
 msgid "%1 bookmarks"
 msgstr "%1 बुकमार्क"
+
+msgid "Page %1 of %2"
+msgstr "%2 में से पृष्ठ %1"
 
 msgid "Mode: All images"
 msgstr "मोड: सभी छवियाँ"
@@ -347,11 +347,20 @@ msgstr "ज़ूम इन/आउट के लिए पिंच करें
 msgid "Layout: %1 · %2"
 msgstr "लेआउट: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "नेविगेशन बटन दिखाएँ"
+msgid "Maximum zoom: %1%"
+msgstr "अधिकतम ज़ूम: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (अनुशंसित)"
+
+msgid "%1%"
+msgstr "%1%"
 
 msgid "Navigation Loops Around"
 msgstr "चक्रीय नेविगेशन"
+
+msgid "Show Nav Buttons"
+msgstr "नेविगेशन बटन दिखाएँ"
 
 msgid "Show Zoom Controls"
 msgstr "ज़ूम नियंत्रण दिखाएँ"
@@ -368,20 +377,14 @@ msgstr "छवि कैप्शन दिखाएँ"
 msgid "Show bookmark label in corner"
 msgstr "कोने में बुकमार्क लेबल दिखाएँ"
 
-msgid "Maximum zoom: %1%"
-msgstr "अधिकतम ज़ूम: %1%"
-
-msgid "%1% (recommended)"
-msgstr "%1% (अनुशंसित)"
-
-msgid "%1%"
-msgstr "%1%"
-
-msgid "Enable top menu tap zone"
-msgstr "शीर्ष मेनू टैप क्षेत्र सक्षम करें"
+msgid "Numbered indicator instead of dots"
+msgstr "बिंदुओं के बजाय संख्यात्मक संकेतक"
 
 msgid "Advanced"
 msgstr "उन्नत"
+
+msgid "Respect KOReader top menu activation"
+msgstr "KOReader के शीर्ष मेन्यू सक्रियण का सम्मान करें"
 
 msgid "Disable irrelevant image filtering"
 msgstr "अप्रासंगिक छवि फ़िल्टरिंग अक्षम करें"
@@ -412,3 +415,6 @@ msgstr "अपडेट के लिए जाँचें (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "पूर्व-रिलीज़ संस्करण शामिल करें"
+
+#~ msgid "Enable top menu tap zone"
+#~ msgstr "शीर्ष मेनू टैप क्षेत्र सक्षम करें"

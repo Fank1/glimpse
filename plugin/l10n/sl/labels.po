@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: sl\n"
@@ -75,9 +75,6 @@ msgstr "Dodaj nazaj v galerijo"
 msgid "Ignore this image"
 msgstr "Prezri to sliko"
 
-msgid "Page %1 of %2"
-msgstr "Stran %1 od %2"
-
 msgid "1 image"
 msgstr "1 slika"
 
@@ -89,6 +86,9 @@ msgstr "1 zaznamek"
 
 msgid "%1 bookmarks"
 msgstr "%1 zaznamkov"
+
+msgid "Page %1 of %2"
+msgstr "Stran %1 od %2"
 
 msgid "Mode: All images"
 msgstr "Način: Vse slike"
@@ -345,11 +345,20 @@ msgstr "Uščipnite za povečavo/pomanjšavo"
 msgid "Layout: %1 · %2"
 msgstr "Postavitev: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "Pokaži navigacijske gumbe"
+msgid "Maximum zoom: %1%"
+msgstr "Največja povečava: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (priporočeno)"
+
+msgid "%1%"
+msgstr "%1%"
 
 msgid "Navigation Loops Around"
 msgstr "Krožna navigacija"
+
+msgid "Show Nav Buttons"
+msgstr "Pokaži navigacijske gumbe"
 
 msgid "Show Zoom Controls"
 msgstr "Pokaži kontrolnike povečave"
@@ -366,20 +375,14 @@ msgstr "Pokaži napise slik"
 msgid "Show bookmark label in corner"
 msgstr "Pokaži oznako zaznamka v kotu"
 
-msgid "Maximum zoom: %1%"
-msgstr "Največja povečava: %1%"
-
-msgid "%1% (recommended)"
-msgstr "%1% (priporočeno)"
-
-msgid "%1%"
-msgstr "%1%"
-
-msgid "Enable top menu tap zone"
-msgstr "Omogoči območje dotika zgornjega menija"
+msgid "Numbered indicator instead of dots"
+msgstr "Številčni indikator namesto pik"
 
 msgid "Advanced"
 msgstr "Napredno"
+
+msgid "Respect KOReader top menu activation"
+msgstr "Upoštevaj aktivacijo zgornjega menija KOReader"
 
 msgid "Disable irrelevant image filtering"
 msgstr "Onemogoči filtriranje nepomembnih slik"
@@ -410,3 +413,6 @@ msgstr "Preveri posodobitve (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "Vključi predizdaje"
+
+#~ msgid "Enable top menu tap zone"
+#~ msgstr "Omogoči območje dotika zgornjega menija"

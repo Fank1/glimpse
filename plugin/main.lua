@@ -11,6 +11,7 @@ local BD = require("ui/bidi")
 local Blitbuffer = require("ffi/blitbuffer")
 local ButtonTable = require("ui/widget/buttontable")
 local CenterContainer = require("ui/widget/container/centercontainer")
+local LeftContainer = require("ui/widget/container/leftcontainer")
 local ConfirmBox = require("ui/widget/confirmbox")
 local DataStorage = require("datastorage")
 local DocSettings = require("docsettings")
@@ -94,6 +95,7 @@ local ZOOMCTL_KEY = "glimpse_zoom_control"     -- overlay −/fit/+ zoom pill, o
 local MINIMAP_KEY = "glimpse_minimap"          -- overview map, shown only while zoomed; off by default
 local CAPTIONS_KEY = "glimpse_captions"        -- caption overlay, ON by default (nilOrTrue)
 local BOOKMARK_LABEL_KEY = "glimpse_bookmark_label" -- top-left "Page N" pill on bookmarked pages, ON by default (nilOrTrue)
+local NUMERIC_PILL_KEY = "glimpse_numeric_pill" -- always show the "n / N" counter instead of dots, OFF by default
 local TOP_MENU_KEY = "glimpse_top_menu_zone"   -- tap top strip → KOReader top menu, ON by default (nilOrTrue)
 local SHADOW_KEY = "glimpse_disable_shadow"    -- drop the drawer's gradient shadow, OFF by default (e-ink ghost source)
 local FAST_SWITCH_KEY = "glimpse_fast_image_switch" -- image switch uses a flashless partial refresh (may ghost); ON by default (nilOrTrue)
@@ -966,6 +968,10 @@ local GlimpseMiniMap = Widget:extend{
     border = Screen:scaleBySize(2),
     rect_border = Screen:scaleBySize(2),
     fade = 0.68,                          -- how far the non-visible area dims
+    max_aspect = 1.0,                     -- cap width at 1× height (square); a
+                                          -- wider (landscape) image letterboxes
+                                          -- inside with white above and below, so
+                                          -- the box stays zoom-control height
     -- set by the viewer each build:
     box_w = nil, box_h = nil,
     corners = nil,                        -- {tl,tr,bl,br} booleans (rounded?)
@@ -3126,7 +3132,8 @@ function GlimpseViewer:_buildPill()
         -- compact by never exceeding the natural pitch
         pitch = math.min(natural_pitch, (budget - 2 * dot_r) / (nb - 1))
     end
-    if pitch >= min_pitch then
+    if pitch >= min_pitch
+       and not G_reader_settings:isTrue(NUMERIC_PILL_KEY) then
         -- mark which dots stand for a bookmarked page (glyph instead of a dot)
         local bm
         if self.image_metas then
@@ -3391,7 +3398,9 @@ function GlimpseViewer:_galleryLayout()
     if self._gallery_layouts[tab] then return self._gallery_layouts[tab] end
     local _, metas, nb = self:_tabList()
     local m = self:_galleryMetrics()
-    local cols = self.gallery_cols
+    -- A top/bottom band is full screen width but short, so 3 columns leave few
+    -- rows visible. Use 4 columns there; side panels keep 3.
+    local cols = self._horizontal and 4 or self.gallery_cols
     local col_w = math.floor(
         (m.area_w - 2 * m.pad - (cols - 1) * m.gap) / cols)
     local thumb_w = col_w - 2 * m.inset
@@ -3635,23 +3644,9 @@ function GlimpseViewer:_buildGallery()
     local th1 = title_wg:getSize().h
     title_wg.overlap_offset = { m.pad, band_top }
     addHead(title_wg)
-    if pages > 1 then
-        local page_wg = TextWidget:new{
-            text = T(_("Page %1 of %2"), self._gallery_page or 1, pages),
-            face = Font:getFace("cfont", 13),
-            bold = true,
-            fgcolor = Blitbuffer.COLOR_DARK_GRAY,
-        }
-        local psz = page_wg:getSize()
-        page_wg.overlap_offset = {
-            m.area_w - m.pad - psz.w,
-            band_top + math.floor((th1 - psz.h) / 2),
-        }
-        addHead(page_wg)
-    end
-    -- subtitle: "N images", plus ", M bookmarks" when the bookmarked-pages
-    -- feature has folded any real bookmarks into this pool (don't lump them
-    -- into the image count). Only the Gallery (shown) tab ever holds bookmarks.
+    -- Count: "N images", plus ", M bookmarks" when the bookmarked-pages feature
+    -- has folded any real bookmarks into this pool (don't lump them into the
+    -- image count). Only the Gallery (shown) tab ever holds bookmarks.
     local _list, tab_metas = self:_tabList()
     local n_bm = 0
     if tab_metas then
@@ -3669,15 +3664,33 @@ function GlimpseViewer:_buildGallery()
         parts[#parts + 1] = (n_bm == 1) and _("1 bookmark")
             or T(_("%1 bookmarks"), n_bm)
     end
-    local sub_wg = TextWidget:new{
+    -- Line 1, right: the count (grey). The page number is the more useful glance,
+    -- so it takes the prominent line-2 slot below in full black.
+    local count_wg = TextWidget:new{
         text = table.concat(parts, ", "),
-        face = Font:getFace("cfont", 12),
+        face = Font:getFace("cfont", 13),
         bold = true,
         fgcolor = Blitbuffer.COLOR_DARK_GRAY,
         max_width = m.area_w - 2 * m.pad,
     }
-    sub_wg.overlap_offset = { m.pad, band_top + th1 + self:_headMetrics().gap }
-    addHead(sub_wg)
+    local csz = count_wg:getSize()
+    count_wg.overlap_offset = {
+        m.area_w - m.pad - csz.w,
+        band_top + math.floor((th1 - csz.h) / 2),
+    }
+    addHead(count_wg)
+    -- Line 2, left: "Page X of Y" in full black, when paged.
+    if pages > 1 then
+        local page_wg = TextWidget:new{
+            text = T(_("Page %1 of %2"), self._gallery_page or 1, pages),
+            face = Font:getFace("cfont", 13),
+            bold = true,
+            fgcolor = Blitbuffer.COLOR_BLACK,
+            max_width = m.area_w - 2 * m.pad,
+        }
+        page_wg.overlap_offset = { m.pad, band_top + th1 + self:_headMetrics().gap }
+        addHead(page_wg)
+    end
     self._gallery_cells = {}
     for _, c in ipairs(layout.pages[self._gallery_page] or {}) do
         local bb = self:_thumb(c.idx,
@@ -3690,15 +3703,26 @@ function GlimpseViewer:_buildGallery()
             -- the cell you're long-pressing (paired with the dim veil over
             -- the others), so the selection reads clearly.
             local is_spotlight = self._dim_except_idx == c.idx
-            local cell = CenterContainer:new{
+            local bsize = is_spotlight
+                and Screen:scaleBySize(2) or Screen:scaleBySize(1)
+            local fpad = Screen:scaleBySize(2)
+            -- the thumbnail's visual box: bb plus the frame's border + padding.
+            -- The badges anchor to THIS box, not the column, so they stay on the
+            -- image when a tall thumbnail is narrower than its column.
+            local frame_w = bb:getWidth() + 2 * bsize + 2 * fpad
+            -- Left-align (not centre) the thumbnail in its column: a tall image
+            -- in a short landscape band is scaled to the band height and so is
+            -- narrower than the column. Centring floated it away from its number
+            -- badge and out of line with the header; left-aligning keeps the
+            -- image at the column's left edge, under the badge and the heading.
+            local cell = LeftContainer:new{
                 dimen = Geom:new{ w = c.w, h = c.h },
                 FrameContainer:new{
-                    bordersize = is_spotlight
-                        and Screen:scaleBySize(2) or Screen:scaleBySize(1),
+                    bordersize = bsize,
                     color = is_spotlight and Blitbuffer.COLOR_BLACK
                         or Blitbuffer.COLOR_GRAY,
                     radius = Screen:scaleBySize(3),
-                    padding = Screen:scaleBySize(2),
+                    padding = fpad,
                     ImageWidget:new{
                         image = bb,
                         image_disposable = false, -- cached in _thumb_bbs
@@ -3732,7 +3756,7 @@ function GlimpseViewer:_buildGallery()
                     }
                     local bsz = bmk:getSize()
                     bmk.overlap_offset = {
-                        c.x + c.w - m.inset - Screen:scaleBySize(3) - bsz.w,
+                        c.x + frame_w - m.inset - Screen:scaleBySize(3) - bsz.w,
                         c.y + m.inset + Screen:scaleBySize(3),
                     }
                     table.insert(grid, bmk)
@@ -4170,7 +4194,12 @@ function GlimpseViewer:onTap(_, ges)
     -- fall through to ReaderMenu:onTapShowMenu, which would ALSO open the
     -- bottom config menu whenever the user's show_bottom_menu setting is
     -- on (the default) — here we never want that second menu.
+    -- Two conditions gate this. "Respect KOReader top menu activation"
+    -- (TOP_MENU_KEY, Advanced) must be on. And KOReader must itself open the
+    -- top menu on a tap: activate_menu is "tap" or "swipe_tap" (its default,
+    -- read as nil), never "swipe". If either is false, Glimpse keeps the tap.
     if self.on_show_menu and G_reader_settings:nilOrTrue(TOP_MENU_KEY)
+       and G_reader_settings:readSetting("activate_menu") ~= "swipe"
        and self:_inTopMenuZone(ges.pos) then
         self.on_show_menu()
         return true
@@ -4713,6 +4742,10 @@ function GlimpseViewer:_buildMiniMap()
     local disp_w = math.max(1, math.floor(disp_h * iw / ih + 0.5))
     local max_inner = image_area_w - 2 * Screen:scaleBySize(14) - 2 * border
     if show_zc and zc then max_inner = max_inner - zc:getSize().w - btn_gap + border end
+    -- Cap a wide (landscape/panorama) map so it can't stretch across the image.
+    -- Past max_aspect the whole image letterboxes into a bounded box; box_h stays
+    -- the zoom control height, so the equal-height merge still holds.
+    max_inner = math.min(max_inner, math.floor(inner_h * GlimpseMiniMap.max_aspect + 0.5))
     if disp_w > max_inner and max_inner > 0 then
         disp_w = max_inner
         disp_h = math.max(1, math.floor(disp_w * ih / iw + 0.5))
@@ -7115,15 +7148,30 @@ function Glimpse:_menuItems()
                     callback = function() self:_showLayoutDialog() end,
                 },
                 {
-                    text = _("Show Nav Buttons"),
-                    help_text = _("Show ‹ and › buttons in the viewer for switching between images, as an alternative to swiping. A button is grayed out when there is no image on its side."),
-                    checked_func = function()
-                        return G_reader_settings:isTrue(NAV_BUTTONS_KEY)
+                    text_func = function()
+                        return T(_("Maximum zoom: %1%"),
+                            math.floor(_maxZoomMult() * 100 + 0.5))
                     end,
-                    callback = function()
-                        G_reader_settings:saveSetting(NAV_BUTTONS_KEY,
-                            not G_reader_settings:isTrue(NAV_BUTTONS_KEY))
-                    end,
+                    help_text = _("How far you can zoom in, as a percentage of the image's own resolution. Double-tap jumps to this level and pinch stops here. Higher reveals more on detailed maps, but past 100% it is upscaling, so very high can look soft."),
+                    sub_item_table = (function()
+                        local t = {}
+                        for _idx, mult in ipairs(MAX_ZOOM_CHOICES) do
+                            local pct = math.floor(mult * 100 + 0.5)
+                            t[_idx] = {
+                                text = (mult == DEFAULT_MAX_ZOOM)
+                                    and T(_("%1% (recommended)"), pct)
+                                    or T(_("%1%"), pct),
+                                radio = true,
+                                checked_func = function()
+                                    return _maxZoomMult() == mult
+                                end,
+                                callback = function()
+                                    G_reader_settings:saveSetting(MAX_ZOOM_KEY, mult)
+                                end,
+                            }
+                        end
+                        return t
+                    end)(),
                 },
                 {
                     text = _("Navigation Loops Around"),
@@ -7134,6 +7182,18 @@ function Glimpse:_menuItems()
                     callback = function()
                         G_reader_settings:saveSetting(NAV_LOOP_KEY,
                             not G_reader_settings:isTrue(NAV_LOOP_KEY))
+                    end,
+                    separator = true,
+                },
+                {
+                    text = _("Show Nav Buttons"),
+                    help_text = _("Show ‹ and › buttons in the viewer for switching between images, as an alternative to swiping. A button is grayed out when there is no image on its side."),
+                    checked_func = function()
+                        return G_reader_settings:isTrue(NAV_BUTTONS_KEY)
+                    end,
+                    callback = function()
+                        G_reader_settings:saveSetting(NAV_BUTTONS_KEY,
+                            not G_reader_settings:isTrue(NAV_BUTTONS_KEY))
                     end,
                 },
                 {
@@ -7190,39 +7250,14 @@ function Glimpse:_menuItems()
                     end,
                 },
                 {
-                    text_func = function()
-                        return T(_("Maximum zoom: %1%"),
-                            math.floor(_maxZoomMult() * 100 + 0.5))
-                    end,
-                    help_text = _("How far you can zoom in, as a percentage of the image's own resolution. Double-tap jumps to this level and pinch stops here. Higher reveals more on detailed maps, but past 100% it is upscaling, so very high can look soft."),
-                    sub_item_table = (function()
-                        local t = {}
-                        for _idx, mult in ipairs(MAX_ZOOM_CHOICES) do
-                            local pct = math.floor(mult * 100 + 0.5)
-                            t[_idx] = {
-                                text = (mult == DEFAULT_MAX_ZOOM)
-                                    and T(_("%1% (recommended)"), pct)
-                                    or T(_("%1%"), pct),
-                                radio = true,
-                                checked_func = function()
-                                    return _maxZoomMult() == mult
-                                end,
-                                callback = function()
-                                    G_reader_settings:saveSetting(MAX_ZOOM_KEY, mult)
-                                end,
-                            }
-                        end
-                        return t
-                    end)(),
-                },
-                {
-                    text = _("Enable top menu tap zone"),
-                    help_text = _("While the viewer is open, a tap along the top edge of the screen opens KOReader's top menu (only the top menu, never the bottom one) over the drawer, instead of doing nothing. Turn off to keep the top edge inert."),
+                    text = _("Numbered indicator instead of dots"),
+                    help_text = _("Show the position as a compact \"3 / 42\" counter instead of a row of dots. Useful when a book has so many images that the dots pill grows very wide. Off by default. (With many images Glimpse switches to the counter on its own; this makes it always so.)"),
                     checked_func = function()
-                        return G_reader_settings:nilOrTrue(TOP_MENU_KEY)
+                        return G_reader_settings:isTrue(NUMERIC_PILL_KEY)
                     end,
                     callback = function()
-                        G_reader_settings:flipNilOrTrue(TOP_MENU_KEY)
+                        G_reader_settings:saveSetting(NUMERIC_PILL_KEY,
+                            not G_reader_settings:isTrue(NUMERIC_PILL_KEY))
                     end,
                 },
             },
@@ -7230,6 +7265,17 @@ function Glimpse:_menuItems()
         {
             text = _("Advanced"),
             sub_item_table = {
+                {
+                    text = _("Respect KOReader top menu activation"),
+                    help_text = _("On (default): while the viewer is open, a tap along the top edge opens KOReader's top menu over the drawer, but only when KOReader itself opens its menu on a tap (Settings → Taps and gestures → menu activation includes Tap). Off: Glimpse keeps the top edge for itself, so a top tap never opens the menu."),
+                    checked_func = function()
+                        return G_reader_settings:nilOrTrue(TOP_MENU_KEY)
+                    end,
+                    callback = function()
+                        G_reader_settings:flipNilOrTrue(TOP_MENU_KEY)
+                    end,
+                    separator = true,
+                },
                 {
                     -- inverted sense: checked = filtering OFF (default unchecked,
                     -- i.e. filtering ON). Flips the same balanced/all setting.

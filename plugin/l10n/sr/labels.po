@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: sr\n"
@@ -75,9 +75,6 @@ msgstr "Врати у галерију"
 msgid "Ignore this image"
 msgstr "Занемари ову слику"
 
-msgid "Page %1 of %2"
-msgstr "Страница %1 од %2"
-
 msgid "1 image"
 msgstr "1 слика"
 
@@ -89,6 +86,9 @@ msgstr "1 обележивач"
 
 msgid "%1 bookmarks"
 msgstr "%1 обележивача"
+
+msgid "Page %1 of %2"
+msgstr "Страница %1 од %2"
 
 msgid "Mode: All images"
 msgstr "Режим: Све слике"
@@ -346,11 +346,20 @@ msgstr "Примакните/размакните прсте за зумирањ
 msgid "Layout: %1 · %2"
 msgstr "Распоред: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "Прикажи дугмад за навигацију"
+msgid "Maximum zoom: %1%"
+msgstr "Максимално зумирање: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (препоручено)"
+
+msgid "%1%"
+msgstr "%1%"
 
 msgid "Navigation Loops Around"
 msgstr "Кружна навигација"
+
+msgid "Show Nav Buttons"
+msgstr "Прикажи дугмад за навигацију"
 
 msgid "Show Zoom Controls"
 msgstr "Прикажи контроле зумирања"
@@ -367,20 +376,14 @@ msgstr "Прикажи натписе слика"
 msgid "Show bookmark label in corner"
 msgstr "Прикажи ознаку обележивача у углу"
 
-msgid "Maximum zoom: %1%"
-msgstr "Максимално зумирање: %1%"
-
-msgid "%1% (recommended)"
-msgstr "%1% (препоручено)"
-
-msgid "%1%"
-msgstr "%1%"
-
-msgid "Enable top menu tap zone"
-msgstr "Омогући зону додира горњег менија"
+msgid "Numbered indicator instead of dots"
+msgstr "Бројчани индикатор уместо тачака"
 
 msgid "Advanced"
 msgstr "Напредно"
+
+msgid "Respect KOReader top menu activation"
+msgstr "Поштуј активацију горњег менија KOReader-а"
 
 msgid "Disable irrelevant image filtering"
 msgstr "Онемогући филтрирање небитних слика"
@@ -411,3 +414,6 @@ msgstr "Провери ажурирања (в%1)"
 
 msgid "Include pre-release versions"
 msgstr "Укључи претпродукциона издања"
+
+#~ msgid "Enable top menu tap zone"
+#~ msgstr "Омогући зону додира горњег менија"

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: ms\n"
@@ -75,9 +75,6 @@ msgstr "Tambah semula ke Galeri"
 msgid "Ignore this image"
 msgstr "Abaikan imej ini"
 
-msgid "Page %1 of %2"
-msgstr "Halaman %1 daripada %2"
-
 msgid "1 image"
 msgstr "1 imej"
 
@@ -89,6 +86,9 @@ msgstr "1 penanda buku"
 
 msgid "%1 bookmarks"
 msgstr "%1 penanda buku"
+
+msgid "Page %1 of %2"
+msgstr "Halaman %1 daripada %2"
 
 msgid "Mode: All images"
 msgstr "Mod: Semua imej"
@@ -346,11 +346,20 @@ msgstr "Cubit untuk zum masuk/keluar"
 msgid "Layout: %1 · %2"
 msgstr "Susun Atur: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "Tunjuk Butang Navigasi"
+msgid "Maximum zoom: %1%"
+msgstr "Zum maksimum: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (disyorkan)"
+
+msgid "%1%"
+msgstr "%1%"
 
 msgid "Navigation Loops Around"
 msgstr "Navigasi Berkitar"
+
+msgid "Show Nav Buttons"
+msgstr "Tunjuk Butang Navigasi"
 
 msgid "Show Zoom Controls"
 msgstr "Tunjuk Kawalan Zum"
@@ -367,20 +376,14 @@ msgstr "Tunjuk kapsyen imej"
 msgid "Show bookmark label in corner"
 msgstr "Tunjuk label penanda buku di sudut"
 
-msgid "Maximum zoom: %1%"
-msgstr "Zum maksimum: %1%"
-
-msgid "%1% (recommended)"
-msgstr "%1% (disyorkan)"
-
-msgid "%1%"
-msgstr "%1%"
-
-msgid "Enable top menu tap zone"
-msgstr "Dayakan zon ketik menu atas"
+msgid "Numbered indicator instead of dots"
+msgstr "Penunjuk bernombor menggantikan titik"
 
 msgid "Advanced"
 msgstr "Lanjutan"
+
+msgid "Respect KOReader top menu activation"
+msgstr "Hormati pengaktifan menu atas KOReader"
 
 msgid "Disable irrelevant image filtering"
 msgstr "Lumpuhkan penapisan imej tidak berkaitan"
@@ -411,3 +414,6 @@ msgstr "Semak kemas kini (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "Sertakan versi pra-keluaran"
+
+#~ msgid "Enable top menu tap zone"
+#~ msgstr "Dayakan zon ketik menu atas"

@@ -1,22 +1,21 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR Erik Fanki
-# This file is distributed under the same license as the Glimpse package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Glimpse\n"
+"Project-Id-Version: glimpse-plugin\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
-"PO-Revision-Date: 2026-08-25 00:00+0000\n"
-"Last-Translator: AI seed <noreply@glimpse>\n"
-"Language-Team: it_IT\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
+"PO-Revision-Date: 2026-08-29 10:08\n"
+"Last-Translator: \n"
+"Language-Team: Italian\n"
 "Language: it_IT\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Crowdin-Project: glimpse-plugin\n"
+"X-Crowdin-Project-ID: 923235\n"
+"X-Crowdin-Language: it\n"
+"X-Crowdin-File: /plugin/l10n/templates/glimpse-labels.pot\n"
+"X-Crowdin-File-ID: 18\n"
 
 msgid "Ignore Image"
 msgstr "Ignora immagine"
@@ -75,9 +74,6 @@ msgstr "Rimetti nella galleria"
 msgid "Ignore this image"
 msgstr "Ignora questa immagine"
 
-msgid "Page %1 of %2"
-msgstr "Pagina %1 di %2"
-
 msgid "1 image"
 msgstr "1 immagine"
 
@@ -89,6 +85,9 @@ msgstr "1 segnalibro"
 
 msgid "%1 bookmarks"
 msgstr "%1 segnalibri"
+
+msgid "Page %1 of %2"
+msgstr "Pagina %1 di %2"
 
 msgid "Mode: All images"
 msgstr "Modalità: tutte le immagini"
@@ -129,17 +128,11 @@ msgstr "Apri Glimpse"
 msgid "No book is open."
 msgstr "Nessun libro aperto."
 
-msgid ""
-"Glimpse failed to load its scanner module. Try reinstalling the plugin."
-msgstr ""
-"Glimpse non è riuscito a caricare il suo modulo di scansione. Prova a "
-"reinstallare l'estensione."
+msgid "Glimpse failed to load its scanner module. Try reinstalling the plugin."
+msgstr "Glimpse non è riuscito a caricare il suo modulo di scansione. Prova a reinstallare l'estensione."
 
-msgid ""
-"Glimpse works with EPUB books only (this document format is not supported)."
-msgstr ""
-"Glimpse funziona solo con libri EPUB (questo formato di documento non è "
-"supportato)."
+msgid "Glimpse works with EPUB books only (this document format is not supported)."
+msgstr "Glimpse funziona solo con libri EPUB (questo formato di documento non è supportato)."
 
 msgid "Scanning book for images…"
 msgstr "Scansione delle immagini del libro…"
@@ -166,8 +159,7 @@ msgid "No images to show – 1 was filtered out as irrelevant."
 msgstr "Nessuna immagine da mostrare – 1 è stata filtrata come irrilevante."
 
 msgid "No images to show – %1 were filtered out as irrelevant."
-msgstr ""
-"Nessuna immagine da mostrare – %1 sono state filtrate come irrilevanti."
+msgstr "Nessuna immagine da mostrare – %1 sono state filtrate come irrilevanti."
 
 msgid "Review filtered-out"
 msgstr "Rivedi le escluse"
@@ -208,15 +200,11 @@ msgstr "Sei aggiornato (v%1)."
 msgid "No downloadable release package found."
 msgstr "Nessun pacchetto di versione scaricabile trovato."
 
-msgid ""
-"Update available: %1\n"
-"(installed: v%2)\n"
-"\n"
+msgid "Update available: %1\n"
+"(installed: v%2)\n\n"
 "Download and install now?"
-msgstr ""
-"Aggiornamento disponibile: %1\n"
-"(installato: v%2)\n"
-"\n"
+msgstr "Aggiornamento disponibile: %1\n"
+"(installato: v%2)\n\n"
 "Scaricare e installare ora?"
 
 msgid "Update"
@@ -225,11 +213,9 @@ msgstr "Aggiorna"
 msgid "Updating to %1…"
 msgstr "Aggiornamento a %1…"
 
-msgid ""
-"Updated to %1.\n"
+msgid "Updated to %1.\n"
 "Restart KOReader now to load it?"
-msgstr ""
-"Aggiornato a %1.\n"
+msgstr "Aggiornato a %1.\n"
 "Riavviare KOReader ora per caricarlo?"
 
 msgid "Restart"
@@ -242,7 +228,7 @@ msgid "Update failed."
 msgstr "Aggiornamento non riuscito."
 
 msgid "Glimpse"
-msgstr "Glimpse"
+msgstr "Sguardo"
 
 msgid "Gesture to open: none set"
 msgstr "Gesto per aprire: nessuno impostato"
@@ -283,17 +269,11 @@ msgstr "Posizione in verticale"
 msgid "Enable Glimpse"
 msgstr "Abilita Glimpse"
 
-msgid ""
-"Tip: open Glimpse instantly with a gesture.\n"
-"\n"
-"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n"
-"\n"
+msgid "Tip: open Glimpse instantly with a gesture.\n\n"
+"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n\n"
 "(This tip is shown only once.)"
-msgstr ""
-"Suggerimento: apri Glimpse all'istante con un gesto.\n"
-"\n"
-"Impostane uno in Impostazioni → Tocchi e gesti → Gestore gesti → scegli un gesto → Lettore → 'Apri Glimpse'.\n"
-"\n"
+msgstr "Suggerimento: apri Glimpse all'istante con un gesto.\n\n"
+"Impostane uno in Impostazioni → Tocchi e gesti → Gestore gesti → scegli un gesto → Lettore → 'Apri Glimpse'.\n\n"
 "(Questo suggerimento viene mostrato una sola volta.)"
 
 msgid "Mode: Show all images"
@@ -305,24 +285,14 @@ msgstr "Modalità: mostra le immagini fino al capitolo corrente"
 msgid "Show images up to current chapter"
 msgstr "Mostra le immagini fino al capitolo corrente"
 
-msgid ""
-"Images that appear beyond your current position stay hidden, so you can't "
-"spoil yourself. Granularity is per chapter: images in the chapter you are "
-"currently reading are shown."
-msgstr ""
-"Le immagini che compaiono oltre la tua posizione attuale restano nascoste, "
-"così non ti rovini la sorpresa. La granularità è per capitolo: le immagini "
-"del capitolo che stai leggendo vengono mostrate."
+msgid "Images that appear beyond your current position stay hidden, so you can't spoil yourself. Granularity is per chapter: images in the chapter you are currently reading are shown."
+msgstr "Le immagini che compaiono oltre la tua posizione attuale restano nascoste, così non ti rovini la sorpresa. La granularità è per capitolo: le immagini del capitolo che stai leggendo vengono mostrate."
 
 msgid "Show all images"
 msgstr "Mostra tutte le immagini"
 
-msgid ""
-"Show reference images from anywhere in the book, including parts you haven't"
-" reached yet."
-msgstr ""
-"Mostra le immagini di riferimento da qualsiasi parte del libro, comprese "
-"quelle che non hai ancora raggiunto."
+msgid "Show reference images from anywhere in the book, including parts you haven't reached yet."
+msgstr "Mostra le immagini di riferimento da qualsiasi parte del libro, comprese quelle che non hai ancora raggiunto."
 
 msgid "Include Bookmarks in Gallery"
 msgstr "Includi i segnalibri nella galleria"
@@ -348,18 +318,26 @@ msgstr "Pizzica per ingrandire/rimpicciolire"
 msgid "Layout: %1 · %2"
 msgstr "Disposizione: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "Mostra pulsanti di navigazione"
+msgid "Maximum zoom: %1%"
+msgstr "Zoom massimo: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (consigliato)"
+
+msgid "%1%"
+msgstr "%1%"
 
 msgid "Navigation Loops Around"
 msgstr "Navigazione ciclica"
 
+msgid "Show Nav Buttons"
+msgstr "Mostra pulsanti di navigazione"
+
 msgid "Show Zoom Controls"
 msgstr "Mostra comandi di zoom"
 
-#, fuzzy
 msgid "Show Mini Map"
-msgstr "Mostra nel libro"
+msgstr "Mostra Mini Map"
 
 msgid "Invert Images in Night Mode"
 msgstr "Inverti immagini in modalità notturna"
@@ -370,20 +348,14 @@ msgstr "Mostra didascalie"
 msgid "Show bookmark label in corner"
 msgstr "Mostra l'etichetta del segnalibro nell'angolo"
 
-msgid "Maximum zoom: %1%"
-msgstr "Zoom massimo: %1%"
-
-msgid "%1% (recommended)"
-msgstr "%1% (consigliato)"
-
-msgid "%1%"
-msgstr "%1%"
-
-msgid "Enable top menu tap zone"
-msgstr "Abilita zona di tocco del menu superiore"
+msgid "Numbered indicator instead of dots"
+msgstr "Indicatore numerato invece di punti"
 
 msgid "Advanced"
 msgstr "Avanzate"
+
+msgid "Respect KOReader top menu activation"
+msgstr "Rispetta l'attivazione del menu superiore di KOReader"
 
 msgid "Disable irrelevant image filtering"
 msgstr "Disabilita il filtraggio delle immagini irrilevanti"
@@ -414,3 +386,4 @@ msgstr "Cerca aggiornamenti (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "Includi versioni preliminari"
+

@@ -1,22 +1,21 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR Erik Fanki
-# This file is distributed under the same license as the Glimpse package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Glimpse\n"
+"Project-Id-Version: glimpse-plugin\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
-"PO-Revision-Date: 2026-08-25 00:00+0000\n"
-"Last-Translator: AI seed <noreply@glimpse>\n"
-"Language-Team: nl_NL\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
+"PO-Revision-Date: 2026-08-29 10:08\n"
+"Last-Translator: \n"
+"Language-Team: Dutch\n"
 "Language: nl_NL\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Crowdin-Project: glimpse-plugin\n"
+"X-Crowdin-Project-ID: 923235\n"
+"X-Crowdin-Language: nl\n"
+"X-Crowdin-File: /plugin/l10n/templates/glimpse-labels.pot\n"
+"X-Crowdin-File-ID: 18\n"
 
 msgid "Ignore Image"
 msgstr "Afbeelding negeren"
@@ -75,9 +74,6 @@ msgstr "Terugzetten in galerij"
 msgid "Ignore this image"
 msgstr "Deze afbeelding negeren"
 
-msgid "Page %1 of %2"
-msgstr "Pagina %1 van %2"
-
 msgid "1 image"
 msgstr "1 afbeelding"
 
@@ -89,6 +85,9 @@ msgstr "1 bladwijzer"
 
 msgid "%1 bookmarks"
 msgstr "%1 bladwijzers"
+
+msgid "Page %1 of %2"
+msgstr "Pagina %1 van %2"
 
 msgid "Mode: All images"
 msgstr "Modus: alle afbeeldingen"
@@ -129,17 +128,11 @@ msgstr "Glimpse openen"
 msgid "No book is open."
 msgstr "Er is geen boek geopend."
 
-msgid ""
-"Glimpse failed to load its scanner module. Try reinstalling the plugin."
-msgstr ""
-"Glimpse kon zijn scannermodule niet laden. Probeer de plug-in opnieuw te "
-"installeren."
+msgid "Glimpse failed to load its scanner module. Try reinstalling the plugin."
+msgstr "Glimpse kon zijn scannermodule niet laden. Probeer de plug-in opnieuw te installeren."
 
-msgid ""
-"Glimpse works with EPUB books only (this document format is not supported)."
-msgstr ""
-"Glimpse werkt alleen met EPUB-boeken (dit documentformaat wordt niet "
-"ondersteund)."
+msgid "Glimpse works with EPUB books only (this document format is not supported)."
+msgstr "Glimpse werkt alleen met EPUB-boeken (dit documentformaat wordt niet ondersteund)."
 
 msgid "Scanning book for images…"
 msgstr "Boek wordt op afbeeldingen gescand…"
@@ -207,15 +200,11 @@ msgstr "Je bent up-to-date (v%1)."
 msgid "No downloadable release package found."
 msgstr "Geen downloadbaar versiepakket gevonden."
 
-msgid ""
-"Update available: %1\n"
-"(installed: v%2)\n"
-"\n"
+msgid "Update available: %1\n"
+"(installed: v%2)\n\n"
 "Download and install now?"
-msgstr ""
-"Update beschikbaar: %1\n"
-"(geïnstalleerd: v%2)\n"
-"\n"
+msgstr "Update beschikbaar: %1\n"
+"(geïnstalleerd: v%2)\n\n"
 "Nu downloaden en installeren?"
 
 msgid "Update"
@@ -224,11 +213,9 @@ msgstr "Bijwerken"
 msgid "Updating to %1…"
 msgstr "Bijwerken naar %1…"
 
-msgid ""
-"Updated to %1.\n"
+msgid "Updated to %1.\n"
 "Restart KOReader now to load it?"
-msgstr ""
-"Bijgewerkt naar %1.\n"
+msgstr "Bijgewerkt naar %1.\n"
 "KOReader nu opnieuw starten om het te laden?"
 
 msgid "Restart"
@@ -241,7 +228,7 @@ msgid "Update failed."
 msgstr "Bijwerken mislukt."
 
 msgid "Glimpse"
-msgstr "Glimpse"
+msgstr "Glimp"
 
 msgid "Gesture to open: none set"
 msgstr "Gebaar om te openen: geen ingesteld"
@@ -282,17 +269,11 @@ msgstr "Positie bij staand"
 msgid "Enable Glimpse"
 msgstr "Glimpse inschakelen"
 
-msgid ""
-"Tip: open Glimpse instantly with a gesture.\n"
-"\n"
-"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n"
-"\n"
+msgid "Tip: open Glimpse instantly with a gesture.\n\n"
+"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n\n"
 "(This tip is shown only once.)"
-msgstr ""
-"Tip: open Glimpse direct met een gebaar.\n"
-"\n"
-"Stel er een in via Instellingen → Tikken en gebaren → Gebarenbeheer → kies een gebaar → Lezer → 'Glimpse openen'.\n"
-"\n"
+msgstr "Tip: open Glimpse direct met een gebaar.\n\n"
+"Stel er een in via Instellingen → Tikken en gebaren → Gebarenbeheer → kies een gebaar → Lezer → 'Glimpse openen'.\n\n"
 "(Deze tip wordt maar één keer getoond.)"
 
 msgid "Mode: Show all images"
@@ -304,24 +285,14 @@ msgstr "Modus: afbeeldingen tot het huidige hoofdstuk tonen"
 msgid "Show images up to current chapter"
 msgstr "Afbeeldingen tot het huidige hoofdstuk tonen"
 
-msgid ""
-"Images that appear beyond your current position stay hidden, so you can't "
-"spoil yourself. Granularity is per chapter: images in the chapter you are "
-"currently reading are shown."
-msgstr ""
-"Afbeeldingen die voorbij je huidige positie verschijnen blijven verborgen, "
-"zodat je niets verklapt. De granulariteit is per hoofdstuk: afbeeldingen in "
-"het hoofdstuk dat je nu leest worden getoond."
+msgid "Images that appear beyond your current position stay hidden, so you can't spoil yourself. Granularity is per chapter: images in the chapter you are currently reading are shown."
+msgstr "Afbeeldingen die voorbij je huidige positie verschijnen blijven verborgen, zodat je niets verklapt. De granulariteit is per hoofdstuk: afbeeldingen in het hoofdstuk dat je nu leest worden getoond."
 
 msgid "Show all images"
 msgstr "Alle afbeeldingen tonen"
 
-msgid ""
-"Show reference images from anywhere in the book, including parts you haven't"
-" reached yet."
-msgstr ""
-"Referentieafbeeldingen uit het hele boek tonen, ook uit delen die je nog "
-"niet hebt bereikt."
+msgid "Show reference images from anywhere in the book, including parts you haven't reached yet."
+msgstr "Referentieafbeeldingen uit het hele boek tonen, ook uit delen die je nog niet hebt bereikt."
 
 msgid "Include Bookmarks in Gallery"
 msgstr "Bladwijzers opnemen in galerij"
@@ -347,18 +318,26 @@ msgstr "Knijp om in/uit te zoomen"
 msgid "Layout: %1 · %2"
 msgstr "Indeling: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "Navigatieknoppen tonen"
+msgid "Maximum zoom: %1%"
+msgstr "Maximale zoom: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (aanbevolen)"
+
+msgid "%1%"
+msgstr "%1%"
 
 msgid "Navigation Loops Around"
 msgstr "Rondlopende navigatie"
 
+msgid "Show Nav Buttons"
+msgstr "Navigatieknoppen tonen"
+
 msgid "Show Zoom Controls"
 msgstr "Zoomknoppen tonen"
 
-#, fuzzy
 msgid "Show Mini Map"
-msgstr "Tonen in boek"
+msgstr "Toon Mini Map"
 
 msgid "Invert Images in Night Mode"
 msgstr "Afbeeldingen omkeren in nachtmodus"
@@ -369,20 +348,14 @@ msgstr "Bijschriften tonen"
 msgid "Show bookmark label in corner"
 msgstr "Bladwijzerlabel in de hoek tonen"
 
-msgid "Maximum zoom: %1%"
-msgstr "Maximale zoom: %1%"
-
-msgid "%1% (recommended)"
-msgstr "%1% (aanbevolen)"
-
-msgid "%1%"
-msgstr "%1%"
-
-msgid "Enable top menu tap zone"
-msgstr "Tikzone bovenmenu inschakelen"
+msgid "Numbered indicator instead of dots"
+msgstr "Genummerde indicator in plaats van stippen"
 
 msgid "Advanced"
 msgstr "Geavanceerd"
+
+msgid "Respect KOReader top menu activation"
+msgstr "Respecteer KOReader top menu activering"
 
 msgid "Disable irrelevant image filtering"
 msgstr "Filteren van irrelevante afbeeldingen uitschakelen"
@@ -406,10 +379,11 @@ msgid "Scan failed."
 msgstr "Scannen mislukt."
 
 msgid "Updates"
-msgstr "Updates"
+msgstr "Bijwerken"
 
 msgid "Check for updates (v%1)"
 msgstr "Zoeken naar updates (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "Voorlopige versies opnemen"
+

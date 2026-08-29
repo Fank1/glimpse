@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: be\n"
@@ -75,9 +75,6 @@ msgstr "Дадаць назад у галерэю"
 msgid "Ignore this image"
 msgstr "Ігнараваць гэту выяву"
 
-msgid "Page %1 of %2"
-msgstr "Старонка %1 з %2"
-
 msgid "1 image"
 msgstr "1 выява"
 
@@ -89,6 +86,9 @@ msgstr "1 закладка"
 
 msgid "%1 bookmarks"
 msgstr "%1 закладак"
+
+msgid "Page %1 of %2"
+msgstr "Старонка %1 з %2"
 
 msgid "Mode: All images"
 msgstr "Рэжым: Усе выявы"
@@ -347,11 +347,20 @@ msgstr "Шчыпніце для маштабавання"
 msgid "Layout: %1 · %2"
 msgstr "Размяшчэнне: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "Паказаць кнопкі навігацыі"
+msgid "Maximum zoom: %1%"
+msgstr "Максімальны маштаб: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (рэкамендавана)"
+
+msgid "%1%"
+msgstr "%1%"
 
 msgid "Navigation Loops Around"
 msgstr "Цыклічная навігацыя"
+
+msgid "Show Nav Buttons"
+msgstr "Паказаць кнопкі навігацыі"
 
 msgid "Show Zoom Controls"
 msgstr "Паказаць кіраванне маштабам"
@@ -368,20 +377,14 @@ msgstr "Паказаць подпісы выяў"
 msgid "Show bookmark label in corner"
 msgstr "Паказаць этыкетку закладкі ў кутку"
 
-msgid "Maximum zoom: %1%"
-msgstr "Максімальны маштаб: %1%"
-
-msgid "%1% (recommended)"
-msgstr "%1% (рэкамендавана)"
-
-msgid "%1%"
-msgstr "%1%"
-
-msgid "Enable top menu tap zone"
-msgstr "Уключыць зону дотыку верхняга меню"
+msgid "Numbered indicator instead of dots"
+msgstr "Лічбавы паказчык замест кропак"
 
 msgid "Advanced"
 msgstr "Дадаткова"
+
+msgid "Respect KOReader top menu activation"
+msgstr "Улічваць актывацыю верхняга меню KOReader"
 
 msgid "Disable irrelevant image filtering"
 msgstr "Адключыць фільтрацыю недарэчных выяў"
@@ -412,3 +415,6 @@ msgstr "Праверыць абнаўленні (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "Уключыць папярэднія выпускі"
+
+#~ msgid "Enable top menu tap zone"
+#~ msgstr "Уключыць зону дотыку верхняга меню"

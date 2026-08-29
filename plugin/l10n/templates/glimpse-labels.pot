@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -74,9 +74,6 @@ msgstr ""
 msgid "Ignore this image"
 msgstr ""
 
-msgid "Page %1 of %2"
-msgstr ""
-
 msgid "1 image"
 msgstr ""
 
@@ -87,6 +84,9 @@ msgid "1 bookmark"
 msgstr ""
 
 msgid "%1 bookmarks"
+msgstr ""
+
+msgid "Page %1 of %2"
 msgstr ""
 
 msgid "Mode: All images"
@@ -326,10 +326,19 @@ msgstr ""
 msgid "Layout: %1 · %2"
 msgstr ""
 
-msgid "Show Nav Buttons"
+msgid "Maximum zoom: %1%"
+msgstr ""
+
+msgid "%1% (recommended)"
+msgstr ""
+
+msgid "%1%"
 msgstr ""
 
 msgid "Navigation Loops Around"
+msgstr ""
+
+msgid "Show Nav Buttons"
 msgstr ""
 
 msgid "Show Zoom Controls"
@@ -347,19 +356,13 @@ msgstr ""
 msgid "Show bookmark label in corner"
 msgstr ""
 
-msgid "Maximum zoom: %1%"
-msgstr ""
-
-msgid "%1% (recommended)"
-msgstr ""
-
-msgid "%1%"
-msgstr ""
-
-msgid "Enable top menu tap zone"
+msgid "Numbered indicator instead of dots"
 msgstr ""
 
 msgid "Advanced"
+msgstr ""
+
+msgid "Respect KOReader top menu activation"
 msgstr ""
 
 msgid "Disable irrelevant image filtering"

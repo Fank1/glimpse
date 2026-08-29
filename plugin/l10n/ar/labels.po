@@ -1,22 +1,21 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR Erik Fanki
-# This file is distributed under the same license as the Glimpse package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Glimpse\n"
+"Project-Id-Version: glimpse-plugin\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
-"PO-Revision-Date: 2026-08-25 00:00+0000\n"
-"Last-Translator: AI seed <noreply@glimpse>\n"
-"Language-Team: ar\n"
-"Language: ar\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
+"PO-Revision-Date: 2026-08-29 10:07\n"
+"Last-Translator: \n"
+"Language-Team: Arabic\n"
+"Language: ar_SA\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
+"X-Crowdin-Project: glimpse-plugin\n"
+"X-Crowdin-Project-ID: 923235\n"
+"X-Crowdin-Language: ar\n"
+"X-Crowdin-File: /plugin/l10n/templates/glimpse-labels.pot\n"
+"X-Crowdin-File-ID: 18\n"
 
 msgid "Ignore Image"
 msgstr "تجاهل الصورة"
@@ -75,9 +74,6 @@ msgstr "إضافة مرة أخرى إلى المعرض"
 msgid "Ignore this image"
 msgstr "تجاهل هذه الصورة"
 
-msgid "Page %1 of %2"
-msgstr "الصفحة %1 من %2"
-
 msgid "1 image"
 msgstr "صورة واحدة"
 
@@ -89,6 +85,9 @@ msgstr "إشارة مرجعية واحدة"
 
 msgid "%1 bookmarks"
 msgstr "%1 إشارة مرجعية"
+
+msgid "Page %1 of %2"
+msgstr "الصفحة %1 من %2"
 
 msgid "Mode: All images"
 msgstr "الوضع: كل الصور"
@@ -129,12 +128,10 @@ msgstr "فتح Glimpse"
 msgid "No book is open."
 msgstr "لا يوجد كتاب مفتوح."
 
-msgid ""
-"Glimpse failed to load its scanner module. Try reinstalling the plugin."
+msgid "Glimpse failed to load its scanner module. Try reinstalling the plugin."
 msgstr "فشل Glimpse في تحميل وحدة المسح الخاصة به. حاول إعادة تثبيت الإضافة."
 
-msgid ""
-"Glimpse works with EPUB books only (this document format is not supported)."
+msgid "Glimpse works with EPUB books only (this document format is not supported)."
 msgstr "يعمل Glimpse مع كتب EPUB فقط (تنسيق المستند هذا غير مدعوم)."
 
 msgid "Scanning book for images…"
@@ -203,15 +200,11 @@ msgstr "أنت محدَّث (v%1)."
 msgid "No downloadable release package found."
 msgstr "لم يُعثر على حزمة إصدار قابلة للتنزيل."
 
-msgid ""
-"Update available: %1\n"
-"(installed: v%2)\n"
-"\n"
+msgid "Update available: %1\n"
+"(installed: v%2)\n\n"
 "Download and install now?"
-msgstr ""
-"يتوفر تحديث: %1\n"
-"(المثبَّت: v%2)\n"
-"\n"
+msgstr "يتوفر تحديث: %1\n"
+"(المثبَّت: v%2)\n\n"
 "تنزيله وتثبيته الآن؟"
 
 msgid "Update"
@@ -220,11 +213,9 @@ msgstr "تحديث"
 msgid "Updating to %1…"
 msgstr "جارٍ التحديث إلى %1…"
 
-msgid ""
-"Updated to %1.\n"
+msgid "Updated to %1.\n"
 "Restart KOReader now to load it?"
-msgstr ""
-"تم التحديث إلى %1.\n"
+msgstr "تم التحديث إلى %1.\n"
 "إعادة تشغيل KOReader الآن لتحميله؟"
 
 msgid "Restart"
@@ -237,7 +228,7 @@ msgid "Update failed."
 msgstr "فشل التحديث."
 
 msgid "Glimpse"
-msgstr "Glimpse"
+msgstr "غضب"
 
 msgid "Gesture to open: none set"
 msgstr "إيماءة الفتح: لا شيء"
@@ -278,17 +269,11 @@ msgstr "الوضع العمودي"
 msgid "Enable Glimpse"
 msgstr "تفعيل Glimpse"
 
-msgid ""
-"Tip: open Glimpse instantly with a gesture.\n"
-"\n"
-"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n"
-"\n"
+msgid "Tip: open Glimpse instantly with a gesture.\n\n"
+"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n\n"
 "(This tip is shown only once.)"
-msgstr ""
-"تلميح: افتح Glimpse فورًا بإيماءة.\n"
-"\n"
-"عيّن واحدة في الإعدادات → النقرات والإيماءات → مدير الإيماءات → اختر إيماءة → القارئ → 'فتح Glimpse'.\n"
-"\n"
+msgstr "تلميح: افتح Glimpse فورًا بإيماءة.\n\n"
+"عيّن واحدة في الإعدادات → النقرات والإيماءات → مدير الإيماءات → اختر إيماءة → القارئ → 'فتح Glimpse'.\n\n"
 "(يُعرض هذا التلميح مرة واحدة فقط.)"
 
 msgid "Mode: Show all images"
@@ -300,23 +285,14 @@ msgstr "الوضع: إظهار الصور حتى الفصل الحالي"
 msgid "Show images up to current chapter"
 msgstr "إظهار الصور حتى الفصل الحالي"
 
-msgid ""
-"Images that appear beyond your current position stay hidden, so you can't "
-"spoil yourself. Granularity is per chapter: images in the chapter you are "
-"currently reading are shown."
-msgstr ""
-"الصور التي تظهر بعد موضعك الحالي تبقى مخفية، حتى لا تحرق الأحداث لنفسك. "
-"الدقة حسب الفصل: تُعرض صور الفصل الذي تقرؤه حاليًا."
+msgid "Images that appear beyond your current position stay hidden, so you can't spoil yourself. Granularity is per chapter: images in the chapter you are currently reading are shown."
+msgstr "الصور التي تظهر بعد موضعك الحالي تبقى مخفية، حتى لا تحرق الأحداث لنفسك. الدقة حسب الفصل: تُعرض صور الفصل الذي تقرؤه حاليًا."
 
 msgid "Show all images"
 msgstr "إظهار كل الصور"
 
-msgid ""
-"Show reference images from anywhere in the book, including parts you haven't"
-" reached yet."
-msgstr ""
-"إظهار الصور المرجعية من أي مكان في الكتاب، بما في ذلك الأجزاء التي لم تصل "
-"إليها بعد."
+msgid "Show reference images from anywhere in the book, including parts you haven't reached yet."
+msgstr "إظهار الصور المرجعية من أي مكان في الكتاب، بما في ذلك الأجزاء التي لم تصل إليها بعد."
 
 msgid "Include Bookmarks in Gallery"
 msgstr "تضمين الإشارات المرجعية في المعرض"
@@ -342,11 +318,20 @@ msgstr "اقرص للتكبير/التصغير"
 msgid "Layout: %1 · %2"
 msgstr "التخطيط: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "إظهار أزرار التنقل"
+msgid "Maximum zoom: %1%"
+msgstr "أقصى تكبير: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (موصى به)"
+
+msgid "%1%"
+msgstr "%1%"
 
 msgid "Navigation Loops Around"
 msgstr "تنقل دائري"
+
+msgid "Show Nav Buttons"
+msgstr "إظهار أزرار التنقل"
 
 msgid "Show Zoom Controls"
 msgstr "إظهار عناصر التحكم في التكبير"
@@ -363,20 +348,14 @@ msgstr "إظهار تسميات الصور"
 msgid "Show bookmark label in corner"
 msgstr "إظهار تسمية الإشارة المرجعية في الزاوية"
 
-msgid "Maximum zoom: %1%"
-msgstr "أقصى تكبير: %1%"
-
-msgid "%1% (recommended)"
-msgstr "%1% (موصى به)"
-
-msgid "%1%"
-msgstr "%1%"
-
-msgid "Enable top menu tap zone"
-msgstr "تفعيل منطقة نقر القائمة العلوية"
+msgid "Numbered indicator instead of dots"
+msgstr "مؤشر مرقم بدلاً من النقاط"
 
 msgid "Advanced"
 msgstr "متقدم"
+
+msgid "Respect KOReader top menu activation"
+msgstr "تفعيل أعلى قائمة احترام KOReader"
 
 msgid "Disable irrelevant image filtering"
 msgstr "تعطيل تصفية الصور غير ذات الصلة"
@@ -407,3 +386,4 @@ msgstr "التحقق من التحديثات (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "تضمين إصدارات ما قبل الإطلاق"
+

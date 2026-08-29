@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: fa\n"
@@ -75,9 +75,6 @@ msgstr "افزودن دوباره به نگارخانه"
 msgid "Ignore this image"
 msgstr "نادیده گرفتن این تصویر"
 
-msgid "Page %1 of %2"
-msgstr "صفحهٔ %1 از %2"
-
 msgid "1 image"
 msgstr "۱ تصویر"
 
@@ -89,6 +86,9 @@ msgstr "۱ نشانک"
 
 msgid "%1 bookmarks"
 msgstr "%1 نشانک"
+
+msgid "Page %1 of %2"
+msgstr "صفحهٔ %1 از %2"
 
 msgid "Mode: All images"
 msgstr "حالت: همهٔ تصاویر"
@@ -346,11 +346,20 @@ msgstr "برای بزرگ/کوچک کردن انگشتان را باز/بسته 
 msgid "Layout: %1 · %2"
 msgstr "چیدمان: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "نمایش دکمه‌های ناوبری"
+msgid "Maximum zoom: %1%"
+msgstr "بیشترین بزرگ‌نمایی: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (توصیه‌شده)"
+
+msgid "%1%"
+msgstr "%1%"
 
 msgid "Navigation Loops Around"
 msgstr "ناوبری چرخه‌ای"
+
+msgid "Show Nav Buttons"
+msgstr "نمایش دکمه‌های ناوبری"
 
 msgid "Show Zoom Controls"
 msgstr "نمایش کنترل‌های بزرگ‌نمایی"
@@ -367,20 +376,14 @@ msgstr "نمایش زیرنویس تصاویر"
 msgid "Show bookmark label in corner"
 msgstr "نمایش برچسب نشانک در گوشه"
 
-msgid "Maximum zoom: %1%"
-msgstr "بیشترین بزرگ‌نمایی: %1%"
-
-msgid "%1% (recommended)"
-msgstr "%1% (توصیه‌شده)"
-
-msgid "%1%"
-msgstr "%1%"
-
-msgid "Enable top menu tap zone"
-msgstr "فعال‌سازی ناحیهٔ ضربهٔ منوی بالا"
+msgid "Numbered indicator instead of dots"
+msgstr "نشانگر عددی به‌جای نقطه‌ها"
 
 msgid "Advanced"
 msgstr "پیشرفته"
+
+msgid "Respect KOReader top menu activation"
+msgstr "احترام به فعال‌سازی منوی بالای KOReader"
 
 msgid "Disable irrelevant image filtering"
 msgstr "غیرفعال‌سازی فیلتر تصاویر نامرتبط"
@@ -411,3 +414,6 @@ msgstr "بررسی به‌روزرسانی‌ها (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "گنجاندن نسخه‌های پیش‌انتشار"
+
+#~ msgid "Enable top menu tap zone"
+#~ msgstr "فعال‌سازی ناحیهٔ ضربهٔ منوی بالا"

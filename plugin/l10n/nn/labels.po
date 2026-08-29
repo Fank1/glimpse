@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: nn\n"
@@ -75,9 +75,6 @@ msgstr "Legg tilbake i galleriet"
 msgid "Ignore this image"
 msgstr "Ignorer dette biletet"
 
-msgid "Page %1 of %2"
-msgstr "Side %1 av %2"
-
 msgid "1 image"
 msgstr "1 bilete"
 
@@ -89,6 +86,9 @@ msgstr "1 bokmerke"
 
 msgid "%1 bookmarks"
 msgstr "%1 bokmerke"
+
+msgid "Page %1 of %2"
+msgstr "Side %1 av %2"
 
 msgid "Mode: All images"
 msgstr "Modus: Alle bilete"
@@ -347,11 +347,20 @@ msgstr "Knip for å zooma inn/ut"
 msgid "Layout: %1 · %2"
 msgstr "Oppsett: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "Vis navigasjonsknappar"
+msgid "Maximum zoom: %1%"
+msgstr "Maksimal zoom: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (tilrådd)"
+
+msgid "%1%"
+msgstr "%1%"
 
 msgid "Navigation Loops Around"
 msgstr "Syklisk navigasjon"
+
+msgid "Show Nav Buttons"
+msgstr "Vis navigasjonsknappar"
 
 msgid "Show Zoom Controls"
 msgstr "Vis zoomkontrollar"
@@ -368,20 +377,14 @@ msgstr "Vis biletetekstar"
 msgid "Show bookmark label in corner"
 msgstr "Vis bokmerkeetikett i hjørnet"
 
-msgid "Maximum zoom: %1%"
-msgstr "Maksimal zoom: %1%"
-
-msgid "%1% (recommended)"
-msgstr "%1% (tilrådd)"
-
-msgid "%1%"
-msgstr "%1%"
-
-msgid "Enable top menu tap zone"
-msgstr "Aktiver trykksone for toppmeny"
+msgid "Numbered indicator instead of dots"
+msgstr "Talindikator i staden for prikkar"
 
 msgid "Advanced"
 msgstr "Avansert"
+
+msgid "Respect KOReader top menu activation"
+msgstr "Følg KOReader si aktivering av toppmenyen"
 
 msgid "Disable irrelevant image filtering"
 msgstr "Deaktiver filtrering av irrelevante bilete"
@@ -412,3 +415,6 @@ msgstr "Sjå etter oppdateringar (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "Inkluder førehandsutgåver"
+
+#~ msgid "Enable top menu tap zone"
+#~ msgstr "Aktiver trykksone for toppmeny"

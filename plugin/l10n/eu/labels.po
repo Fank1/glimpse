@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: eu\n"
@@ -75,9 +75,6 @@ msgstr "Gehitu berriro galeriara"
 msgid "Ignore this image"
 msgstr "Ez ikusi irudi hau"
 
-msgid "Page %1 of %2"
-msgstr "%1. orria / %2"
-
 msgid "1 image"
 msgstr "irudi 1"
 
@@ -89,6 +86,9 @@ msgstr "laster-marka 1"
 
 msgid "%1 bookmarks"
 msgstr "%1 laster-marka"
+
+msgid "Page %1 of %2"
+msgstr "%1. orria / %2"
 
 msgid "Mode: All images"
 msgstr "Modua: Irudi guztiak"
@@ -348,11 +348,20 @@ msgstr "Atximurkatu zooma handitzeko/txikitzeko"
 msgid "Layout: %1 · %2"
 msgstr "Diseinua: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "Erakutsi nabigazio-botoiak"
+msgid "Maximum zoom: %1%"
+msgstr "Gehienezko zooma: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (gomendatua)"
+
+msgid "%1%"
+msgstr "%1%"
 
 msgid "Navigation Loops Around"
 msgstr "Nabigazio ziklikoa"
+
+msgid "Show Nav Buttons"
+msgstr "Erakutsi nabigazio-botoiak"
 
 msgid "Show Zoom Controls"
 msgstr "Erakutsi zoom-kontrolak"
@@ -369,20 +378,14 @@ msgstr "Erakutsi irudi-epigrafeak"
 msgid "Show bookmark label in corner"
 msgstr "Erakutsi laster-markaren etiketa izkinan"
 
-msgid "Maximum zoom: %1%"
-msgstr "Gehienezko zooma: %1%"
-
-msgid "%1% (recommended)"
-msgstr "%1% (gomendatua)"
-
-msgid "%1%"
-msgstr "%1%"
-
-msgid "Enable top menu tap zone"
-msgstr "Gaitu goiko menuaren ukitze-eremua"
+msgid "Numbered indicator instead of dots"
+msgstr "Zenbakizko adierazlea puntuen ordez"
 
 msgid "Advanced"
 msgstr "Aurreratua"
+
+msgid "Respect KOReader top menu activation"
+msgstr "Errespetatu KOReader-en goiko menuaren aktibazioa"
 
 msgid "Disable irrelevant image filtering"
 msgstr "Desgaitu garrantzirik gabeko irudien iragazketa"
@@ -413,3 +416,6 @@ msgstr "Bilatu eguneraketak (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "Sartu aurre-argitalpenak"
+
+#~ msgid "Enable top menu tap zone"
+#~ msgstr "Gaitu goiko menuaren ukitze-eremua"

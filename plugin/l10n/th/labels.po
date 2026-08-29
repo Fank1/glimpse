@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: th\n"
@@ -75,9 +75,6 @@ msgstr "เพิ่มกลับไปยังแกลเลอรี"
 msgid "Ignore this image"
 msgstr "ละเว้นรูปภาพนี้"
 
-msgid "Page %1 of %2"
-msgstr "หน้า %1 จาก %2"
-
 msgid "1 image"
 msgstr "1 รูป"
 
@@ -89,6 +86,9 @@ msgstr "1 บุ๊กมาร์ก"
 
 msgid "%1 bookmarks"
 msgstr "%1 บุ๊กมาร์ก"
+
+msgid "Page %1 of %2"
+msgstr "หน้า %1 จาก %2"
 
 msgid "Mode: All images"
 msgstr "โหมด: รูปภาพทั้งหมด"
@@ -341,11 +341,20 @@ msgstr "หนีบนิ้วเพื่อซูมเข้า/ออก"
 msgid "Layout: %1 · %2"
 msgstr "เค้าโครง: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "แสดงปุ่มนำทาง"
+msgid "Maximum zoom: %1%"
+msgstr "ซูมสูงสุด: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (แนะนำ)"
+
+msgid "%1%"
+msgstr "%1%"
 
 msgid "Navigation Loops Around"
 msgstr "การนำทางแบบวนรอบ"
+
+msgid "Show Nav Buttons"
+msgstr "แสดงปุ่มนำทาง"
 
 msgid "Show Zoom Controls"
 msgstr "แสดงตัวควบคุมการซูม"
@@ -362,20 +371,14 @@ msgstr "แสดงคำบรรยายรูปภาพ"
 msgid "Show bookmark label in corner"
 msgstr "แสดงป้ายบุ๊กมาร์กที่มุม"
 
-msgid "Maximum zoom: %1%"
-msgstr "ซูมสูงสุด: %1%"
-
-msgid "%1% (recommended)"
-msgstr "%1% (แนะนำ)"
-
-msgid "%1%"
-msgstr "%1%"
-
-msgid "Enable top menu tap zone"
-msgstr "เปิดใช้งานพื้นที่แตะเมนูด้านบน"
+msgid "Numbered indicator instead of dots"
+msgstr "ตัวบ่งชี้แบบตัวเลขแทนจุด"
 
 msgid "Advanced"
 msgstr "ขั้นสูง"
+
+msgid "Respect KOReader top menu activation"
+msgstr "เคารพการเปิดใช้เมนูด้านบนของ KOReader"
 
 msgid "Disable irrelevant image filtering"
 msgstr "ปิดการกรองรูปภาพที่ไม่เกี่ยวข้อง"
@@ -406,3 +409,6 @@ msgstr "ตรวจสอบการอัปเดต (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "รวมเวอร์ชันก่อนวางจำหน่าย"
+
+#~ msgid "Enable top menu tap zone"
+#~ msgstr "เปิดใช้งานพื้นที่แตะเมนูด้านบน"

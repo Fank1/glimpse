@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: uz\n"
@@ -75,9 +75,6 @@ msgstr "Galereyaga qaytarish"
 msgid "Ignore this image"
 msgstr "Bu rasmga e'tibor bermaslik"
 
-msgid "Page %1 of %2"
-msgstr "%1-sahifa, jami %2"
-
 msgid "1 image"
 msgstr "1 rasm"
 
@@ -89,6 +86,9 @@ msgstr "1 xatcho'p"
 
 msgid "%1 bookmarks"
 msgstr "%1 xatcho'p"
+
+msgid "Page %1 of %2"
+msgstr "%1-sahifa, jami %2"
 
 msgid "Mode: All images"
 msgstr "Rejim: Barcha rasmlar"
@@ -346,11 +346,20 @@ msgstr "Kattalashtirish/kichraytirish uchun chimchilang"
 msgid "Layout: %1 · %2"
 msgstr "Joylashuv: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "Navigatsiya tugmalarini ko'rsatish"
+msgid "Maximum zoom: %1%"
+msgstr "Maksimal masshtab: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (tavsiya etiladi)"
+
+msgid "%1%"
+msgstr "%1%"
 
 msgid "Navigation Loops Around"
 msgstr "Aylanma navigatsiya"
+
+msgid "Show Nav Buttons"
+msgstr "Navigatsiya tugmalarini ko'rsatish"
 
 msgid "Show Zoom Controls"
 msgstr "Masshtab boshqaruvini ko'rsatish"
@@ -367,20 +376,14 @@ msgstr "Rasm izohlarini ko'rsatish"
 msgid "Show bookmark label in corner"
 msgstr "Burchakda xatcho'p yorlig'ini ko'rsatish"
 
-msgid "Maximum zoom: %1%"
-msgstr "Maksimal masshtab: %1%"
-
-msgid "%1% (recommended)"
-msgstr "%1% (tavsiya etiladi)"
-
-msgid "%1%"
-msgstr "%1%"
-
-msgid "Enable top menu tap zone"
-msgstr "Yuqori menyu teginish zonasini yoqish"
+msgid "Numbered indicator instead of dots"
+msgstr "Nuqtalar o‘rniga raqamli ko‘rsatkich"
 
 msgid "Advanced"
 msgstr "Kengaytirilgan"
+
+msgid "Respect KOReader top menu activation"
+msgstr "KOReader yuqori menyusi faollashtirilishiga rioya qilish"
 
 msgid "Disable irrelevant image filtering"
 msgstr "Ahamiyatsiz rasmlarni filtrlashni o'chirish"
@@ -411,3 +414,6 @@ msgstr "Yangilanishlarni tekshirish (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "Old nashr versiyalarini qo'shish"
+
+#~ msgid "Enable top menu tap zone"
+#~ msgstr "Yuqori menyu teginish zonasini yoqish"

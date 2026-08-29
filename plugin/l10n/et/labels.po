@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: et\n"
@@ -75,9 +75,6 @@ msgstr "Lisa galeriisse tagasi"
 msgid "Ignore this image"
 msgstr "Eira seda pilti"
 
-msgid "Page %1 of %2"
-msgstr "Lehekülg %1 / %2"
-
 msgid "1 image"
 msgstr "1 pilt"
 
@@ -89,6 +86,9 @@ msgstr "1 järjehoidja"
 
 msgid "%1 bookmarks"
 msgstr "%1 järjehoidjat"
+
+msgid "Page %1 of %2"
+msgstr "Lehekülg %1 / %2"
 
 msgid "Mode: All images"
 msgstr "Režiim: Kõik pildid"
@@ -346,11 +346,20 @@ msgstr "Suumimiseks näpista"
 msgid "Layout: %1 · %2"
 msgstr "Paigutus: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "Näita navigeerimisnuppe"
+msgid "Maximum zoom: %1%"
+msgstr "Maksimaalne suum: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (soovitatav)"
+
+msgid "%1%"
+msgstr "%1%"
 
 msgid "Navigation Loops Around"
 msgstr "Ringnavigatsioon"
+
+msgid "Show Nav Buttons"
+msgstr "Näita navigeerimisnuppe"
 
 msgid "Show Zoom Controls"
 msgstr "Näita suumi juhtnuppe"
@@ -367,20 +376,14 @@ msgstr "Näita pildiallkirju"
 msgid "Show bookmark label in corner"
 msgstr "Näita järjehoidja silti nurgas"
 
-msgid "Maximum zoom: %1%"
-msgstr "Maksimaalne suum: %1%"
-
-msgid "%1% (recommended)"
-msgstr "%1% (soovitatav)"
-
-msgid "%1%"
-msgstr "%1%"
-
-msgid "Enable top menu tap zone"
-msgstr "Luba ülamenüü puutetsoon"
+msgid "Numbered indicator instead of dots"
+msgstr "Numbriline näidik täppide asemel"
 
 msgid "Advanced"
 msgstr "Täpsem"
+
+msgid "Respect KOReader top menu activation"
+msgstr "Arvesta KOReaderi ülamenüü aktiveerimist"
 
 msgid "Disable irrelevant image filtering"
 msgstr "Keela asjakohatute piltide filtreerimine"
@@ -411,3 +414,6 @@ msgstr "Kontrolli uuendusi (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "Kaasa eelväljalasked"
+
+#~ msgid "Enable top menu tap zone"
+#~ msgstr "Luba ülamenüü puutetsoon"

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: ga\n"
@@ -75,9 +75,6 @@ msgstr "Cuir ar ais sa Ghailearaí"
 msgid "Ignore this image"
 msgstr "Déan neamhaird den íomhá seo"
 
-msgid "Page %1 of %2"
-msgstr "Leathanach %1 as %2"
-
 msgid "1 image"
 msgstr "1 íomhá"
 
@@ -89,6 +86,9 @@ msgstr "1 leabharmharc"
 
 msgid "%1 bookmarks"
 msgstr "%1 leabharmharc"
+
+msgid "Page %1 of %2"
+msgstr "Leathanach %1 as %2"
 
 msgid "Mode: All images"
 msgstr "Mód: Gach íomhá"
@@ -348,11 +348,20 @@ msgstr "Bain le chéile chun súmáil isteach/amach"
 msgid "Layout: %1 · %2"
 msgstr "Leagan Amach: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "Taispeáin Cnaipí Nascleanúna"
+msgid "Maximum zoom: %1%"
+msgstr "Súmáil uasta: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (molta)"
+
+msgid "%1%"
+msgstr "%1%"
 
 msgid "Navigation Loops Around"
 msgstr "Nascleanúint Timthriallach"
+
+msgid "Show Nav Buttons"
+msgstr "Taispeáin Cnaipí Nascleanúna"
 
 msgid "Show Zoom Controls"
 msgstr "Taispeáin Rialtáin Súmála"
@@ -369,20 +378,14 @@ msgstr "Taispeáin foscríbhinní íomhá"
 msgid "Show bookmark label in corner"
 msgstr "Taispeáin lipéad leabharmhairc sa chúinne"
 
-msgid "Maximum zoom: %1%"
-msgstr "Súmáil uasta: %1%"
-
-msgid "%1% (recommended)"
-msgstr "%1% (molta)"
-
-msgid "%1%"
-msgstr "%1%"
-
-msgid "Enable top menu tap zone"
-msgstr "Cumasaigh crios tapála an bharrchláir"
+msgid "Numbered indicator instead of dots"
+msgstr "Táscaire uimhrithe in ionad poncanna"
 
 msgid "Advanced"
 msgstr "Casta"
+
+msgid "Respect KOReader top menu activation"
+msgstr "Tabhair aird ar ghníomhachtú roghchláir uachtair KOReader"
 
 msgid "Disable irrelevant image filtering"
 msgstr "Díchumasaigh scagadh íomhánna neamhábhartha"
@@ -413,3 +416,6 @@ msgstr "Seiceáil le haghaidh nuashonruithe (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "Cuir leaganacha réamheisiúna san áireamh"
+
+#~ msgid "Enable top menu tap zone"
+#~ msgstr "Cumasaigh crios tapála an bharrchláir"

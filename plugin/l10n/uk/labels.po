@@ -1,22 +1,21 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR Erik Fanki
-# This file is distributed under the same license as the Glimpse package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Glimpse\n"
+"Project-Id-Version: glimpse-plugin\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
-"PO-Revision-Date: 2026-08-25 00:00+0000\n"
-"Last-Translator: AI seed <noreply@glimpse>\n"
-"Language-Team: uk\n"
-"Language: uk\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
+"PO-Revision-Date: 2026-08-29 10:09\n"
+"Last-Translator: \n"
+"Language-Team: Ukrainian\n"
+"Language: uk_UA\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
+"X-Crowdin-Project: glimpse-plugin\n"
+"X-Crowdin-Project-ID: 923235\n"
+"X-Crowdin-Language: uk\n"
+"X-Crowdin-File: /plugin/l10n/templates/glimpse-labels.pot\n"
+"X-Crowdin-File-ID: 18\n"
 
 msgid "Ignore Image"
 msgstr "Ігнорувати зображення"
@@ -75,9 +74,6 @@ msgstr "Повернути до галереї"
 msgid "Ignore this image"
 msgstr "Ігнорувати це зображення"
 
-msgid "Page %1 of %2"
-msgstr "Сторінка %1 з %2"
-
 msgid "1 image"
 msgstr "1 зображення"
 
@@ -89,6 +85,9 @@ msgstr "1 закладка"
 
 msgid "%1 bookmarks"
 msgstr "Закладок: %1"
+
+msgid "Page %1 of %2"
+msgstr "Сторінка %1 з %2"
 
 msgid "Mode: All images"
 msgstr "Режим: усі зображення"
@@ -129,16 +128,11 @@ msgstr "Відкрити Glimpse"
 msgid "No book is open."
 msgstr "Жодну книгу не відкрито."
 
-msgid ""
-"Glimpse failed to load its scanner module. Try reinstalling the plugin."
-msgstr ""
-"Glimpse не вдалося завантажити модуль сканування. Спробуйте перевстановити "
-"плагін."
+msgid "Glimpse failed to load its scanner module. Try reinstalling the plugin."
+msgstr "Glimpse не вдалося завантажити модуль сканування. Спробуйте перевстановити плагін."
 
-msgid ""
-"Glimpse works with EPUB books only (this document format is not supported)."
-msgstr ""
-"Glimpse працює лише з книгами EPUB (цей формат документа не підтримується)."
+msgid "Glimpse works with EPUB books only (this document format is not supported)."
+msgstr "Glimpse працює лише з книгами EPUB (цей формат документа не підтримується)."
 
 msgid "Scanning book for images…"
 msgstr "Пошук зображень у книзі…"
@@ -206,15 +200,11 @@ msgstr "У вас найновіша версія (v%1)."
 msgid "No downloadable release package found."
 msgstr "Не знайдено пакета випуску для завантаження."
 
-msgid ""
-"Update available: %1\n"
-"(installed: v%2)\n"
-"\n"
+msgid "Update available: %1\n"
+"(installed: v%2)\n\n"
 "Download and install now?"
-msgstr ""
-"Доступне оновлення: %1\n"
-"(встановлено: v%2)\n"
-"\n"
+msgstr "Доступне оновлення: %1\n"
+"(встановлено: v%2)\n\n"
 "Завантажити й встановити зараз?"
 
 msgid "Update"
@@ -223,11 +213,9 @@ msgstr "Оновити"
 msgid "Updating to %1…"
 msgstr "Оновлення до %1…"
 
-msgid ""
-"Updated to %1.\n"
+msgid "Updated to %1.\n"
 "Restart KOReader now to load it?"
-msgstr ""
-"Оновлено до %1.\n"
+msgstr "Оновлено до %1.\n"
 "Перезапустити KOReader зараз, щоб завантажити?"
 
 msgid "Restart"
@@ -240,7 +228,7 @@ msgid "Update failed."
 msgstr "Не вдалося оновити."
 
 msgid "Glimpse"
-msgstr "Glimpse"
+msgstr "Гліппс"
 
 msgid "Gesture to open: none set"
 msgstr "Жест для відкриття: не задано"
@@ -281,17 +269,11 @@ msgstr "Положення в портретній орієнтації"
 msgid "Enable Glimpse"
 msgstr "Увімкнути Glimpse"
 
-msgid ""
-"Tip: open Glimpse instantly with a gesture.\n"
-"\n"
-"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n"
-"\n"
+msgid "Tip: open Glimpse instantly with a gesture.\n\n"
+"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n\n"
 "(This tip is shown only once.)"
-msgstr ""
-"Порада: відкривайте Glimpse миттєво жестом.\n"
-"\n"
-"Задайте його в Налаштування → Дотики та жести → Менеджер жестів → виберіть жест → Читалка → 'Відкрити Glimpse'.\n"
-"\n"
+msgstr "Порада: відкривайте Glimpse миттєво жестом.\n\n"
+"Задайте його в Налаштування → Дотики та жести → Менеджер жестів → виберіть жест → Читалка → 'Відкрити Glimpse'.\n\n"
 "(Ця порада показується лише один раз.)"
 
 msgid "Mode: Show all images"
@@ -303,24 +285,14 @@ msgstr "Режим: показувати зображення до поточн�
 msgid "Show images up to current chapter"
 msgstr "Показувати зображення до поточного розділу"
 
-msgid ""
-"Images that appear beyond your current position stay hidden, so you can't "
-"spoil yourself. Granularity is per chapter: images in the chapter you are "
-"currently reading are shown."
-msgstr ""
-"Зображення, що трапляються за вашою поточною позицією, залишаються "
-"прихованими, щоб ви не зіпсували собі враження. Деталізація — за розділами: "
-"показуються зображення з розділу, який ви зараз читаєте."
+msgid "Images that appear beyond your current position stay hidden, so you can't spoil yourself. Granularity is per chapter: images in the chapter you are currently reading are shown."
+msgstr "Зображення, що трапляються за вашою поточною позицією, залишаються прихованими, щоб ви не зіпсували собі враження. Деталізація — за розділами: показуються зображення з розділу, який ви зараз читаєте."
 
 msgid "Show all images"
 msgstr "Показувати всі зображення"
 
-msgid ""
-"Show reference images from anywhere in the book, including parts you haven't"
-" reached yet."
-msgstr ""
-"Показувати довідкові зображення з будь-якої частини книги, включно з тими, "
-"до яких ви ще не дійшли."
+msgid "Show reference images from anywhere in the book, including parts you haven't reached yet."
+msgstr "Показувати довідкові зображення з будь-якої частини книги, включно з тими, до яких ви ще не дійшли."
 
 msgid "Include Bookmarks in Gallery"
 msgstr "Включити закладки до галереї"
@@ -346,18 +318,26 @@ msgstr "Зведіть пальці для збільшення/зменшенн
 msgid "Layout: %1 · %2"
 msgstr "Розташування: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "Показувати кнопки навігації"
+msgid "Maximum zoom: %1%"
+msgstr "Максимальний масштаб: %1 %"
+
+msgid "%1% (recommended)"
+msgstr "%1 % (рекомендовано)"
+
+msgid "%1%"
+msgstr "%1 %"
 
 msgid "Navigation Loops Around"
 msgstr "Циклічна навігація"
 
+msgid "Show Nav Buttons"
+msgstr "Показувати кнопки навігації"
+
 msgid "Show Zoom Controls"
 msgstr "Показувати елементи масштабування"
 
-#, fuzzy
 msgid "Show Mini Map"
-msgstr "Показати в книзі"
+msgstr "Показати міні-мапу"
 
 msgid "Invert Images in Night Mode"
 msgstr "Інвертувати зображення в нічному режимі"
@@ -368,20 +348,14 @@ msgstr "Показувати підписи до зображень"
 msgid "Show bookmark label in corner"
 msgstr "Показувати мітку закладки в кутку"
 
-msgid "Maximum zoom: %1%"
-msgstr "Максимальний масштаб: %1 %"
-
-msgid "%1% (recommended)"
-msgstr "%1 % (рекомендовано)"
-
-msgid "%1%"
-msgstr "%1 %"
-
-msgid "Enable top menu tap zone"
-msgstr "Увімкнути зону дотику верхнього меню"
+msgid "Numbered indicator instead of dots"
+msgstr "Відображати індикатор номер замість точок"
 
 msgid "Advanced"
 msgstr "Додатково"
+
+msgid "Respect KOReader top menu activation"
+msgstr "Поважати головну активацію KOReader"
 
 msgid "Disable irrelevant image filtering"
 msgstr "Вимкнути фільтрування несуттєвих зображень"
@@ -412,3 +386,4 @@ msgstr "Перевірити оновлення (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "Включати попередні версії"
+

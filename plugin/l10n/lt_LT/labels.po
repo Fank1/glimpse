@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: lt_LT\n"
@@ -75,9 +75,6 @@ msgstr "Grąžinti į galeriją"
 msgid "Ignore this image"
 msgstr "Nepaisyti šio paveikslėlio"
 
-msgid "Page %1 of %2"
-msgstr "Puslapis %1 iš %2"
-
 msgid "1 image"
 msgstr "1 paveikslėlis"
 
@@ -89,6 +86,9 @@ msgstr "1 žymė"
 
 msgid "%1 bookmarks"
 msgstr "%1 žymių"
+
+msgid "Page %1 of %2"
+msgstr "Puslapis %1 iš %2"
 
 msgid "Mode: All images"
 msgstr "Veiksena: Visi paveikslėliai"
@@ -346,11 +346,20 @@ msgstr "Suglauskite mastelio keitimui"
 msgid "Layout: %1 · %2"
 msgstr "Išdėstymas: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "Rodyti naršymo mygtukus"
+msgid "Maximum zoom: %1%"
+msgstr "Maksimalus mastelis: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (rekomenduojama)"
+
+msgid "%1%"
+msgstr "%1%"
 
 msgid "Navigation Loops Around"
 msgstr "Ciklinis naršymas"
+
+msgid "Show Nav Buttons"
+msgstr "Rodyti naršymo mygtukus"
 
 msgid "Show Zoom Controls"
 msgstr "Rodyti mastelio valdiklius"
@@ -367,20 +376,14 @@ msgstr "Rodyti paveikslėlių antraštes"
 msgid "Show bookmark label in corner"
 msgstr "Rodyti žymės etiketę kampe"
 
-msgid "Maximum zoom: %1%"
-msgstr "Maksimalus mastelis: %1%"
-
-msgid "%1% (recommended)"
-msgstr "%1% (rekomenduojama)"
-
-msgid "%1%"
-msgstr "%1%"
-
-msgid "Enable top menu tap zone"
-msgstr "Įjungti viršutinio meniu bakstelėjimo zoną"
+msgid "Numbered indicator instead of dots"
+msgstr "Skaitinis indikatorius vietoj taškų"
 
 msgid "Advanced"
 msgstr "Išplėstiniai"
+
+msgid "Respect KOReader top menu activation"
+msgstr "Paisyti KOReader viršutinio meniu aktyvinimo"
 
 msgid "Disable irrelevant image filtering"
 msgstr "Išjungti nesvarbių paveikslėlių filtravimą"
@@ -411,3 +414,6 @@ msgstr "Tikrinti atnaujinimus (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "Įtraukti išankstines laidas"
+
+#~ msgid "Enable top menu tap zone"
+#~ msgstr "Įjungti viršutinio meniu bakstelėjimo zoną"

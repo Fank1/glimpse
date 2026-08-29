@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: ka\n"
@@ -75,9 +75,6 @@ msgstr "გალერეაში დაბრუნება"
 msgid "Ignore this image"
 msgstr "ამ სურათის იგნორირება"
 
-msgid "Page %1 of %2"
-msgstr "გვერდი %1 / %2"
-
 msgid "1 image"
 msgstr "1 სურათი"
 
@@ -89,6 +86,9 @@ msgstr "1 სანიშნე"
 
 msgid "%1 bookmarks"
 msgstr "%1 სანიშნე"
+
+msgid "Page %1 of %2"
+msgstr "გვერდი %1 / %2"
 
 msgid "Mode: All images"
 msgstr "რეჟიმი: ყველა სურათი"
@@ -347,11 +347,20 @@ msgstr "მოასწიეთ თითები მასშტაბირ�
 msgid "Layout: %1 · %2"
 msgstr "განლაგება: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "ნავიგაციის ღილაკების ჩვენება"
+msgid "Maximum zoom: %1%"
+msgstr "მაქსიმალური მასშტაბი: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (რეკომენდებული)"
+
+msgid "%1%"
+msgstr "%1%"
 
 msgid "Navigation Loops Around"
 msgstr "ციკლური ნავიგაცია"
+
+msgid "Show Nav Buttons"
+msgstr "ნავიგაციის ღილაკების ჩვენება"
 
 msgid "Show Zoom Controls"
 msgstr "მასშტაბის მართვის ჩვენება"
@@ -368,20 +377,14 @@ msgstr "სურათების წარწერების ჩვენ�
 msgid "Show bookmark label in corner"
 msgstr "სანიშნის ჭდის ჩვენება კუთხეში"
 
-msgid "Maximum zoom: %1%"
-msgstr "მაქსიმალური მასშტაბი: %1%"
-
-msgid "%1% (recommended)"
-msgstr "%1% (რეკომენდებული)"
-
-msgid "%1%"
-msgstr "%1%"
-
-msgid "Enable top menu tap zone"
-msgstr "ზედა მენიუს შეხების ზონის ჩართვა"
+msgid "Numbered indicator instead of dots"
+msgstr "ციფრული ინდიკატორი წერტილების ნაცვლად"
 
 msgid "Advanced"
 msgstr "გაფართოებული"
+
+msgid "Respect KOReader top menu activation"
+msgstr "KOReader-ის ზედა მენიუს გააქტიურების გათვალისწინება"
 
 msgid "Disable irrelevant image filtering"
 msgstr "შეუსაბამო სურათების ფილტრაციის გამორთვა"
@@ -412,3 +415,6 @@ msgstr "განახლებების შემოწმება (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "წინასწარი გამოშვებების ჩართვა"
+
+#~ msgid "Enable top menu tap zone"
+#~ msgstr "ზედა მენიუს შეხების ზონის ჩართვა"

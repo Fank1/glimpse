@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: eo\n"
@@ -75,9 +75,6 @@ msgstr "Aldoni reen al galerio"
 msgid "Ignore this image"
 msgstr "Ignori ĉi tiun bildon"
 
-msgid "Page %1 of %2"
-msgstr "Paĝo %1 el %2"
-
 msgid "1 image"
 msgstr "1 bildo"
 
@@ -89,6 +86,9 @@ msgstr "1 legosigno"
 
 msgid "%1 bookmarks"
 msgstr "%1 legosignoj"
+
+msgid "Page %1 of %2"
+msgstr "Paĝo %1 el %2"
 
 msgid "Mode: All images"
 msgstr "Reĝimo: Ĉiuj bildoj"
@@ -346,11 +346,20 @@ msgstr "Pinĉu por zomi en/el"
 msgid "Layout: %1 · %2"
 msgstr "Aranĝo: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "Montri navigajn butonojn"
+msgid "Maximum zoom: %1%"
+msgstr "Maksimuma zomo: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (rekomendata)"
+
+msgid "%1%"
+msgstr "%1%"
 
 msgid "Navigation Loops Around"
 msgstr "Cikla navigado"
+
+msgid "Show Nav Buttons"
+msgstr "Montri navigajn butonojn"
 
 msgid "Show Zoom Controls"
 msgstr "Montri zomregilojn"
@@ -367,20 +376,14 @@ msgstr "Montri bildajn apudskribojn"
 msgid "Show bookmark label in corner"
 msgstr "Montri legosignan etikedon en angulo"
 
-msgid "Maximum zoom: %1%"
-msgstr "Maksimuma zomo: %1%"
-
-msgid "%1% (recommended)"
-msgstr "%1% (rekomendata)"
-
-msgid "%1%"
-msgstr "%1%"
-
-msgid "Enable top menu tap zone"
-msgstr "Ebligi supran menuan tuŝzonon"
+msgid "Numbered indicator instead of dots"
+msgstr "Numera indikilo anstataŭ punktoj"
 
 msgid "Advanced"
 msgstr "Altnivela"
+
+msgid "Respect KOReader top menu activation"
+msgstr "Respekti la aktivigon de la supra menuo de KOReader"
 
 msgid "Disable irrelevant image filtering"
 msgstr "Malebligi filtradon de malgravaj bildoj"
@@ -411,3 +414,6 @@ msgstr "Kontroli ĝisdatigojn (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "Inkluzivi antaŭeldonajn versiojn"
+
+#~ msgid "Enable top menu tap zone"
+#~ msgstr "Ebligi supran menuan tuŝzonon"

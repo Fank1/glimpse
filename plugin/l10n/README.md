@@ -79,8 +79,8 @@ emits `de_DE` where KOReader wants `de`, so `crowdin.yml` carries an explicit
 
 ## Project settings that are not in crowdin.yml
 
-`crowdin.yml` governs file mapping only. Set these in the Crowdin web UI (see
-`../../docs/CROWDIN-SETUP.md`):
+`crowdin.yml` governs file mapping only. Set these in the Crowdin web UI, under
+the project settings and the GitHub integration:
 
 - Skip untranslated strings — ON.
 - Push Sources — OFF.

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-27 21:22+0200\n"
+"POT-Creation-Date: 2026-08-29 11:21+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: lv\n"
@@ -75,9 +75,6 @@ msgstr "Pievienot atpakaļ galerijai"
 msgid "Ignore this image"
 msgstr "Ignorēt šo attēlu"
 
-msgid "Page %1 of %2"
-msgstr "%1. lappuse no %2"
-
 msgid "1 image"
 msgstr "1 attēls"
 
@@ -89,6 +86,9 @@ msgstr "1 grāmatzīme"
 
 msgid "%1 bookmarks"
 msgstr "%1 grāmatzīmes"
+
+msgid "Page %1 of %2"
+msgstr "%1. lappuse no %2"
 
 msgid "Mode: All images"
 msgstr "Režīms: Visi attēli"
@@ -347,11 +347,20 @@ msgstr "Savelciet, lai tuvinātu/tālinātu"
 msgid "Layout: %1 · %2"
 msgstr "Izkārtojums: %1 · %2"
 
-msgid "Show Nav Buttons"
-msgstr "Rādīt navigācijas pogas"
+msgid "Maximum zoom: %1%"
+msgstr "Maksimālais tuvinājums: %1%"
+
+msgid "%1% (recommended)"
+msgstr "%1% (ieteicams)"
+
+msgid "%1%"
+msgstr "%1%"
 
 msgid "Navigation Loops Around"
 msgstr "Cikliska navigācija"
+
+msgid "Show Nav Buttons"
+msgstr "Rādīt navigācijas pogas"
 
 msgid "Show Zoom Controls"
 msgstr "Rādīt tuvinājuma vadīklas"
@@ -368,20 +377,14 @@ msgstr "Rādīt attēlu parakstus"
 msgid "Show bookmark label in corner"
 msgstr "Rādīt grāmatzīmes etiķeti stūrī"
 
-msgid "Maximum zoom: %1%"
-msgstr "Maksimālais tuvinājums: %1%"
-
-msgid "%1% (recommended)"
-msgstr "%1% (ieteicams)"
-
-msgid "%1%"
-msgstr "%1%"
-
-msgid "Enable top menu tap zone"
-msgstr "Iespējot augšējās izvēlnes skāriena zonu"
+msgid "Numbered indicator instead of dots"
+msgstr "Ciparu indikators punktu vietā"
 
 msgid "Advanced"
 msgstr "Papildu"
+
+msgid "Respect KOReader top menu activation"
+msgstr "Ievērot KOReader augšējās izvēlnes aktivizēšanu"
 
 msgid "Disable irrelevant image filtering"
 msgstr "Atspējot nesvarīgu attēlu filtrēšanu"
@@ -412,3 +415,6 @@ msgstr "Pārbaudīt atjauninājumus (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "Iekļaut priekšlaidienus"
+
+#~ msgid "Enable top menu tap zone"
+#~ msgstr "Iespējot augšējās izvēlnes skāriena zonu"
