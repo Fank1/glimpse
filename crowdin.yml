@@ -10,6 +10,19 @@
 # (CROWDIN_PROJECT_ID / CROWDIN_PERSONAL_TOKEN) so this file stays safe to
 # commit to a public repo.
 #
+# ── ALWAYS PASS -b main TO THE CLI ────────────────────────────────────────────
+# The GitHub integration owns the source files. It puts them in the Crowdin
+# branch `main`, at /main/plugin/l10n/templates/. A crowdin command WITHOUT
+# `-b main` writes a SECOND copy at the top level instead, and Crowdin then
+# counts every string twice: each language reads about 50%, whatever the real
+# state is. That happened on 2026-08-29 and was cleaned up on 2026-09-07 by
+# deleting the top-level copy (file ids 18 and 20).
+#
+# Crowdin's config schema has no key for this, so it is a rule, not a setting:
+#     crowdin upload sources       -b main
+#     crowdin upload translations  -b main
+#     crowdin download             -b main
+#
 # ── THE LANGUAGE MAPPING IS THE DANGEROUS PART ────────────────────────────────
 # At runtime the plugin loads:
 #     l10n/<KOReader's gettext current_lang>/glimpse.mo
