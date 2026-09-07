@@ -2040,6 +2040,206 @@ function GlimpsePopupMenu:onCloseWidget()
     if self.on_dismiss then self.on_dismiss() end
 end
 
+-- ── zoomed image ────────────────────────────────────────────────────────────
+-- Upstream ImageWidget scales the WHOLE source by the zoom factor and then
+-- paints a panel-sized window out of the result, so the buffer it builds grows
+-- with the SQUARE of the zoom while the visible area stays the same. Measured
+-- on a 2376x3438 image in a 956x1406 panel: at 4.5x the widget rasterised
+-- 8677x12555 = 108.9 megapixels (475 ms) to show 1.34 of them. Every zoom step
+-- cost more than the one before, and the memory guard in
+-- getScaleFactorExtrema had to step in and cap the zoom short of the setting.
+--
+-- This subclass scales only the part of the source that the window actually
+-- shows. The output is window-sized at every zoom level, so a step costs the
+-- same few milliseconds however far in you are.
+--
+-- Everything outside stays in FULL-image coordinates: _bb_w/_bb_h, _offset_x/y
+-- and _max_off_center_*_ratio all describe the whole scaled image exactly as
+-- upstream sets them, because panBy, the mini map and getPanByCenterRatio read
+-- them. Only _bb is smaller, and _crop_x/_crop_y say where it sits, which
+-- paintTo subtracts before it blits.
+local GlimpseZoomImage = ImageWidget:extend{
+    _crop_x = nil,   -- offset of _bb inside the full scaled image
+    _crop_y = nil,
+    _src_bb = nil,   -- loaded and rotated source, kept across re-renders
+    _src_disposable = nil,
+}
+
+-- Denominator the crop grid is quantised to. A crop scaled on its own samples
+-- the source on its OWN grid, which lands between the full image's pixels
+-- unless the crop's origin maps to a whole output pixel. Rounding the scale to
+-- p/GRID and starting every crop on a multiple of GRID source pixels makes
+-- origin * scale a whole number by construction, so the crop's pixels line up
+-- with the full image's exactly and a pan can never shift the picture by one.
+-- The scale moves by at most 1/(2*GRID), which is invisible.
+local ZOOM_GRID = 64
+
+function GlimpseZoomImage:_render()
+    if self._bb then return end
+    local want = self.scale_factor        -- may be 0, meaning "fit the box"
+    local w, h = self.width, self.height
+    local src = self._src_bb
+    if not src then
+        -- Let upstream do the load and the rotation, but NOT the scaling: hand
+        -- it scale 1 and no box, so it stops after producing the source
+        -- bitmap. Keep that source: a pan re-renders, and reloading and
+        -- re-rotating it every time would undo the saving.
+        self.scale_factor = 1
+        self.width, self.height = nil, nil
+        ImageWidget._render(self)
+        self.scale_factor, self.width, self.height = want, w, h
+        src = self._bb
+        self._src_bb, self._src_disposable = src, self._bb_disposable
+    end
+    self._initial_scale_factor = want   -- free() restores scale_factor from it
+
+    local src_w, src_h = src:getWidth(), src:getHeight()
+    -- Resolve the two scales upstream understands but our own path does not:
+    -- 0 means best fit in the box, nil means no scaling.
+    local scale = want
+    if scale == 0 then
+        scale = math.min(w / src_w, h / src_h)
+    elseif scale == nil then
+        scale = 1
+    end
+    -- Will the scaled image spill past the window? Then it is rendered as a
+    -- crop, and the crop grid has to be quantised before any geometry is
+    -- computed from it.
+    local p
+    if src_w * scale > w or src_h * scale > h then
+        p = math.max(1, math.floor(scale * ZOOM_GRID + 0.5))
+        scale = p / ZOOM_GRID
+    end
+    self.scale_factor = scale
+    local full_w = math.max(1, math.floor(src_w * scale))
+    local full_h = math.max(1, math.floor(src_h * scale))
+
+    -- virtual geometry, identical to what upstream would have computed
+    self._bb_w, self._bb_h = full_w, full_h
+    self._max_off_center_x_ratio = 0
+    self._max_off_center_y_ratio = 0
+    if full_w > w then self._max_off_center_x_ratio = 0.5 - w / 2 / full_w end
+    if full_h > h then self._max_off_center_y_ratio = 0.5 - h / 2 / full_h end
+    local function clamp(v, lim)
+        if v < 0.5 - lim then return 0.5 - lim end
+        if v > 0.5 + lim then return 0.5 + lim end
+        return v
+    end
+    self.center_x_ratio = clamp(self.center_x_ratio,
+        self._max_off_center_x_ratio)
+    self.center_y_ratio = clamp(self.center_y_ratio,
+        self._max_off_center_y_ratio)
+    self._offset_x = math.floor(self.center_x_ratio * full_w - w / 2)
+    self._offset_y = math.floor(self.center_y_ratio * full_h - h / 2)
+
+    -- _src_bb owns the source from here on, so nothing below ever frees it
+    if not p then
+        -- the whole scaled image fits the window: nothing to crop, and the
+        -- scale is a shrink, so it is cheap
+        if scale ~= 1 then
+            self._bb = RenderImage:scaleBlitBuffer(src, full_w, full_h, false)
+            self._bb_disposable = true
+        else
+            self._bb = src
+            self._bb_disposable = false
+        end
+        self._crop_x, self._crop_y = 0, 0
+    else
+        -- window in full-image coordinates, clipped to the image
+        local vx0 = math.max(0, math.min(self._offset_x, full_w))
+        local vy0 = math.max(0, math.min(self._offset_y, full_h))
+        local vx1 = math.max(vx0, math.min(full_w, self._offset_x + w))
+        local vy1 = math.max(vy0, math.min(full_h, self._offset_y + h))
+        -- the source rectangle it comes from, snapped out to the grid
+        local function snap_lo(v)
+            return ZOOM_GRID * math.floor(v / scale / ZOOM_GRID)
+        end
+        local function snap_hi(v, lim)
+            local s = ZOOM_GRID * math.ceil(v / scale / ZOOM_GRID)
+            return math.min(lim, s)
+        end
+        local sx0 = math.max(0, snap_lo(vx0))
+        local sy0 = math.max(0, snap_lo(vy0))
+        local sw = math.max(ZOOM_GRID, snap_hi(vx1, src_w) - sx0)
+        local sh = math.max(ZOOM_GRID, snap_hi(vy1, src_h) - sy0)
+        sw = math.min(sw, src_w - sx0)
+        sh = math.min(sh, src_h - sy0)
+        -- viewport shares the source's memory and keeps its stride, which
+        -- mupdf.scaleBlitBuffer reads, so the crop costs no copy. It owns no
+        -- memory, so it is never freed; _src_bb owns the pixels.
+        local sub = src:viewport(sx0, sy0, sw, sh)
+        self._bb = RenderImage:scaleBlitBuffer(sub,
+            math.max(1, math.floor(sw * scale)),
+            math.max(1, math.floor(sh * scale)), false)
+        self._bb_disposable = true
+        -- exact, because sx0 is a multiple of ZOOM_GRID and scale is p/ZOOM_GRID
+        self._crop_x = sx0 / ZOOM_GRID * p
+        self._crop_y = sy0 / ZOOM_GRID * p
+    end
+end
+
+-- Does the rendered crop still cover the window? A pan moves _offset_x/y
+-- without re-rendering (that is the point of the light pan path), so once the
+-- window leaves the crop the buffer has to be rebuilt around the new position.
+function GlimpseZoomImage:_cropCovers()
+    if not (self._bb and self._crop_x) then return false end
+    local cw, ch = self._bb:getWidth(), self._bb:getHeight()
+    local x0 = math.max(0, self._offset_x)
+    local y0 = math.max(0, self._offset_y)
+    local x1 = math.min(self._bb_w, self._offset_x + self.width)
+    local y1 = math.min(self._bb_h, self._offset_y + self.height)
+    return x0 >= self._crop_x and y0 >= self._crop_y
+        and x1 <= self._crop_x + cw and y1 <= self._crop_y + ch
+end
+
+-- Throw away the rendered crop but keep the source, so the next _render only
+-- re-scales. Used when a pan leaves the crop; free() is the disposal path and
+-- drops both.
+function GlimpseZoomImage:_dropRender()
+    if self._bb and self._bb_disposable and self._bb.free then
+        self._bb:free()
+    end
+    self._bb, self._bb_disposable = nil, nil
+    self.scale_factor = self._initial_scale_factor or self.scale_factor
+end
+
+function GlimpseZoomImage:free()
+    ImageWidget.free(self)
+    if self._src_bb and self._src_disposable and self._src_bb.free then
+        self._src_bb:free()
+    end
+    self._src_bb, self._src_disposable = nil, nil
+    self._crop_x, self._crop_y = nil, nil
+end
+
+function GlimpseZoomImage:paintTo(bb, x, y)
+    if self.hide then return end
+    self:getSize()                      -- render if needed
+    if not self:_cropCovers() then
+        -- the pan left the crop: rebuild it around where the window is now.
+        -- _render reads center_*_ratio, which every pan path keeps in step
+        -- with _offset_x/y.
+        self:_dropRender()
+        self:getSize()
+    end
+    -- upstream blits from (_offset_x, _offset_y) of _bb; ours holds only the
+    -- crop, so shift into it
+    local ox, oy = self._offset_x, self._offset_y
+    self._offset_x = ox - self._crop_x
+    self._offset_y = oy - self._crop_y
+    ImageWidget.paintTo(self, bb, x, y)
+    self._offset_x, self._offset_y = ox, oy
+end
+
+-- Upstream caps the zoom so the rasterised image cannot eat the RAM. That cap
+-- assumed the WHOLE image was rasterised; the crop above makes the buffer
+-- window-sized whatever the zoom, so only the user's own Maximum zoom setting
+-- limits it now. The minimum is unchanged.
+function GlimpseZoomImage:getScaleFactorExtrema()
+    local minf = ImageWidget.getScaleFactorExtrema(self)
+    return minf, math.huge
+end
+
 -- ── viewer ──────────────────────────────────────────────────────────────────
 -- ImageViewer already provides pan/zoom/rotate, multi-image lists with lazy
 -- per-image render functions, captions and resource cleanup. We add:
@@ -3647,7 +3847,7 @@ function GlimpseViewer:_new_image_wg()
             end
         end
     end
-    self._image_wg = ImageWidget:new{
+    self._image_wg = GlimpseZoomImage:new{
         image = src,
         image_disposable = false, -- we may reuse self.image
         alpha = true,

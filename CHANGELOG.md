@@ -19,7 +19,8 @@
 
 **Maximum zoom**
 - The Maximum zoom setting now has a Custom option. Enter any value from 100% to 1000%, in place of the fixed presets. A very high value helps low-resolution images fill the screen.
-- The zoom-in ceiling now respects the memory limit of the image. The "+" button disables at the real maximum, so it no longer looks active when the image cannot grow further.
+- **Zooming in is much quicker, and it no longer slows down the further you go.** Each step used to rebuild the whole image at the new size and then show a screen-sized piece of it, so the work grew with the square of the zoom: on a 1920×2778 image the fourth step built a 109-megapixel picture to show 1.3 of them, and took 480 ms. Glimpse now builds only the part you can see. The same step takes 9 ms, and every step costs the same however far in you are.
+- You can now zoom all the way to the value you set. The old path had to stop early to stay inside the memory limit, which also left the "+" button looking active when the image could not grow further. Both are gone: "+" greys out exactly at your Maximum zoom.
 
 ## 1.5.1
 
