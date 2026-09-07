@@ -1,8 +1,9 @@
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: glimpse-plugin\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 11:21+0200\n"
+"POT-Creation-Date: 2026-09-07 18:00+0200\n"
 "PO-Revision-Date: 2026-08-29 10:08\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
@@ -11,11 +12,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
-"X-Crowdin-Project: glimpse-plugin\n"
-"X-Crowdin-Project-ID: 923235\n"
-"X-Crowdin-Language: pl\n"
 "X-Crowdin-File: /plugin/l10n/templates/glimpse-labels.pot\n"
 "X-Crowdin-File-ID: 18\n"
+"X-Crowdin-Language: pl\n"
+"X-Crowdin-Project: glimpse-plugin\n"
+"X-Crowdin-Project-ID: 923235\n"
 
 msgid "Ignore Image"
 msgstr "Ignoruj obraz"
@@ -49,6 +50,9 @@ msgstr "Przełącz odwracanie w trybie nocnym"
 
 msgid "Layout"
 msgstr "Układ"
+
+msgid "Panel Size Switch"
+msgstr "Przełącznik rozmiaru panelu"
 
 msgid "Page %1 (%2)"
 msgstr "Strona %1 (%2)"
@@ -95,6 +99,9 @@ msgstr "Tryb: wszystkie obrazy"
 msgid "Mode: Spoiler-free"
 msgstr "Tryb: bez spoilerów"
 
+msgid "Spoiler-free is not supported on MOBI files."
+msgstr "Tryb bez spoilerów nie jest obsługiwany w plikach MOBI."
+
 msgid "Reset Rotation"
 msgstr "Resetuj obrót"
 
@@ -116,6 +123,12 @@ msgstr "Uwzględnij zakładki"
 msgid "Invert in Night Mode"
 msgstr "Odwracaj w trybie nocnym"
 
+msgid "Switch to Large"
+msgstr "Przełącz na duży"
+
+msgid "Switch to Compact"
+msgstr "Przełącz na kompaktowy"
+
 msgid "Image ignored."
 msgstr "Obraz zignorowany."
 
@@ -131,14 +144,11 @@ msgstr "Nie otwarto żadnej książki."
 msgid "Glimpse failed to load its scanner module. Try reinstalling the plugin."
 msgstr "Glimpse nie mógł wczytać swojego modułu skanera. Spróbuj ponownie zainstalować wtyczkę."
 
-msgid "Glimpse works with EPUB books only (this document format is not supported)."
-msgstr "Glimpse działa tylko z książkami EPUB (ten format dokumentu nie jest obsługiwany)."
+msgid "Glimpse works with EPUB, FB2 and MOBI books only (this document format is not supported)."
+msgstr "Glimpse działa tylko z książkami EPUB, FB2 i MOBI (ten format dokumentu nie jest obsługiwany)."
 
 msgid "Scanning book for images…"
 msgstr "Wyszukiwanie obrazów w książce…"
-
-msgid "Glimpse works with EPUB books only."
-msgstr "Glimpse działa tylko z książkami EPUB."
 
 msgid "Could not scan this book for images."
 msgstr "Nie udało się wyszukać obrazów w tej książce."
@@ -200,11 +210,15 @@ msgstr "Masz najnowszą wersję (v%1)."
 msgid "No downloadable release package found."
 msgstr "Nie znaleziono pakietu wydania do pobrania."
 
-msgid "Update available: %1\n"
-"(installed: v%2)\n\n"
+msgid ""
+"Update available: %1\n"
+"(installed: v%2)\n"
+"\n"
 "Download and install now?"
-msgstr "Dostępna aktualizacja: %1\n"
-"(zainstalowana: v%2)\n\n"
+msgstr ""
+"Dostępna aktualizacja: %1\n"
+"(zainstalowana: v%2)\n"
+"\n"
 "Pobrać i zainstalować teraz?"
 
 msgid "Update"
@@ -213,9 +227,11 @@ msgstr "Aktualizuj"
 msgid "Updating to %1…"
 msgstr "Aktualizowanie do %1…"
 
-msgid "Updated to %1.\n"
+msgid ""
+"Updated to %1.\n"
 "Restart KOReader now to load it?"
-msgstr "Zaktualizowano do %1.\n"
+msgstr ""
+"Zaktualizowano do %1.\n"
 "Uruchomić KOReader ponownie teraz, aby wczytać?"
 
 msgid "Restart"
@@ -269,11 +285,17 @@ msgstr "Położenie w pionie"
 msgid "Enable Glimpse"
 msgstr "Włącz Glimpse"
 
-msgid "Tip: open Glimpse instantly with a gesture.\n\n"
-"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n\n"
+msgid ""
+"Tip: open Glimpse instantly with a gesture.\n"
+"\n"
+"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n"
+"\n"
 "(This tip is shown only once.)"
-msgstr "Wskazówka: otwieraj Glimpse od razu gestem.\n\n"
-"Ustaw go w Ustawienia → Dotknięcia i gesty → Menedżer gestów → wybierz gest → Czytnik → 'Otwórz Glimpse'.\n\n"
+msgstr ""
+"Wskazówka: otwieraj Glimpse od razu gestem.\n"
+"\n"
+"Ustaw go w Ustawienia → Dotknięcia i gesty → Menedżer gestów → wybierz gest → Czytnik → 'Otwórz Glimpse'.\n"
+"\n"
 "(Ta wskazówka jest pokazywana tylko raz.)"
 
 msgid "Mode: Show all images"
@@ -318,6 +340,18 @@ msgstr "Uszczypnij, aby powiększyć/pomniejszyć"
 msgid "Layout: %1 · %2"
 msgstr "Układ: %1 · %2"
 
+msgid "Panel Size: Compact"
+msgstr "Rozmiar panelu: kompaktowy"
+
+msgid "Panel Size: Large"
+msgstr "Rozmiar panelu: duży"
+
+msgid "Large"
+msgstr "Duży"
+
+msgid "Compact"
+msgstr "Kompaktowy"
+
 msgid "Maximum zoom: %1%"
 msgstr "Maksymalne powiększenie: %1%"
 
@@ -326,6 +360,18 @@ msgstr "%1% (zalecane)"
 
 msgid "%1%"
 msgstr "%1%"
+
+msgid "Custom: %1%"
+msgstr "Niestandardowe: %1%"
+
+msgid "Custom…"
+msgstr "Niestandardowe…"
+
+msgid "Set the zoom ceiling as a percentage of the image's own resolution. Past 100% Glimpse enlarges the pixels, so a very high value can look soft."
+msgstr "Ustaw górną granicę powiększenia jako procent własnej rozdzielczości obrazu. Powyżej 100% Glimpse powiększa piksele, więc bardzo wysoka wartość może wyglądać nieostro."
+
+msgid "Set"
+msgstr "Ustaw"
 
 msgid "Navigation Loops Around"
 msgstr "Nawigacja zapętlona"
@@ -387,3 +433,13 @@ msgstr "Sprawdź aktualizacje (v%1)"
 msgid "Include pre-release versions"
 msgstr "Uwzględnij wersje przedpremierowe"
 
+#, fuzzy
+#~ msgid "Mini Mode"
+#~ msgstr "Minimapa"
+
+#, fuzzy
+#~ msgid "Maximum zoom"
+#~ msgstr "Maksymalne powiększenie: %1%"
+
+#~ msgid "Glimpse works with EPUB books only."
+#~ msgstr "Glimpse działa tylko z książkami EPUB."

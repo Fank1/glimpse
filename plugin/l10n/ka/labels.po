@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 11:21+0200\n"
+"POT-Creation-Date: 2026-09-07 18:00+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: ka\n"
@@ -50,6 +50,9 @@ msgstr "ინვერსია ღამის რეჟიმში"
 
 msgid "Layout"
 msgstr "განლაგება"
+
+msgid "Panel Size Switch"
+msgstr "პანელის ზომის გადამრთველი"
 
 msgid "Page %1 (%2)"
 msgstr "გვერდი %1 (%2)"
@@ -96,6 +99,9 @@ msgstr "რეჟიმი: ყველა სურათი"
 msgid "Mode: Spoiler-free"
 msgstr "რეჟიმი: სპოილერების გარეშე"
 
+msgid "Spoiler-free is not supported on MOBI files."
+msgstr "სპოილერების გარეშე რეჟიმი MOBI ფაილებისთვის მხარდაჭერილი არ არის."
+
 msgid "Reset Rotation"
 msgstr "შემობრუნების გაუქმება"
 
@@ -117,6 +123,12 @@ msgstr "სანიშნეების ჩართვა"
 msgid "Invert in Night Mode"
 msgstr "ინვერსია ღამის რეჟიმში"
 
+msgid "Switch to Large"
+msgstr "დიდზე გადართვა"
+
+msgid "Switch to Compact"
+msgstr "კომპაქტურზე გადართვა"
+
 msgid "Image ignored."
 msgstr "სურათი იგნორირებულია."
 
@@ -129,23 +141,14 @@ msgstr "Glimpse-ის გახსნა"
 msgid "No book is open."
 msgstr "წიგნი გახსნილი არ არის."
 
-msgid ""
-"Glimpse failed to load its scanner module. Try reinstalling the plugin."
-msgstr ""
-"Glimpse-მა ვერ ჩატვირთა სკანირების მოდული. სცადეთ დანამატის ხელახლა "
-"დაყენება."
+msgid "Glimpse failed to load its scanner module. Try reinstalling the plugin."
+msgstr "Glimpse-მა ვერ ჩატვირთა სკანირების მოდული. სცადეთ დანამატის ხელახლა დაყენება."
 
-msgid ""
-"Glimpse works with EPUB books only (this document format is not supported)."
-msgstr ""
-"Glimpse მუშაობს მხოლოდ EPUB წიგნებთან (ეს დოკუმენტის ფორმატი მხარდაჭერილი არ"
-" არის)."
+msgid "Glimpse works with EPUB, FB2 and MOBI books only (this document format is not supported)."
+msgstr "Glimpse მუშაობს მხოლოდ EPUB, FB2 და MOBI წიგნებთან (ეს დოკუმენტის ფორმატი მხარდაჭერილი არ არის)."
 
 msgid "Scanning book for images…"
 msgstr "მიმდინარეობს წიგნის სკანირება სურათებისთვის…"
-
-msgid "Glimpse works with EPUB books only."
-msgstr "Glimpse მუშაობს მხოლოდ EPUB წიგნებთან."
 
 msgid "Could not scan this book for images."
 msgstr "ამ წიგნის სკანირება სურათებისთვის ვერ მოხერხდა."
@@ -304,24 +307,14 @@ msgstr "რეჟიმი: სურათების ჩვენება �
 msgid "Show images up to current chapter"
 msgstr "სურათების ჩვენება მიმდინარე თავამდე"
 
-msgid ""
-"Images that appear beyond your current position stay hidden, so you can't "
-"spoil yourself. Granularity is per chapter: images in the chapter you are "
-"currently reading are shown."
-msgstr ""
-"სურათები, რომლებიც თქვენს მიმდინარე პოზიციას მიღმა ჩნდება, დამალული რჩება, "
-"რომ საკუთარ თავს არ გაუმხილოთ. დეტალიზაცია თავების მიხედვითაა: ნაჩვენებია იმ"
-" თავის სურათები, რომელსაც ახლა კითხულობთ."
+msgid "Images that appear beyond your current position stay hidden, so you can't spoil yourself. Granularity is per chapter: images in the chapter you are currently reading are shown."
+msgstr "სურათები, რომლებიც თქვენს მიმდინარე პოზიციას მიღმა ჩნდება, დამალული რჩება, რომ საკუთარ თავს არ გაუმხილოთ. დეტალიზაცია თავების მიხედვითაა: ნაჩვენებია იმ თავის სურათები, რომელსაც ახლა კითხულობთ."
 
 msgid "Show all images"
 msgstr "ყველა სურათის ჩვენება"
 
-msgid ""
-"Show reference images from anywhere in the book, including parts you haven't"
-" reached yet."
-msgstr ""
-"საცნობარო სურათების ჩვენება წიგნის ნებისმიერი ადგილიდან, იმ ნაწილების "
-"ჩათვლით, რომლებამდეც ჯერ არ მისულხართ."
+msgid "Show reference images from anywhere in the book, including parts you haven't reached yet."
+msgstr "საცნობარო სურათების ჩვენება წიგნის ნებისმიერი ადგილიდან, იმ ნაწილების ჩათვლით, რომლებამდეც ჯერ არ მისულხართ."
 
 msgid "Include Bookmarks in Gallery"
 msgstr "სანიშნეების ჩართვა გალერეაში"
@@ -347,6 +340,18 @@ msgstr "მოასწიეთ თითები მასშტაბირ�
 msgid "Layout: %1 · %2"
 msgstr "განლაგება: %1 · %2"
 
+msgid "Panel Size: Compact"
+msgstr "პანელის ზომა: კომპაქტური"
+
+msgid "Panel Size: Large"
+msgstr "პანელის ზომა: დიდი"
+
+msgid "Large"
+msgstr "დიდი"
+
+msgid "Compact"
+msgstr "კომპაქტური"
+
 msgid "Maximum zoom: %1%"
 msgstr "მაქსიმალური მასშტაბი: %1%"
 
@@ -355,6 +360,18 @@ msgstr "%1% (რეკომენდებული)"
 
 msgid "%1%"
 msgstr "%1%"
+
+msgid "Custom: %1%"
+msgstr "მორგებული: %1%"
+
+msgid "Custom…"
+msgstr "მორგებული…"
+
+msgid "Set the zoom ceiling as a percentage of the image's own resolution. Past 100% Glimpse enlarges the pixels, so a very high value can look soft."
+msgstr "დააყენეთ მასშტაბის ზედა ზღვარი სურათის საკუთარი გარჩევადობის პროცენტულად. 100%-ის ზემოთ Glimpse ზრდის პიქსელებს, ამიტომ ძალიან მაღალი მნიშვნელობა შეიძლება ბუნდოვნად გამოიყურებოდეს."
+
+msgid "Set"
+msgstr "დაყენება"
 
 msgid "Navigation Loops Around"
 msgstr "ციკლური ნავიგაცია"
@@ -415,6 +432,17 @@ msgstr "განახლებების შემოწმება (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "წინასწარი გამოშვებების ჩართვა"
+
+#, fuzzy
+#~ msgid "Mini Mode"
+#~ msgstr "მინი-რუკა"
+
+#, fuzzy
+#~ msgid "Maximum zoom"
+#~ msgstr "მაქსიმალური მასშტაბი: %1%"
+
+#~ msgid "Glimpse works with EPUB books only."
+#~ msgstr "Glimpse მუშაობს მხოლოდ EPUB წიგნებთან."
 
 #~ msgid "Enable top menu tap zone"
 #~ msgstr "ზედა მენიუს შეხების ზონის ჩართვა"

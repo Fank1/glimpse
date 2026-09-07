@@ -1,8 +1,9 @@
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: glimpse-plugin\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 11:21+0200\n"
+"POT-Creation-Date: 2026-09-07 18:00+0200\n"
 "PO-Revision-Date: 2026-08-29 10:07\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
@@ -11,11 +12,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
-"X-Crowdin-Project: glimpse-plugin\n"
-"X-Crowdin-Project-ID: 923235\n"
-"X-Crowdin-Language: ar\n"
 "X-Crowdin-File: /plugin/l10n/templates/glimpse-help.pot\n"
 "X-Crowdin-File-ID: 20\n"
+"X-Crowdin-Language: ar\n"
+"X-Crowdin-Project: glimpse-plugin\n"
+"X-Crowdin-Project-ID: 923235\n"
 
 msgid "Master switch. When off, the bound gesture and the Open Glimpse entry do nothing – a quick way to silence Glimpse without unbinding its gesture."
 msgstr "المفتاح الرئيسي. عند إيقافه، لا تفعل الإيماءة المرتبطة ولا إدخال فتح Glimpse أي شيء – طريقة سريعة لإسكات Glimpse دون فك ارتباط إيماءته."
@@ -32,6 +33,9 @@ msgstr "اعرض أيضًا الصفحات التي أضفت إليها إشار
 msgid "Choose which actions appear in the viewer's ⋯ menu. Reset Rotation is automatic (shown while an image is rotated)."
 msgstr "اختر الإجراءات التي تظهر في قائمة ⋯ بالعارض. إعادة تعيين التدوير تلقائية (تظهر أثناء تدوير صورة)."
 
+msgid "These apply to the large panel. The compact panel always keeps swipe, pinch and double-tap on, because it hides the navigation buttons and the reset button."
+msgstr "تنطبق هذه الخيارات على اللوحة الكبيرة. أما اللوحة المدمجة فتُبقي التمرير والقرص والنقر المزدوج مفعّلة دائمًا، لأنها تخفي أزرار التنقل وزر إعادة التعيين."
+
 msgid "Double-tap the image to jump to the maximum zoom (centered on the tap), and again to return to the fitted view. On by default."
 msgstr "انقر نقرًا مزدوجًا على الصورة للقفز إلى أقصى تكبير (متمركزًا على النقرة)، ومرة أخرى للعودة إلى العرض المُلائم. مُفعّل افتراضيًا."
 
@@ -43,6 +47,9 @@ msgstr "اقرص أو باعِد إصبعين على الصورة للتصغير
 
 msgid "Where Glimpse opens: a side panel (left or right) or, in portrait, a band across the top or bottom. In landscape it always uses the preferred side."
 msgstr "حيث يُفتح Glimpse: لوحة جانبية (يسار أو يمين) أو، في الوضع العمودي، شريط عبر الأعلى أو الأسفل. في الوضع الأفقي يستخدم دائمًا الجانب المفضّل."
+
+msgid "Large fills one edge of the screen. Compact is a small card that floats over the page, which you drag by the grip in its top-right corner. The compact card hides the captions, the bookmark label, the navigation buttons and the reset button, and the Gallery always opens at the large size."
+msgstr "الكبير يملأ إحدى حواف الشاشة. المدمج بطاقة صغيرة تطفو فوق الصفحة، تسحبها من المقبض في زاويتها العلوية اليمنى. تخفي البطاقة المدمجة تسميات الصور وتسمية العلامة المرجعية وأزرار التنقل وزر إعادة التعيين، ويفتح المعرض دائمًا بالحجم الكبير."
 
 msgid "How far you can zoom in, as a percentage of the image's own resolution. Double-tap jumps to this level and pinch stops here. Higher reveals more on detailed maps, but past 100% it is upscaling, so very high can look soft."
 msgstr "إلى أي مدى يمكنك التكبير، كنسبة مئوية من دقة الصورة نفسها. ينتقل النقر المزدوج إلى هذا المستوى ويتوقف القرص هنا. الأعلى يكشف المزيد على الخرائط التفصيلية، لكن بعد 100% يكون تكبيرًا رقميًا، لذا قد يبدو المرتفع جدًا ناعمًا."
@@ -91,4 +98,3 @@ msgstr "يخزّن Glimpse مسحه للكتاب مؤقتًا. استخدم هذ
 
 msgid "Also offer releases marked as pre-release on GitHub – test builds published before a proper release. Normal update checks never see those."
 msgstr "اعرض أيضًا الإصدارات المُعلَّمة كإصدار ما قبل الإطلاق على GitHub – نسخ اختبارية تُنشَر قبل إصدار رسمي. لا تراها عمليات التحقق من التحديثات العادية أبدًا."
-

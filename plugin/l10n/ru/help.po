@@ -1,8 +1,9 @@
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: glimpse-plugin\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 11:21+0200\n"
+"POT-Creation-Date: 2026-09-07 18:00+0200\n"
 "PO-Revision-Date: 2026-08-29 10:08\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
@@ -11,11 +12,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
-"X-Crowdin-Project: glimpse-plugin\n"
-"X-Crowdin-Project-ID: 923235\n"
-"X-Crowdin-Language: ru\n"
 "X-Crowdin-File: /plugin/l10n/templates/glimpse-help.pot\n"
 "X-Crowdin-File-ID: 20\n"
+"X-Crowdin-Language: ru\n"
+"X-Crowdin-Project: glimpse-plugin\n"
+"X-Crowdin-Project-ID: 923235\n"
 
 msgid "Master switch. When off, the bound gesture and the Open Glimpse entry do nothing – a quick way to silence Glimpse without unbinding its gesture."
 msgstr "Главный переключатель. Когда он выключен, назначенный жест и пункт Открыть Glimpse ничего не делают — быстрый способ отключить Glimpse, не снимая назначение жеста."
@@ -32,6 +33,9 @@ msgstr "Показывать в галерее также страницы, ко
 msgid "Choose which actions appear in the viewer's ⋯ menu. Reset Rotation is automatic (shown while an image is rotated)."
 msgstr "Выберите, какие действия появляются в меню ⋯ просмотрщика. Сбросить поворот — автоматическое (показывается, пока изображение повёрнуто)."
 
+msgid "These apply to the large panel. The compact panel always keeps swipe, pinch and double-tap on, because it hides the navigation buttons and the reset button."
+msgstr "Это относится к большой панели. Компактная панель всегда оставляет включенными свайп, щипок и двойное касание, потому что она скрывает кнопки навигации и кнопку сброса."
+
 msgid "Double-tap the image to jump to the maximum zoom (centered on the tap), and again to return to the fitted view. On by default."
 msgstr "Дважды коснитесь изображения, чтобы перейти к максимальному масштабу (по центру касания), и ещё раз, чтобы вернуться к вписанному виду. По умолчанию включено."
 
@@ -43,6 +47,9 @@ msgstr "Сведите или разведите два пальца на изо
 
 msgid "Where Glimpse opens: a side panel (left or right) or, in portrait, a band across the top or bottom. In landscape it always uses the preferred side."
 msgstr "Где открывается Glimpse: боковая панель (слева или справа) или, в портретной ориентации, полоса сверху либо снизу. В альбомной ориентации всегда используется предпочтительная сторона."
+
+msgid "Large fills one edge of the screen. Compact is a small card that floats over the page, which you drag by the grip in its top-right corner. The compact card hides the captions, the bookmark label, the navigation buttons and the reset button, and the Gallery always opens at the large size."
+msgstr "Большая занимает один край экрана. Компактная – это небольшая карточка, которая плавает над страницей и которую вы перетаскиваете за держатель в ее правом верхнем углу. Компактная карточка скрывает подписи, метку закладки, кнопки навигации и кнопку сброса, а Галерея всегда открывается в большом размере."
 
 msgid "How far you can zoom in, as a percentage of the image's own resolution. Double-tap jumps to this level and pinch stops here. Higher reveals more on detailed maps, but past 100% it is upscaling, so very high can look soft."
 msgstr "Насколько сильно можно увеличивать, в процентах от собственного разрешения изображения. Двойное касание переходит на этот уровень, а сведение пальцев останавливается здесь. Более высокое значение показывает больше на детальных картах, но выше 100 % это апскейлинг, поэтому очень высокое может выглядеть размытым."
@@ -91,4 +98,3 @@ msgstr "Glimpse кэширует сканирование книги. Испол
 
 msgid "Also offer releases marked as pre-release on GitHub – test builds published before a proper release. Normal update checks never see those."
 msgstr "Также предлагать версии, отмеченные на GitHub как предварительные, — тестовые сборки, публикуемые до полноценного выпуска. Обычные проверки обновлений их никогда не видят."
-

@@ -114,8 +114,8 @@ Glimpse is translated on [Crowdin](https://crowdin.com/project/glimpse-plugin), 
 
 ## Scope and limitations
 
-- **EPUB only** (and other HTML-based formats crengine renders). PDF, DjVu, comics and manga get a polite "not supported" message.
-- Spoiler scope tracks the **chapter you're currently in**, not the furthest you've ever read.
+- **EPUB, FB2 and MOBI** (and other HTML-based formats crengine renders) are supported. PDF, DjVu, comics and manga get a polite "not supported" message.
+- Spoiler scope tracks the **chapter you're currently in**, not the furthest you've ever read. A MOBI holds the whole book as one HTML document, so Glimpse cannot place an image in a chapter. On a MOBI the mode is locked to "All images" and the switcher is greyed out. Your setting is kept for EPUB and FB2 books.
 
 ## Development
 
@@ -124,8 +124,10 @@ plugin/                     the plugin (copy/stage as glimpse.koplugin/)
   main.lua                  KOReader wiring: menu, gesture action, scan cache,
                             viewer subclass (dots, captions, hide, swipe-nav)
   glimpse_scanner.lua       pure Lua, no KOReader deps: EPUB container/OPF/HTML
-                            parsing, image-header dimension sniffing (PNG,
-                            JPEG, GIF, WebP, BMP, SVG), filter heuristics
+                            parsing, FB2 (base64 <binary>) and MOBI (crengine
+                            mobi_image_N) scanners, image-header dimension
+                            sniffing (PNG, JPEG, GIF, WebP, BMP, SVG), filter
+                            heuristics
 builder/
   check.sh                  syntax gate + fixture regen + unit tests; run it
                             before calling any change done

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 11:21+0200\n"
+"POT-Creation-Date: 2026-09-07 18:00+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: ko_KR\n"
@@ -50,6 +50,9 @@ msgstr "야간 모드 반전 전환"
 
 msgid "Layout"
 msgstr "레이아웃"
+
+msgid "Panel Size Switch"
+msgstr "패널 크기 전환"
 
 msgid "Page %1 (%2)"
 msgstr "%1페이지 (%2)"
@@ -96,6 +99,9 @@ msgstr "모드: 모든 이미지"
 msgid "Mode: Spoiler-free"
 msgstr "모드: 스포일러 없음"
 
+msgid "Spoiler-free is not supported on MOBI files."
+msgstr "MOBI 파일에서는 스포일러 없음 모드를 지원하지 않습니다."
+
 msgid "Reset Rotation"
 msgstr "회전 초기화"
 
@@ -117,6 +123,12 @@ msgstr "북마크 포함"
 msgid "Invert in Night Mode"
 msgstr "야간 모드에서 반전"
 
+msgid "Switch to Large"
+msgstr "크게로 전환"
+
+msgid "Switch to Compact"
+msgstr "간결로 전환"
+
 msgid "Image ignored."
 msgstr "이미지를 무시했습니다."
 
@@ -129,19 +141,14 @@ msgstr "Glimpse 열기"
 msgid "No book is open."
 msgstr "열려 있는 책이 없습니다."
 
-msgid ""
-"Glimpse failed to load its scanner module. Try reinstalling the plugin."
+msgid "Glimpse failed to load its scanner module. Try reinstalling the plugin."
 msgstr "Glimpse가 스캐너 모듈을 불러오지 못했습니다. 플러그인을 다시 설치해 보세요."
 
-msgid ""
-"Glimpse works with EPUB books only (this document format is not supported)."
-msgstr "Glimpse는 EPUB 책에서만 작동합니다(이 문서 형식은 지원되지 않습니다)."
+msgid "Glimpse works with EPUB, FB2 and MOBI books only (this document format is not supported)."
+msgstr "Glimpse는 EPUB, FB2, MOBI 책에서만 작동합니다(이 문서 형식은 지원되지 않습니다)."
 
 msgid "Scanning book for images…"
 msgstr "책에서 이미지를 검색하는 중…"
-
-msgid "Glimpse works with EPUB books only."
-msgstr "Glimpse는 EPUB 책에서만 작동합니다."
 
 msgid "Could not scan this book for images."
 msgstr "이 책에서 이미지를 검색할 수 없습니다."
@@ -300,20 +307,13 @@ msgstr "모드: 현재 챕터까지의 이미지 표시"
 msgid "Show images up to current chapter"
 msgstr "현재 챕터까지의 이미지 표시"
 
-msgid ""
-"Images that appear beyond your current position stay hidden, so you can't "
-"spoil yourself. Granularity is per chapter: images in the chapter you are "
-"currently reading are shown."
-msgstr ""
-"현재 위치보다 뒤에 나오는 이미지는 숨겨진 상태로 유지되어 스포일러를 방지합니다. 단위는 챕터별이며, 현재 읽고 있는 챕터의 이미지가 "
-"표시됩니다."
+msgid "Images that appear beyond your current position stay hidden, so you can't spoil yourself. Granularity is per chapter: images in the chapter you are currently reading are shown."
+msgstr "현재 위치보다 뒤에 나오는 이미지는 숨겨진 상태로 유지되어 스포일러를 방지합니다. 단위는 챕터별이며, 현재 읽고 있는 챕터의 이미지가 표시됩니다."
 
 msgid "Show all images"
 msgstr "모든 이미지 표시"
 
-msgid ""
-"Show reference images from anywhere in the book, including parts you haven't"
-" reached yet."
+msgid "Show reference images from anywhere in the book, including parts you haven't reached yet."
 msgstr "아직 읽지 않은 부분을 포함해 책의 어디에서든 참고 이미지를 표시합니다."
 
 msgid "Include Bookmarks in Gallery"
@@ -340,6 +340,18 @@ msgstr "핀치하여 확대/축소"
 msgid "Layout: %1 · %2"
 msgstr "레이아웃: %1 · %2"
 
+msgid "Panel Size: Compact"
+msgstr "패널 크기: 간결"
+
+msgid "Panel Size: Large"
+msgstr "패널 크기: 크게"
+
+msgid "Large"
+msgstr "크게"
+
+msgid "Compact"
+msgstr "간결"
+
 msgid "Maximum zoom: %1%"
 msgstr "최대 확대: %1%"
 
@@ -348,6 +360,18 @@ msgstr "%1% (권장)"
 
 msgid "%1%"
 msgstr "%1%"
+
+msgid "Custom: %1%"
+msgstr "사용자 지정: %1%"
+
+msgid "Custom…"
+msgstr "사용자 지정…"
+
+msgid "Set the zoom ceiling as a percentage of the image's own resolution. Past 100% Glimpse enlarges the pixels, so a very high value can look soft."
+msgstr "확대 상한을 이미지 자체 해상도의 백분율로 설정합니다. 100%를 넘으면 Glimpse가 픽셀을 확대하므로 값이 매우 크면 흐릿해 보일 수 있습니다."
+
+msgid "Set"
+msgstr "설정"
 
 msgid "Navigation Loops Around"
 msgstr "순환 탐색"
@@ -358,9 +382,8 @@ msgstr "탐색 버튼 표시"
 msgid "Show Zoom Controls"
 msgstr "확대/축소 컨트롤 표시"
 
-#, fuzzy
 msgid "Show Mini Map"
-msgstr "책에서 보기"
+msgstr "미니맵 표시"
 
 msgid "Invert Images in Night Mode"
 msgstr "야간 모드에서 이미지 반전"
@@ -409,6 +432,17 @@ msgstr "업데이트 확인 (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "사전 릴리스 버전 포함"
+
+#, fuzzy
+#~ msgid "Mini Mode"
+#~ msgstr "미니맵"
+
+#, fuzzy
+#~ msgid "Maximum zoom"
+#~ msgstr "최대 확대: %1%"
+
+#~ msgid "Glimpse works with EPUB books only."
+#~ msgstr "Glimpse는 EPUB 책에서만 작동합니다."
 
 #~ msgid "Enable top menu tap zone"
 #~ msgstr "상단 메뉴 탭 영역 사용"

@@ -1,8 +1,9 @@
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: glimpse-plugin\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 11:21+0200\n"
+"POT-Creation-Date: 2026-09-07 18:00+0200\n"
 "PO-Revision-Date: 2026-08-29 10:08\n"
 "Last-Translator: \n"
 "Language-Team: Finnish\n"
@@ -11,11 +12,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Crowdin-Project: glimpse-plugin\n"
-"X-Crowdin-Project-ID: 923235\n"
-"X-Crowdin-Language: fi\n"
 "X-Crowdin-File: /plugin/l10n/templates/glimpse-labels.pot\n"
 "X-Crowdin-File-ID: 18\n"
+"X-Crowdin-Language: fi\n"
+"X-Crowdin-Project: glimpse-plugin\n"
+"X-Crowdin-Project-ID: 923235\n"
 
 msgid "Ignore Image"
 msgstr "Ohita kuva"
@@ -49,6 +50,9 @@ msgstr "Vaihda käännön yötilassa"
 
 msgid "Layout"
 msgstr "Asettelu"
+
+msgid "Panel Size Switch"
+msgstr "Paneelin koon vaihto"
 
 msgid "Page %1 (%2)"
 msgstr "Sivu %1 (%2)"
@@ -95,6 +99,9 @@ msgstr "Tila: kaikki kuvat"
 msgid "Mode: Spoiler-free"
 msgstr "Tila: spoilaamaton"
 
+msgid "Spoiler-free is not supported on MOBI files."
+msgstr "Spoilaamatonta tilaa ei tueta MOBI-tiedostoissa."
+
 msgid "Reset Rotation"
 msgstr "Nollaa kierto"
 
@@ -116,6 +123,12 @@ msgstr "Sisällytä kirjanmerkit"
 msgid "Invert in Night Mode"
 msgstr "Käännä yötilassa"
 
+msgid "Switch to Large"
+msgstr "Vaihda suureen"
+
+msgid "Switch to Compact"
+msgstr "Vaihda kompaktiin"
+
 msgid "Image ignored."
 msgstr "Kuva ohitettu."
 
@@ -131,14 +144,11 @@ msgstr "Yhtään kirjaa ei ole auki."
 msgid "Glimpse failed to load its scanner module. Try reinstalling the plugin."
 msgstr "Glimpse ei voinut ladata skannerimoduuliaan. Yritä asentaa lisäosa uudelleen."
 
-msgid "Glimpse works with EPUB books only (this document format is not supported)."
-msgstr "Glimpse toimii vain EPUB-kirjojen kanssa (tätä asiakirjamuotoa ei tueta)."
+msgid "Glimpse works with EPUB, FB2 and MOBI books only (this document format is not supported)."
+msgstr "Glimpse toimii vain EPUB-, FB2- ja MOBI-kirjojen kanssa (tätä asiakirjamuotoa ei tueta)."
 
 msgid "Scanning book for images…"
 msgstr "Etsitään kuvia kirjasta…"
-
-msgid "Glimpse works with EPUB books only."
-msgstr "Glimpse toimii vain EPUB-kirjojen kanssa."
 
 msgid "Could not scan this book for images."
 msgstr "Kirjasta ei voitu etsiä kuvia."
@@ -200,11 +210,15 @@ msgstr "Olet ajan tasalla (v%1)."
 msgid "No downloadable release package found."
 msgstr "Ladattavaa julkaisupakettia ei löytynyt."
 
-msgid "Update available: %1\n"
-"(installed: v%2)\n\n"
+msgid ""
+"Update available: %1\n"
+"(installed: v%2)\n"
+"\n"
 "Download and install now?"
-msgstr "Päivitys saatavilla: %1\n"
-"(asennettu: v%2)\n\n"
+msgstr ""
+"Päivitys saatavilla: %1\n"
+"(asennettu: v%2)\n"
+"\n"
 "Ladataanko ja asennetaanko nyt?"
 
 msgid "Update"
@@ -213,9 +227,11 @@ msgstr "Päivitä"
 msgid "Updating to %1…"
 msgstr "Päivitetään versioon %1…"
 
-msgid "Updated to %1.\n"
+msgid ""
+"Updated to %1.\n"
 "Restart KOReader now to load it?"
-msgstr "Päivitetty versioon %1.\n"
+msgstr ""
+"Päivitetty versioon %1.\n"
 "Käynnistetäänkö KOReader nyt uudelleen sen lataamiseksi?"
 
 msgid "Restart"
@@ -269,11 +285,17 @@ msgstr "Sijainti pystytilassa"
 msgid "Enable Glimpse"
 msgstr "Ota Glimpse käyttöön"
 
-msgid "Tip: open Glimpse instantly with a gesture.\n\n"
-"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n\n"
+msgid ""
+"Tip: open Glimpse instantly with a gesture.\n"
+"\n"
+"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n"
+"\n"
 "(This tip is shown only once.)"
-msgstr "Vinkki: avaa Glimpse heti eleellä.\n\n"
-"Määritä ele kohdassa Asetukset → Napautukset ja eleet → Eleiden hallinta → valitse ele → Lukija → 'Avaa Glimpse'.\n\n"
+msgstr ""
+"Vinkki: avaa Glimpse heti eleellä.\n"
+"\n"
+"Määritä ele kohdassa Asetukset → Napautukset ja eleet → Eleiden hallinta → valitse ele → Lukija → 'Avaa Glimpse'.\n"
+"\n"
 "(Tämä vinkki näytetään vain kerran.)"
 
 msgid "Mode: Show all images"
@@ -318,6 +340,18 @@ msgstr "Nipistä lähentääksesi/loitontaaksesi"
 msgid "Layout: %1 · %2"
 msgstr "Asettelu: %1 · %2"
 
+msgid "Panel Size: Compact"
+msgstr "Paneelin koko: kompakti"
+
+msgid "Panel Size: Large"
+msgstr "Paneelin koko: suuri"
+
+msgid "Large"
+msgstr "Suuri"
+
+msgid "Compact"
+msgstr "Kompakti"
+
 msgid "Maximum zoom: %1%"
 msgstr "Suurin zoomaus: %1 %"
 
@@ -326,6 +360,18 @@ msgstr "%1 % (suositus)"
 
 msgid "%1%"
 msgstr "%1 %"
+
+msgid "Custom: %1%"
+msgstr "Mukautettu: %1 %"
+
+msgid "Custom…"
+msgstr "Mukautettu…"
+
+msgid "Set the zoom ceiling as a percentage of the image's own resolution. Past 100% Glimpse enlarges the pixels, so a very high value can look soft."
+msgstr "Aseta zoomauksen yläraja prosentteina kuvan omasta tarkkuudesta. Yli 100 %:n Glimpse suurentaa pikseleitä, joten hyvin suuri arvo voi näyttää pehmeältä."
+
+msgid "Set"
+msgstr "Aseta"
 
 msgid "Navigation Loops Around"
 msgstr "Kiertävä navigointi"
@@ -387,3 +433,13 @@ msgstr "Tarkista päivitykset (v%1)"
 msgid "Include pre-release versions"
 msgstr "Sisällytä esijulkaisuversiot"
 
+#, fuzzy
+#~ msgid "Mini Mode"
+#~ msgstr "Pienoiskartta"
+
+#, fuzzy
+#~ msgid "Maximum zoom"
+#~ msgstr "Suurin zoomaus: %1 %"
+
+#~ msgid "Glimpse works with EPUB books only."
+#~ msgstr "Glimpse toimii vain EPUB-kirjojen kanssa."

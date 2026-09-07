@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 11:21+0200\n"
+"POT-Creation-Date: 2026-09-07 18:00+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: ga\n"
@@ -50,6 +50,9 @@ msgstr "Inbhéartaigh sa Mhód Oíche"
 
 msgid "Layout"
 msgstr "Leagan Amach"
+
+msgid "Panel Size Switch"
+msgstr "Lasc Mhéid an Phainéil"
 
 msgid "Page %1 (%2)"
 msgstr "Leathanach %1 (%2)"
@@ -96,6 +99,9 @@ msgstr "Mód: Gach íomhá"
 msgid "Mode: Spoiler-free"
 msgstr "Mód: Saor ó sproic"
 
+msgid "Spoiler-free is not supported on MOBI files."
+msgstr "Ní thacaítear le saor ó sproic i gcomhaid MOBI."
+
 msgid "Reset Rotation"
 msgstr "Athshocraigh Rothlú"
 
@@ -117,6 +123,12 @@ msgstr "Cuir Leabharmharcanna san Áireamh"
 msgid "Invert in Night Mode"
 msgstr "Inbhéartaigh sa Mhód Oíche"
 
+msgid "Switch to Large"
+msgstr "Athraigh go Mór"
+
+msgid "Switch to Compact"
+msgstr "Athraigh go Dlúth"
+
 msgid "Image ignored."
 msgstr "Rinneadh neamhaird den íomhá."
 
@@ -129,23 +141,14 @@ msgstr "Oscail Glimpse"
 msgid "No book is open."
 msgstr "Níl aon leabhar oscailte."
 
-msgid ""
-"Glimpse failed to load its scanner module. Try reinstalling the plugin."
-msgstr ""
-"Theip ar Glimpse a mhodúl scanacháin a lódáil. Bain triail as an mbreiseán a"
-" athshuiteáil."
+msgid "Glimpse failed to load its scanner module. Try reinstalling the plugin."
+msgstr "Theip ar Glimpse a mhodúl scanacháin a lódáil. Bain triail as an mbreiseán a athshuiteáil."
 
-msgid ""
-"Glimpse works with EPUB books only (this document format is not supported)."
-msgstr ""
-"Ní oibríonn Glimpse ach le leabhair EPUB (ní thacaítear leis an bhformáid "
-"cháipéise seo)."
+msgid "Glimpse works with EPUB, FB2 and MOBI books only (this document format is not supported)."
+msgstr "Ní oibríonn Glimpse ach le leabhair EPUB, FB2 agus MOBI (ní thacaítear leis an bhformáid cháipéise seo)."
 
 msgid "Scanning book for images…"
 msgstr "Ag scanadh an leabhair le haghaidh íomhánna…"
-
-msgid "Glimpse works with EPUB books only."
-msgstr "Ní oibríonn Glimpse ach le leabhair EPUB."
 
 msgid "Could not scan this book for images."
 msgstr "Níorbh fhéidir an leabhar seo a scanadh le haghaidh íomhánna."
@@ -166,8 +169,7 @@ msgid "No images to show – 1 was filtered out as irrelevant."
 msgstr "Níl aon íomhá le taispeáint – scagadh 1 amach mar rud neamhábhartha."
 
 msgid "No images to show – %1 were filtered out as irrelevant."
-msgstr ""
-"Níl aon íomhá le taispeáint – scagadh %1 amach mar rudaí neamhábhartha."
+msgstr "Níl aon íomhá le taispeáint – scagadh %1 amach mar rudaí neamhábhartha."
 
 msgid "Review filtered-out"
 msgstr "Athbhreithnigh na cinn a scagadh"
@@ -305,24 +307,14 @@ msgstr "Mód: Taispeáin íomhánna go dtí an chaibidil reatha"
 msgid "Show images up to current chapter"
 msgstr "Taispeáin íomhánna go dtí an chaibidil reatha"
 
-msgid ""
-"Images that appear beyond your current position stay hidden, so you can't "
-"spoil yourself. Granularity is per chapter: images in the chapter you are "
-"currently reading are shown."
-msgstr ""
-"Fanann íomhánna a thagann chun cinn thar do shuíomh reatha i bhfolach, ionas"
-" nach spoilfidh tú duit féin. Tá an mhionghráinneacht de réir caibidle: "
-"taispeántar íomhánna sa chaibidil atá á léamh agat faoi láthair."
+msgid "Images that appear beyond your current position stay hidden, so you can't spoil yourself. Granularity is per chapter: images in the chapter you are currently reading are shown."
+msgstr "Fanann íomhánna a thagann chun cinn thar do shuíomh reatha i bhfolach, ionas nach spoilfidh tú duit féin. Tá an mhionghráinneacht de réir caibidle: taispeántar íomhánna sa chaibidil atá á léamh agat faoi láthair."
 
 msgid "Show all images"
 msgstr "Taispeáin gach íomhá"
 
-msgid ""
-"Show reference images from anywhere in the book, including parts you haven't"
-" reached yet."
-msgstr ""
-"Taispeáin íomhánna tagartha ó áit ar bith sa leabhar, na codanna nár shroich"
-" tú fós san áireamh."
+msgid "Show reference images from anywhere in the book, including parts you haven't reached yet."
+msgstr "Taispeáin íomhánna tagartha ó áit ar bith sa leabhar, na codanna nár shroich tú fós san áireamh."
 
 msgid "Include Bookmarks in Gallery"
 msgstr "Cuir Leabharmharcanna sa Ghailearaí"
@@ -348,6 +340,18 @@ msgstr "Bain le chéile chun súmáil isteach/amach"
 msgid "Layout: %1 · %2"
 msgstr "Leagan Amach: %1 · %2"
 
+msgid "Panel Size: Compact"
+msgstr "Méid an Phainéil: Dlúth"
+
+msgid "Panel Size: Large"
+msgstr "Méid an Phainéil: Mór"
+
+msgid "Large"
+msgstr "Mór"
+
+msgid "Compact"
+msgstr "Dlúth"
+
 msgid "Maximum zoom: %1%"
 msgstr "Súmáil uasta: %1%"
 
@@ -356,6 +360,18 @@ msgstr "%1% (molta)"
 
 msgid "%1%"
 msgstr "%1%"
+
+msgid "Custom: %1%"
+msgstr "Saincheaptha: %1%"
+
+msgid "Custom…"
+msgstr "Saincheaptha…"
+
+msgid "Set the zoom ceiling as a percentage of the image's own resolution. Past 100% Glimpse enlarges the pixels, so a very high value can look soft."
+msgstr "Socraigh uasteorainn na súmála mar chéatadán de thaifeach na híomhá féin. Os cionn 100% méadaíonn Glimpse na picteilíní, mar sin d'fhéadfadh luach an-ard breathnú bog."
+
+msgid "Set"
+msgstr "Socraigh"
 
 msgid "Navigation Loops Around"
 msgstr "Nascleanúint Timthriallach"
@@ -416,6 +432,17 @@ msgstr "Seiceáil le haghaidh nuashonruithe (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "Cuir leaganacha réamheisiúna san áireamh"
+
+#, fuzzy
+#~ msgid "Mini Mode"
+#~ msgstr "Mionléarscáil"
+
+#, fuzzy
+#~ msgid "Maximum zoom"
+#~ msgstr "Súmáil uasta: %1%"
+
+#~ msgid "Glimpse works with EPUB books only."
+#~ msgstr "Ní oibríonn Glimpse ach le leabhair EPUB."
 
 #~ msgid "Enable top menu tap zone"
 #~ msgstr "Cumasaigh crios tapála an bharrchláir"

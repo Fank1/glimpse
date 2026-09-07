@@ -1,8 +1,9 @@
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: glimpse-plugin\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 11:21+0200\n"
+"POT-Creation-Date: 2026-09-07 18:00+0200\n"
 "PO-Revision-Date: 2026-08-29 10:07\n"
 "Last-Translator: \n"
 "Language-Team: Danish\n"
@@ -11,11 +12,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Crowdin-Project: glimpse-plugin\n"
-"X-Crowdin-Project-ID: 923235\n"
-"X-Crowdin-Language: da\n"
 "X-Crowdin-File: /plugin/l10n/templates/glimpse-labels.pot\n"
 "X-Crowdin-File-ID: 18\n"
+"X-Crowdin-Language: da\n"
+"X-Crowdin-Project: glimpse-plugin\n"
+"X-Crowdin-Project-ID: 923235\n"
 
 msgid "Ignore Image"
 msgstr "Ignorér billede"
@@ -49,6 +50,9 @@ msgstr "Slå invertering i nattilstand til/fra"
 
 msgid "Layout"
 msgstr "Layout"
+
+msgid "Panel Size Switch"
+msgstr "Skift af panelstørrelse"
 
 msgid "Page %1 (%2)"
 msgstr "Side %1 (%2)"
@@ -95,6 +99,9 @@ msgstr "Tilstand: alle billeder"
 msgid "Mode: Spoiler-free"
 msgstr "Tilstand: spoilerfri"
 
+msgid "Spoiler-free is not supported on MOBI files."
+msgstr "Spoilerfri understøttes ikke for MOBI-filer."
+
 msgid "Reset Rotation"
 msgstr "Nulstil rotation"
 
@@ -116,6 +123,12 @@ msgstr "Medtag bogmærker"
 msgid "Invert in Night Mode"
 msgstr "Invertér i nattilstand"
 
+msgid "Switch to Large"
+msgstr "Skift til Stor"
+
+msgid "Switch to Compact"
+msgstr "Skift til Kompakt"
+
 msgid "Image ignored."
 msgstr "Billede ignoreret."
 
@@ -131,14 +144,11 @@ msgstr "Ingen bog er åben."
 msgid "Glimpse failed to load its scanner module. Try reinstalling the plugin."
 msgstr "Glimpse kunne ikke indlæse sit scannermodul. Prøv at geninstallere udvidelsen."
 
-msgid "Glimpse works with EPUB books only (this document format is not supported)."
-msgstr "Glimpse fungerer kun med EPUB-bøger (dette dokumentformat understøttes ikke)."
+msgid "Glimpse works with EPUB, FB2 and MOBI books only (this document format is not supported)."
+msgstr "Glimpse fungerer kun med EPUB-, FB2- og MOBI-bøger (dette dokumentformat understøttes ikke)."
 
 msgid "Scanning book for images…"
 msgstr "Søger efter billeder i bogen…"
-
-msgid "Glimpse works with EPUB books only."
-msgstr "Glimpse fungerer kun med EPUB-bøger."
 
 msgid "Could not scan this book for images."
 msgstr "Kunne ikke søge efter billeder i denne bog."
@@ -200,11 +210,15 @@ msgstr "Du er opdateret (v%1)."
 msgid "No downloadable release package found."
 msgstr "Ingen udgivelsespakke til download fundet."
 
-msgid "Update available: %1\n"
-"(installed: v%2)\n\n"
+msgid ""
+"Update available: %1\n"
+"(installed: v%2)\n"
+"\n"
 "Download and install now?"
-msgstr "Opdatering tilgængelig: %1\n"
-"(installeret: v%2)\n\n"
+msgstr ""
+"Opdatering tilgængelig: %1\n"
+"(installeret: v%2)\n"
+"\n"
 "Vil du downloade og installere nu?"
 
 msgid "Update"
@@ -213,9 +227,11 @@ msgstr "Opdatér"
 msgid "Updating to %1…"
 msgstr "Opdaterer til %1…"
 
-msgid "Updated to %1.\n"
+msgid ""
+"Updated to %1.\n"
 "Restart KOReader now to load it?"
-msgstr "Opdateret til %1.\n"
+msgstr ""
+"Opdateret til %1.\n"
 "Vil du genstarte KOReader nu for at indlæse den?"
 
 msgid "Restart"
@@ -269,11 +285,17 @@ msgstr "Position i stående format"
 msgid "Enable Glimpse"
 msgstr "Aktivér Glimpse"
 
-msgid "Tip: open Glimpse instantly with a gesture.\n\n"
-"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n\n"
+msgid ""
+"Tip: open Glimpse instantly with a gesture.\n"
+"\n"
+"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n"
+"\n"
 "(This tip is shown only once.)"
-msgstr "Tip: åbn Glimpse med det samme med en bevægelse.\n\n"
-"Angiv en under Indstillinger → Tryk og bevægelser → Bevægelsesstyring → vælg en bevægelse → Læser → 'Åbn Glimpse'.\n\n"
+msgstr ""
+"Tip: åbn Glimpse med det samme med en bevægelse.\n"
+"\n"
+"Angiv en under Indstillinger → Tryk og bevægelser → Bevægelsesstyring → vælg en bevægelse → Læser → 'Åbn Glimpse'.\n"
+"\n"
 "(Dette tip vises kun én gang.)"
 
 msgid "Mode: Show all images"
@@ -318,6 +340,18 @@ msgstr "Knib for at zoome ind/ud"
 msgid "Layout: %1 · %2"
 msgstr "Layout: %1 · %2"
 
+msgid "Panel Size: Compact"
+msgstr "Panelstørrelse: kompakt"
+
+msgid "Panel Size: Large"
+msgstr "Panelstørrelse: stor"
+
+msgid "Large"
+msgstr "Stor"
+
+msgid "Compact"
+msgstr "Kompakt"
+
 msgid "Maximum zoom: %1%"
 msgstr "Maksimal zoom: %1 %"
 
@@ -326,6 +360,18 @@ msgstr "%1 % (anbefales)"
 
 msgid "%1%"
 msgstr "%1 %"
+
+msgid "Custom: %1%"
+msgstr "Brugerdefineret: %1 %"
+
+msgid "Custom…"
+msgstr "Brugerdefineret…"
+
+msgid "Set the zoom ceiling as a percentage of the image's own resolution. Past 100% Glimpse enlarges the pixels, so a very high value can look soft."
+msgstr "Angiv zoomloftet som en procentdel af billedets egen opløsning. Over 100 % forstørrer Glimpse pixlerne, så en meget høj værdi kan se blød ud."
+
+msgid "Set"
+msgstr "Angiv"
 
 msgid "Navigation Loops Around"
 msgstr "Cirkulær navigation"
@@ -387,3 +433,13 @@ msgstr "Søg efter opdateringer (v%1)"
 msgid "Include pre-release versions"
 msgstr "Medtag forhåndsversioner"
 
+#, fuzzy
+#~ msgid "Mini Mode"
+#~ msgstr "Minikort"
+
+#, fuzzy
+#~ msgid "Maximum zoom"
+#~ msgstr "Maksimal zoom: %1 %"
+
+#~ msgid "Glimpse works with EPUB books only."
+#~ msgstr "Glimpse fungerer kun med EPUB-bøger."

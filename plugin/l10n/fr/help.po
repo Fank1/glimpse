@@ -1,8 +1,9 @@
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: glimpse-plugin\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 11:21+0200\n"
+"POT-Creation-Date: 2026-09-07 18:00+0200\n"
 "PO-Revision-Date: 2026-08-29 10:07\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
@@ -11,11 +12,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Crowdin-Project: glimpse-plugin\n"
-"X-Crowdin-Project-ID: 923235\n"
-"X-Crowdin-Language: fr\n"
 "X-Crowdin-File: /plugin/l10n/templates/glimpse-help.pot\n"
 "X-Crowdin-File-ID: 20\n"
+"X-Crowdin-Language: fr\n"
+"X-Crowdin-Project: glimpse-plugin\n"
+"X-Crowdin-Project-ID: 923235\n"
 
 msgid "Master switch. When off, the bound gesture and the Open Glimpse entry do nothing – a quick way to silence Glimpse without unbinding its gesture."
 msgstr "Interrupteur principal. Désactivé, le geste associé et l'entrée Ouvrir Glimpse ne font rien – un moyen rapide de désactiver Glimpse sans dissocier son geste."
@@ -32,6 +33,9 @@ msgstr "Affichez aussi les pages que vous avez mises en signet (le signet en cor
 msgid "Choose which actions appear in the viewer's ⋯ menu. Reset Rotation is automatic (shown while an image is rotated)."
 msgstr "Choisissez les actions qui apparaissent dans le menu ⋯ de la visionneuse. Réinitialiser la rotation est automatique (affiché lorsqu'une image est pivotée)."
 
+msgid "These apply to the large panel. The compact panel always keeps swipe, pinch and double-tap on, because it hides the navigation buttons and the reset button."
+msgstr "Ces options s'appliquent au grand panneau. Le panneau compact conserve toujours le balayage, le pincement et le double appui, car il masque les boutons de navigation et le bouton de réinitialisation."
+
 msgid "Double-tap the image to jump to the maximum zoom (centered on the tap), and again to return to the fitted view. On by default."
 msgstr "Double-tapez l'image pour passer au zoom maximal (centré sur l'appui), et de nouveau pour revenir à la vue ajustée. Activé par défaut."
 
@@ -43,6 +47,9 @@ msgstr "Pincez ou écartez deux doigts sur l'image pour dézoomer ou zoomer. Act
 
 msgid "Where Glimpse opens: a side panel (left or right) or, in portrait, a band across the top or bottom. In landscape it always uses the preferred side."
 msgstr "Où Glimpse s'ouvre : un panneau latéral (à gauche ou à droite) ou, en portrait, un bandeau en haut ou en bas. En paysage, il utilise toujours le côté préféré."
+
+msgid "Large fills one edge of the screen. Compact is a small card that floats over the page, which you drag by the grip in its top-right corner. The compact card hides the captions, the bookmark label, the navigation buttons and the reset button, and the Gallery always opens at the large size."
+msgstr "Grand occupe un bord de l'écran. Compact est une petite carte qui flotte au-dessus de la page et que vous faites glisser par la poignée de son coin supérieur droit. La carte compacte masque les légendes, l'étiquette de signet, les boutons de navigation et le bouton de réinitialisation, et la Galerie s'ouvre toujours en grande taille."
 
 msgid "How far you can zoom in, as a percentage of the image's own resolution. Double-tap jumps to this level and pinch stops here. Higher reveals more on detailed maps, but past 100% it is upscaling, so very high can look soft."
 msgstr "Jusqu'où vous pouvez zoomer, en pourcentage de la résolution propre de l'image. Le double-tap saute à ce niveau et le pincement s'y arrête. Plus élevé révèle davantage sur les cartes détaillées, mais au-delà de 100 % il s'agit d'un agrandissement, donc une valeur très élevée peut paraître floue."
@@ -91,4 +98,3 @@ msgstr "Glimpse met en cache son analyse du livre. Utilisez ceci si le fichier d
 
 msgid "Also offer releases marked as pre-release on GitHub – test builds published before a proper release. Normal update checks never see those."
 msgstr "Proposer aussi les versions marquées comme préliminaires sur GitHub – des versions de test publiées avant une vraie version. Les recherches de mise à jour normales ne les voient jamais."
-

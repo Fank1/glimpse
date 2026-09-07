@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 11:21+0200\n"
+"POT-Creation-Date: 2026-09-07 18:00+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: et\n"
@@ -50,6 +50,9 @@ msgstr "Inverteeri öörežiimis"
 
 msgid "Layout"
 msgstr "Paigutus"
+
+msgid "Panel Size Switch"
+msgstr "Paneeli suuruse lüliti"
 
 msgid "Page %1 (%2)"
 msgstr "Lehekülg %1 (%2)"
@@ -96,6 +99,9 @@ msgstr "Režiim: Kõik pildid"
 msgid "Mode: Spoiler-free"
 msgstr "Režiim: Spoilerivaba"
 
+msgid "Spoiler-free is not supported on MOBI files."
+msgstr "Spoilerivaba režiimi MOBI-failide puhul ei toetata."
+
 msgid "Reset Rotation"
 msgstr "Lähtesta pööramine"
 
@@ -117,6 +123,12 @@ msgstr "Kaasa järjehoidjad"
 msgid "Invert in Night Mode"
 msgstr "Inverteeri öörežiimis"
 
+msgid "Switch to Large"
+msgstr "Lülita suurele"
+
+msgid "Switch to Compact"
+msgstr "Lülita kompaktsele"
+
 msgid "Image ignored."
 msgstr "Pilt eiratud."
 
@@ -129,22 +141,14 @@ msgstr "Ava Glimpse"
 msgid "No book is open."
 msgstr "Ükski raamat pole avatud."
 
-msgid ""
-"Glimpse failed to load its scanner module. Try reinstalling the plugin."
-msgstr ""
-"Glimpse ei suutnud oma skannimoodulit laadida. Proovi pistikprogramm uuesti "
-"installida."
+msgid "Glimpse failed to load its scanner module. Try reinstalling the plugin."
+msgstr "Glimpse ei suutnud oma skannimoodulit laadida. Proovi pistikprogramm uuesti installida."
 
-msgid ""
-"Glimpse works with EPUB books only (this document format is not supported)."
-msgstr ""
-"Glimpse töötab ainult EPUB-raamatutega (see dokumendivorming pole toetatud)."
+msgid "Glimpse works with EPUB, FB2 and MOBI books only (this document format is not supported)."
+msgstr "Glimpse töötab ainult EPUB-, FB2- ja MOBI-raamatutega (see dokumendivorming pole toetatud)."
 
 msgid "Scanning book for images…"
 msgstr "Skannin raamatust pilte…"
-
-msgid "Glimpse works with EPUB books only."
-msgstr "Glimpse töötab ainult EPUB-raamatutega."
 
 msgid "Could not scan this book for images."
 msgstr "Selle raamatu piltide skannimine ebaõnnestus."
@@ -303,24 +307,14 @@ msgstr "Režiim: Näita pilte praeguse peatükini"
 msgid "Show images up to current chapter"
 msgstr "Näita pilte praeguse peatükini"
 
-msgid ""
-"Images that appear beyond your current position stay hidden, so you can't "
-"spoil yourself. Granularity is per chapter: images in the chapter you are "
-"currently reading are shown."
-msgstr ""
-"Pildid, mis ilmuvad sinu praegusest asukohast kaugemal, jäävad peidetuks, et"
-" sa ei rikuks endale üllatust. Granulaarsus on peatüki kaupa: praegu loetava"
-" peatüki pildid näidatakse."
+msgid "Images that appear beyond your current position stay hidden, so you can't spoil yourself. Granularity is per chapter: images in the chapter you are currently reading are shown."
+msgstr "Pildid, mis ilmuvad sinu praegusest asukohast kaugemal, jäävad peidetuks, et sa ei rikuks endale üllatust. Granulaarsus on peatüki kaupa: praegu loetava peatüki pildid näidatakse."
 
 msgid "Show all images"
 msgstr "Näita kõiki pilte"
 
-msgid ""
-"Show reference images from anywhere in the book, including parts you haven't"
-" reached yet."
-msgstr ""
-"Näita viitepilte raamatu igast osast, kaasa arvatud osad, milleni sa pole "
-"veel jõudnud."
+msgid "Show reference images from anywhere in the book, including parts you haven't reached yet."
+msgstr "Näita viitepilte raamatu igast osast, kaasa arvatud osad, milleni sa pole veel jõudnud."
 
 msgid "Include Bookmarks in Gallery"
 msgstr "Kaasa järjehoidjad galeriisse"
@@ -346,6 +340,18 @@ msgstr "Suumimiseks näpista"
 msgid "Layout: %1 · %2"
 msgstr "Paigutus: %1 · %2"
 
+msgid "Panel Size: Compact"
+msgstr "Paneeli suurus: kompaktne"
+
+msgid "Panel Size: Large"
+msgstr "Paneeli suurus: suur"
+
+msgid "Large"
+msgstr "Suur"
+
+msgid "Compact"
+msgstr "Kompaktne"
+
 msgid "Maximum zoom: %1%"
 msgstr "Maksimaalne suum: %1%"
 
@@ -354,6 +360,18 @@ msgstr "%1% (soovitatav)"
 
 msgid "%1%"
 msgstr "%1%"
+
+msgid "Custom: %1%"
+msgstr "Kohandatud: %1%"
+
+msgid "Custom…"
+msgstr "Kohandatud…"
+
+msgid "Set the zoom ceiling as a percentage of the image's own resolution. Past 100% Glimpse enlarges the pixels, so a very high value can look soft."
+msgstr "Määra suumi ülempiir protsendina pildi enda eraldusvõimest. Üle 100% suurendab Glimpse piksleid, seega väga suur väärtus võib näida udune."
+
+msgid "Set"
+msgstr "Määra"
 
 msgid "Navigation Loops Around"
 msgstr "Ringnavigatsioon"
@@ -414,6 +432,17 @@ msgstr "Kontrolli uuendusi (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "Kaasa eelväljalasked"
+
+#, fuzzy
+#~ msgid "Mini Mode"
+#~ msgstr "Minikaart"
+
+#, fuzzy
+#~ msgid "Maximum zoom"
+#~ msgstr "Maksimaalne suum: %1%"
+
+#~ msgid "Glimpse works with EPUB books only."
+#~ msgstr "Glimpse töötab ainult EPUB-raamatutega."
 
 #~ msgid "Enable top menu tap zone"
 #~ msgstr "Luba ülamenüü puutetsoon"

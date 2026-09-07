@@ -1,8 +1,9 @@
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: glimpse-plugin\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 11:21+0200\n"
+"POT-Creation-Date: 2026-09-07 18:00+0200\n"
 "PO-Revision-Date: 2026-08-29 10:08\n"
 "Last-Translator: \n"
 "Language-Team: Dutch\n"
@@ -11,11 +12,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Crowdin-Project: glimpse-plugin\n"
-"X-Crowdin-Project-ID: 923235\n"
-"X-Crowdin-Language: nl\n"
 "X-Crowdin-File: /plugin/l10n/templates/glimpse-help.pot\n"
 "X-Crowdin-File-ID: 20\n"
+"X-Crowdin-Language: nl\n"
+"X-Crowdin-Project: glimpse-plugin\n"
+"X-Crowdin-Project-ID: 923235\n"
 
 msgid "Master switch. When off, the bound gesture and the Open Glimpse entry do nothing – a quick way to silence Glimpse without unbinding its gesture."
 msgstr "Hoofdschakelaar. Wanneer uit doen het gekoppelde gebaar en het item Glimpse openen niets — een snelle manier om Glimpse stil te leggen zonder het gebaar los te koppelen."
@@ -32,6 +33,9 @@ msgstr "Toon in de galerij ook de pagina's die je van een bladwijzer hebt voorzi
 msgid "Choose which actions appear in the viewer's ⋯ menu. Reset Rotation is automatic (shown while an image is rotated)."
 msgstr "Kies welke acties in het ⋯-menu van de viewer verschijnen. Rotatie herstellen is automatisch (getoond terwijl een afbeelding is gedraaid)."
 
+msgid "These apply to the large panel. The compact panel always keeps swipe, pinch and double-tap on, because it hides the navigation buttons and the reset button."
+msgstr "Deze gelden voor het grote paneel. Het compacte paneel houdt vegen, knijpen en dubbeltikken altijd aan, omdat het de navigatieknoppen en de herstelknop verbergt."
+
 msgid "Double-tap the image to jump to the maximum zoom (centered on the tap), and again to return to the fitted view. On by default."
 msgstr "Dubbeltik op de afbeelding om naar de maximale zoom te springen (gecentreerd op de tik), en nogmaals om terug te keren naar de passende weergave. Standaard aan."
 
@@ -43,6 +47,9 @@ msgstr "Knijp of spreid twee vingers op de afbeelding om uit of in te zoomen. St
 
 msgid "Where Glimpse opens: a side panel (left or right) or, in portrait, a band across the top or bottom. In landscape it always uses the preferred side."
 msgstr "Waar Glimpse opent: een zijpaneel (links of rechts) of, in staande stand, een balk boven- of onderaan. In liggende stand gebruikt het altijd de voorkeurszijde."
+
+msgid "Large fills one edge of the screen. Compact is a small card that floats over the page, which you drag by the grip in its top-right corner. The compact card hides the captions, the bookmark label, the navigation buttons and the reset button, and the Gallery always opens at the large size."
+msgstr "Groot vult één rand van het scherm. Compact is een klein kaartje dat boven de pagina zweeft en dat u aan de greep in de rechterbovenhoek versleept. Het compacte kaartje verbergt de bijschriften, het bladwijzerlabel, de navigatieknoppen en de herstelknop, en de Galerij opent altijd in het grote formaat."
 
 msgid "How far you can zoom in, as a percentage of the image's own resolution. Double-tap jumps to this level and pinch stops here. Higher reveals more on detailed maps, but past 100% it is upscaling, so very high can look soft."
 msgstr "Hoe ver je kunt inzoomen, als percentage van de eigen resolutie van de afbeelding. Dubbeltik springt naar dit niveau en knijpen stopt hier. Hoger onthult meer op gedetailleerde kaarten, maar boven 100% is het opschalen, dus zeer hoog kan wazig ogen."
@@ -91,4 +98,3 @@ msgstr "Glimpse bewaart de scan van het boek in de cache. Gebruik dit als het bo
 
 msgid "Also offer releases marked as pre-release on GitHub – test builds published before a proper release. Normal update checks never see those."
 msgstr "Bied ook versies aan die op GitHub als voorlopig zijn gemarkeerd — testbuilds die vóór een echte versie worden gepubliceerd. Normale updatecontroles zien die nooit."
-

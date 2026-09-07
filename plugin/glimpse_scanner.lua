@@ -1,11 +1,16 @@
--- Glimpse scanner: finds reference-worthy images inside an EPUB.
+-- Glimpse scanner: finds reference-worthy images inside a book.
 --
--- Pure Lua (5.1/LuaJIT compatible), no KOReader requires — the caller
--- injects `read_file(archive_path) -> string|nil`, so this module can be
--- unit-tested headlessly against an extracted EPUB (see builder/).
+-- Pure Lua (5.1/LuaJIT compatible), no KOReader requires, so it can be
+-- unit-tested headlessly (see builder/). Two source formats:
+--   EPUB  the caller injects `read_file(archive_path) -> string|nil`; the
+--         scan parses the container/OPF/HTML and reads image files by path.
+--   FB2   a single XML file passed in whole; images are base64 <binary>
+--         blocks the scan decodes itself. The viewer reads bytes back with
+--         M.fb2_read_binary(fb2, id).
 --
 -- Pipeline:
 --   M.scan(read_file)          -> { images = {...}, spine_count, opf_path }
+--   M.scan_fb2(fb2_text)       -> { images = {...}, spine_count, format }
 --   M.filter(images, level)    -> included_list, stats
 --
 -- Each image record:
@@ -137,6 +142,65 @@ local function le32(s, i)
     local a, b, c, d = s:byte(i, i + 3)
     if not d then return nil end
     return ((d * 256 + c) * 256 + b) * 256 + a
+end
+
+-- ── base64 (for FB2 <binary> images) ────────────────────────────────────────
+
+local B64_DEC = {}
+do
+    local a = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+    for i = 1, #a do B64_DEC[a:byte(i)] = i - 1 end
+end
+
+-- Decode a base64 string. Ignores whitespace and any non-alphabet byte, and
+-- stops at padding ("="). Returns the decoded binary string ("" on no input).
+function M.b64decode(s)
+    if type(s) ~= "string" then return "" end
+    local dec = B64_DEC
+    local byte, char, concat = string.byte, string.char, table.concat
+    local floor = math.floor
+    local out, op = {}, 0
+    local chunk, cp = {}, 0
+    local acc, nbits = 0, 0
+    for k = 1, #s do
+        local c = byte(s, k)
+        if c == 61 then break end          -- "=" padding: stop
+        local v = dec[c]
+        if v then
+            acc = acc * 64 + v
+            nbits = nbits + 6
+            if nbits >= 8 then
+                nbits = nbits - 8
+                local shift = 2 ^ nbits
+                cp = cp + 1
+                chunk[cp] = char(floor(acc / shift) % 256)
+                acc = acc % shift
+                if cp >= 8192 then
+                    op = op + 1
+                    out[op] = concat(chunk, "", 1, cp)
+                    cp = 0
+                end
+            end
+        end
+    end
+    if cp > 0 then op = op + 1; out[op] = concat(chunk, "", 1, cp) end
+    return concat(out, "", 1, op)
+end
+
+-- Find the base64 body of a FB2 <binary id="..."> block (nil if absent).
+local function fb2_binary_body(fb2, id)
+    for tag, body in fb2:gmatch("<[bB]inary(.-)>(.-)</[bB]inary>") do
+        if attr(tag, "id") == id then return body end
+    end
+    return nil
+end
+
+-- Decode one FB2 embedded image to its raw bytes, by <binary> id. Used by the
+-- viewer's read_file at display time (the scan already sniffed dimensions).
+function M.fb2_read_binary(fb2, id)
+    local body = fb2_binary_body(fb2, id)
+    if not body then return nil end
+    return M.b64decode(body)
 end
 
 -- ── image dimension sniffing ────────────────────────────────────────────────
@@ -834,6 +898,179 @@ function M.scan(read_file)
         spine_count = #book.spine,
         opf_path = opf_path,
         cover_path = book.cover_path,
+    }
+end
+
+-- ── FB2 (FictionBook) ───────────────────────────────────────────────────────
+--
+-- FB2 is a single XML file, not an archive: text in <body><section>…, images
+-- referenced by <image l:href="#id"/> and stored at the end as
+-- <binary id="id" content-type="…"> base64 </binary>. So there is no per-file
+-- read; scan_fb2 takes the whole document text and reads image bytes from the
+-- <binary> blocks itself. The record shape matches M.scan so the filter, the
+-- gallery and the viewer treat FB2 and EPUB images the same way. `path` is the
+-- binary id; the viewer reads bytes back with M.fb2_read_binary(fb2, id).
+
+-- The image reference of an <image>/<img> tag: l:href / xlink:href / href / src,
+-- with a leading "#" removed.
+local function fb2_href(tag)
+    local h = attr(tag, "l:href") or attr(tag, "xlink:href")
+        or attr(tag, "href") or attr(tag, "src")
+    if h then return (h:gsub("^#", "")) end
+end
+
+function M.scan_fb2(fb2)
+    if type(fb2) ~= "string" or #fb2 == 0 then return nil, "empty" end
+
+    -- 1. index every <binary> block by id (keep the base64 body for a later,
+    -- lazy decode; only referenced images are decoded, for dimensions).
+    local bins = {}
+    for tag, body in fb2:gmatch("<[bB]inary(.-)>(.-)</[bB]inary>") do
+        local id = attr(tag, "id")
+        if id then bins[id] = { ctype = attr(tag, "content-type"), body = body } end
+    end
+
+    -- 2. the cover image id, from <description><…><coverpage><image .../>.
+    local cover_id
+    local cov = fb2:match("<[cC]overpage>(.-)</[cC]overpage>")
+    if cov then
+        local itag = cov:match("<[iI]mage(.-)/?>")
+        if itag then cover_id = fb2_href(itag) end
+    end
+
+    -- 3. walk the FIRST body in document order. crengine numbers the reading
+    -- position as /FictionBook/body/section[N], counting only TOP-LEVEL sections
+    -- (direct children of <body>). Match that: bump the chapter only when a
+    -- section opens at depth 0, so an image nested in a subsection still maps to
+    -- its top-level section. That keeps spine_index aligned with the xpointer
+    -- Glimpse reads for spoiler scope and for "Show in Book". Notes live in a
+    -- second <body>; reading position stays in the first, so only it is scanned.
+    local body = fb2:match("<[bB]ody[^>]*>(.-)</[bB]ody>") or fb2
+    local list, by_id, order, chapter, depth = {}, {}, 0, 0, 0
+
+    local function record(id, chap, token)
+        local rec = by_id[id]
+        if not rec then
+            order = order + 1
+            rec = {
+                path = id, raw_path = id,
+                spine_index = chap > 0 and chap or 1,
+                order = order, files_count = 0, total_count = 0, _files = {},
+            }
+            by_id[id] = rec
+            list[#list + 1] = rec
+        end
+        rec.total_count = rec.total_count + 1
+        if not rec._files[chap] then
+            rec._files[chap] = true
+            rec.files_count = rec.files_count + 1
+        end
+        rec.title_attr = rec.title_attr or M.meaningful_text(attr(token, "title"))
+        rec.alt = rec.alt or M.meaningful_text(attr(token, "alt"))
+    end
+
+    for token in body:gmatch("<[^>]->") do
+        if token:match("^<%s*/%s*[sS][eE][cC][tT][iI][oO][nN]%s*>") then
+            if depth > 0 then depth = depth - 1 end
+        elseif token:match("^<%s*[sS][eE][cC][tT][iI][oO][nN][%s>/]") then
+            if depth == 0 then chapter = chapter + 1 end
+            if not token:match("/%s*>$") then depth = depth + 1 end  -- not self-closed
+        elseif token:match("^<%s*[iI][mM][aA][gG][eE][%s/>]")
+            or token:match("^<%s*[iI][mM][gG][%s/>]") then
+            local id = fb2_href(token)
+            if id and bins[id] then record(id, chapter, token) end
+        end
+    end
+
+    -- 4. cover referenced only from <description>: synthesize an entry so
+    -- "show all" can still surface it (mirrors the EPUB cover handling).
+    if cover_id and bins[cover_id] and not by_id[cover_id] then
+        order = order + 1
+        list[#list + 1] = {
+            path = cover_id, raw_path = cover_id, spine_index = 0,
+            order = order, files_count = 0, total_count = 0, _files = {},
+        }
+    end
+
+    -- 5. decode each referenced image's bytes for dimensions; finalize records.
+    for _, rec in ipairs(list) do
+        local bin = bins[rec.path]
+        if bin then
+            local data = M.b64decode(bin.body)
+            if data and #data > 0 then
+                rec.bytes = #data
+                local w, h, fmt = M.get_image_dimensions(data)
+                rec.width, rec.height = w, h
+                rec.format = fmt or (bin.ctype and bin.ctype:match("image/([%w]+)"))
+            end
+        end
+        if rec.path == cover_id then rec.is_cover = true end
+        rec.caption = rec.title_attr or rec.alt
+        rec._files = nil
+    end
+
+    table.sort(list, function(a, b)
+        if a.spine_index ~= b.spine_index then
+            return a.spine_index < b.spine_index
+        end
+        return a.order < b.order
+    end)
+
+    return {
+        version = M.VERSION,
+        images = list,
+        spine_count = chapter > 0 and chapter or 1,
+        cover_path = cover_id,
+        format = "fb2",
+    }
+end
+
+-- ── MOBI (Mobipocket / Kindle) ──────────────────────────────────────────────
+--
+-- Unlike FB2, MOBI needs no binary parsing here: crengine's loader unpacks the
+-- image records into its container as "mobi_image_<n>" (1-based) and serves each
+-- through the same read_file the EPUB path uses. So scan_mobi just enumerates
+-- those names. A MOBI has no spine/section structure in its DOM (the reading
+-- position is a flat /html/body/body/p[N]), so every image gets spine_index 1
+-- and the spoiler scope shows them all (Glimpse:_currentSpineIndex returns nil
+-- for MOBI, so the scope clip is skipped). cover_size, when given, is the raw
+-- byte size of the cover image (from crengine); the first image whose bytes
+-- match is flagged as the cover so the filter can set it aside.
+function M.scan_mobi(read_file, cover_size)
+    if type(read_file) ~= "function" then return nil, "no_reader" end
+    local list = {}
+    local n, order, misses, cover_id = 0, 0, 0, nil
+    while true do
+        n = n + 1
+        if n > 4096 then break end            -- safety cap
+        local name = "mobi_image_" .. n
+        local data = read_file(name)
+        if data and #data > 0 then
+            misses = 0
+            order = order + 1
+            local w, h, fmt = M.get_image_dimensions(data)
+            local rec = {
+                path = name, raw_path = name,
+                spine_index = 1, order = order,
+                files_count = 1, total_count = 1,
+                bytes = #data, width = w, height = h, format = fmt,
+            }
+            if cover_size and not cover_id and #data == cover_size then
+                rec.is_cover = true
+                cover_id = name
+            end
+            list[#list + 1] = rec
+        else
+            misses = misses + 1
+            if misses >= 3 then break end     -- past the last image record
+        end
+    end
+    return {
+        version = M.VERSION,
+        images = list,
+        spine_count = 1,
+        cover_path = cover_id,
+        format = "mobi",
     }
 end
 

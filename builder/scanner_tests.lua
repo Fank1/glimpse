@@ -574,6 +574,128 @@ do
     eq(book.cover_path, "OEBPS/images/cover.jpg", "ns-prefixed cover meta resolved")
 end
 
+-- ── FB2 (FictionBook) ───────────────────────────────────────────────────────
+
+local function be32b(n)
+    return string.char(math.floor(n / 16777216) % 256, math.floor(n / 65536) % 256,
+        math.floor(n / 256) % 256, n % 256)
+end
+-- Smallest PNG the dimension sniffer accepts: signature + IHDR length/type +
+-- width/height (24 bytes; dims_png reads only these).
+local function tiny_png(w, h)
+    return "\137PNG\r\n\26\n" .. "\0\0\0\13" .. "IHDR" .. be32b(w) .. be32b(h)
+end
+local function b64encode(s)
+    local a = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+    local out = {}
+    for i = 1, #s, 3 do
+        local b1, b2, b3 = s:byte(i, i + 2)
+        local n = b1 * 65536 + (b2 or 0) * 256 + (b3 or 0)
+        local c1 = math.floor(n / 262144) % 64
+        local c2 = math.floor(n / 4096) % 64
+        local c3 = math.floor(n / 64) % 64
+        local c4 = n % 64
+        out[#out + 1] = a:sub(c1 + 1, c1 + 1) .. a:sub(c2 + 1, c2 + 1)
+            .. (b2 and a:sub(c3 + 1, c3 + 1) or "=")
+            .. (b3 and a:sub(c4 + 1, c4 + 1) or "=")
+    end
+    return table.concat(out)
+end
+
+do
+    -- base64 round-trip (binary-safe) and a known vector
+    local raw = "Hello, Glimpse! \0\255 binary"
+    eq(scanner.b64decode(b64encode(raw)), raw, "b64 round-trip binary")
+    eq(scanner.b64decode("SGVsbG8="), "Hello", "b64 known vector")
+
+    local cover = tiny_png(10, 20)
+    local ia = tiny_png(30, 40)  -- section 1
+    local ib = tiny_png(50, 60)  -- nested inside section 2
+    local fb2 = table.concat({
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<FictionBook xmlns:l="http://www.w3.org/1999/xlink">',
+        '<description><title-info><coverpage>',
+        '<image l:href="#cov"/></coverpage></title-info></description>',
+        '<body>',
+        '<section><p>one</p><image l:href="#a"/></section>',
+        '<section><p>two</p><section><p>x</p><image l:href="#b"/></section></section>',
+        '</body>',
+        '<binary id="cov" content-type="image/png">' .. b64encode(cover) .. '</binary>',
+        '<binary id="a" content-type="image/png">' .. b64encode(ia) .. '</binary>',
+        '<binary id="b" content-type="image/png">' .. b64encode(ib) .. '</binary>',
+        '</FictionBook>',
+    }, "\n")
+
+    local res = scanner.scan_fb2(fb2)
+    check(res ~= nil, "fb2 scan returns a result")
+    eq(res.format, "fb2", "fb2 format tag")
+    eq(#res.images, 3, "fb2 image count (a + b + synthesized cover)")
+    eq(res.spine_count, 2, "fb2 counts only top-level sections")
+
+    local byid = {}
+    for _, im in ipairs(res.images) do byid[im.path] = im end
+    check(byid.cov and byid.cov.is_cover, "fb2 cover flagged is_cover")
+    eq(byid.cov.spine_index, 0, "fb2 cover spine_index 0")
+    eq(byid.a.spine_index, 1, "fb2 image a in section 1")
+    eq(byid.b.spine_index, 2, "fb2 nested image b maps to top-level section 2")
+    eq(byid.a.width, 30, "fb2 a width"); eq(byid.a.height, 40, "fb2 a height")
+    eq(byid.a.format, "png", "fb2 a format")
+    eq(byid.b.width, 50, "fb2 b width")
+    eq(scanner.fb2_read_binary(fb2, "a"), ia, "fb2_read_binary returns decoded bytes")
+    check(scanner.fb2_read_binary(fb2, "missing") == nil, "fb2_read_binary missing id -> nil")
+end
+
+do
+    -- MOBI: crengine serves image records as "mobi_image_<n>". scan_mobi
+    -- enumerates them through a read_file. Pad the tiny PNGs to distinct byte
+    -- sizes so the cover-by-size match is a real test (image 3 is the cover).
+    local imgs = {
+        tiny_png(100, 200) .. string.rep("\0", 100),   -- mobi_image_1
+        tiny_png(300, 150) .. string.rep("\0", 50),    -- mobi_image_2
+        tiny_png(120, 120) .. string.rep("\0", 200),   -- mobi_image_3 (cover)
+    }
+    local cover_size = #imgs[3]
+    local function reader(name)
+        local k = name:match("^mobi_image_(%d+)$")
+        k = k and tonumber(k)
+        return k and imgs[k] or nil
+    end
+
+    local res = scanner.scan_mobi(reader, cover_size)
+    check(res ~= nil, "mobi scan returns a result")
+    eq(res.format, "mobi", "mobi format tag")
+    eq(#res.images, 3, "mobi enumerates contiguous images")
+    eq(res.spine_count, 1, "mobi flat spine_count")
+    eq(res.images[1].path, "mobi_image_1", "mobi image name")
+    eq(res.images[1].spine_index, 1, "mobi image spine_index 1")
+    eq(res.images[1].width, 100, "mobi image 1 width")
+    eq(res.images[1].height, 200, "mobi image 1 height")
+    eq(res.images[2].width, 300, "mobi image 2 width")
+    eq(res.images[3].height, 120, "mobi image 3 height")
+
+    check(res.images[3].is_cover, "mobi cover flagged by matching byte size")
+    check(not res.images[1].is_cover, "mobi non-cover image 1 not flagged")
+    check(not res.images[2].is_cover, "mobi non-cover image 2 not flagged")
+    eq(res.cover_path, "mobi_image_3", "mobi cover_path set to matched image")
+
+    -- With no cover_size, no image is flagged as the cover.
+    local res2 = scanner.scan_mobi(reader)
+    eq(#res2.images, 3, "mobi scan without cover size still finds images")
+    check(res2.cover_path == nil, "mobi no cover_path when size unknown")
+    check(not res2.images[3].is_cover, "mobi no cover flag when size unknown")
+
+    -- A gap of 3 consecutive misses stops enumeration.
+    local function gappy(name)
+        local k = tonumber(name:match("^mobi_image_(%d+)$"))
+        if k == 1 or k == 2 then return imgs[k] end
+        return nil    -- 3, 4, 5 miss -> stop
+    end
+    local res3 = scanner.scan_mobi(gappy)
+    eq(#res3.images, 2, "mobi stops after 3 consecutive misses")
+
+    check(scanner.scan_mobi(nil) == nil, "mobi scan with no reader -> nil")
+end
+
 -- ── summary ─────────────────────────────────────────────────────────────────
 
 print(string.format("scanner_tests: %d passed, %d failed", n_pass, n_fail))

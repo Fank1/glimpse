@@ -1,8 +1,9 @@
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: glimpse-plugin\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 11:21+0200\n"
+"POT-Creation-Date: 2026-09-07 18:00+0200\n"
 "PO-Revision-Date: 2026-08-29 10:07\n"
 "Last-Translator: \n"
 "Language-Team: Czech\n"
@@ -11,11 +12,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 3;\n"
-"X-Crowdin-Project: glimpse-plugin\n"
-"X-Crowdin-Project-ID: 923235\n"
-"X-Crowdin-Language: cs\n"
 "X-Crowdin-File: /plugin/l10n/templates/glimpse-help.pot\n"
 "X-Crowdin-File-ID: 20\n"
+"X-Crowdin-Language: cs\n"
+"X-Crowdin-Project: glimpse-plugin\n"
+"X-Crowdin-Project-ID: 923235\n"
 
 msgid "Master switch. When off, the bound gesture and the Open Glimpse entry do nothing – a quick way to silence Glimpse without unbinding its gesture."
 msgstr "Hlavní vypínač. Když je vypnutý, přiřazené gesto a položka Otevřít Glimpse nic nedělají – rychlý způsob, jak Glimpse ztišit bez odpojení jeho gesta."
@@ -32,6 +33,9 @@ msgstr "Zobrazte v galerii také stránky, které jste si označili záložkou (
 msgid "Choose which actions appear in the viewer's ⋯ menu. Reset Rotation is automatic (shown while an image is rotated)."
 msgstr "Vyberte, které akce se objeví v nabídce ⋯ prohlížeče. Obnovit otočení je automatické (zobrazí se, když je obrázek otočený)."
 
+msgid "These apply to the large panel. The compact panel always keeps swipe, pinch and double-tap on, because it hides the navigation buttons and the reset button."
+msgstr "Toto platí pro velký panel. Kompaktní panel má přejetí, štípnutí i dvojité klepnutí vždy zapnuté, protože skrývá navigační tlačítka a tlačítko obnovení."
+
 msgid "Double-tap the image to jump to the maximum zoom (centered on the tap), and again to return to the fitted view. On by default."
 msgstr "Dvojitým klepnutím na obrázek přejdete na maximální přiblížení (vystředěné na klepnutí) a dalším klepnutím se vrátíte na přizpůsobené zobrazení. Ve výchozím nastavení zapnuto."
 
@@ -43,6 +47,9 @@ msgstr "Sevřením nebo roztažením dvou prstů na obrázku oddálíte nebo př
 
 msgid "Where Glimpse opens: a side panel (left or right) or, in portrait, a band across the top or bottom. In landscape it always uses the preferred side."
 msgstr "Kde se Glimpse otevírá: postranní panel (vlevo nebo vpravo) nebo, na výšku, pruh nahoře či dole. Na šířku vždy použije upřednostňovanou stranu."
+
+msgid "Large fills one edge of the screen. Compact is a small card that floats over the page, which you drag by the grip in its top-right corner. The compact card hides the captions, the bookmark label, the navigation buttons and the reset button, and the Gallery always opens at the large size."
+msgstr "Velký vyplní jeden okraj obrazovky. Kompaktní je malá karta plovoucí nad stránkou, kterou přetahujete za úchyt v pravém horním rohu. Kompaktní karta skrývá popisky obrázků, štítek záložky, navigační tlačítka i tlačítko obnovení a Galerie se vždy otevře ve velké velikosti."
 
 msgid "How far you can zoom in, as a percentage of the image's own resolution. Double-tap jumps to this level and pinch stops here. Higher reveals more on detailed maps, but past 100% it is upscaling, so very high can look soft."
 msgstr "Jak daleko lze přiblížit, jako procento vlastního rozlišení obrázku. Dvojité klepnutí přeskočí na tuto úroveň a sevření se zde zastaví. Vyšší hodnota odhalí více na podrobných mapách, ale nad 100 % jde o převzorkování nahoru, takže velmi vysoká může vypadat rozmazaně."
@@ -91,4 +98,3 @@ msgstr "Glimpse ukládá prohledání knihy do mezipaměti. Použijte toto, poku
 
 msgid "Also offer releases marked as pre-release on GitHub – test builds published before a proper release. Normal update checks never see those."
 msgstr "Nabízet také vydání označená na GitHubu jako předběžná – testovací sestavení publikovaná před řádným vydáním. Běžné kontroly aktualizací je nikdy nevidí."
-

@@ -1,8 +1,9 @@
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: glimpse-plugin\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 11:21+0200\n"
+"POT-Creation-Date: 2026-09-07 18:00+0200\n"
 "PO-Revision-Date: 2026-08-29 10:09\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
@@ -11,11 +12,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
-"X-Crowdin-Project: glimpse-plugin\n"
-"X-Crowdin-Project-ID: 923235\n"
-"X-Crowdin-Language: uk\n"
 "X-Crowdin-File: /plugin/l10n/templates/glimpse-labels.pot\n"
 "X-Crowdin-File-ID: 18\n"
+"X-Crowdin-Language: uk\n"
+"X-Crowdin-Project: glimpse-plugin\n"
+"X-Crowdin-Project-ID: 923235\n"
 
 msgid "Ignore Image"
 msgstr "Ігнорувати зображення"
@@ -49,6 +50,9 @@ msgstr "Перемкнути інверсію в нічному режимі"
 
 msgid "Layout"
 msgstr "Розташування"
+
+msgid "Panel Size Switch"
+msgstr "Перемикач розміру панелі"
 
 msgid "Page %1 (%2)"
 msgstr "Сторінка %1 (%2)"
@@ -95,6 +99,9 @@ msgstr "Режим: усі зображення"
 msgid "Mode: Spoiler-free"
 msgstr "Режим: без спойлерів"
 
+msgid "Spoiler-free is not supported on MOBI files."
+msgstr "Режим без спойлерів не підтримується для файлів MOBI."
+
 msgid "Reset Rotation"
 msgstr "Скинути поворот"
 
@@ -116,6 +123,12 @@ msgstr "Включити закладки"
 msgid "Invert in Night Mode"
 msgstr "Інвертувати в нічному режимі"
 
+msgid "Switch to Large"
+msgstr "Перемкнути на велику"
+
+msgid "Switch to Compact"
+msgstr "Перемкнути на компактну"
+
 msgid "Image ignored."
 msgstr "Зображення проігноровано."
 
@@ -131,14 +144,11 @@ msgstr "Жодну книгу не відкрито."
 msgid "Glimpse failed to load its scanner module. Try reinstalling the plugin."
 msgstr "Glimpse не вдалося завантажити модуль сканування. Спробуйте перевстановити плагін."
 
-msgid "Glimpse works with EPUB books only (this document format is not supported)."
-msgstr "Glimpse працює лише з книгами EPUB (цей формат документа не підтримується)."
+msgid "Glimpse works with EPUB, FB2 and MOBI books only (this document format is not supported)."
+msgstr "Glimpse працює лише з книгами EPUB, FB2 і MOBI (цей формат документа не підтримується)."
 
 msgid "Scanning book for images…"
 msgstr "Пошук зображень у книзі…"
-
-msgid "Glimpse works with EPUB books only."
-msgstr "Glimpse працює лише з книгами EPUB."
 
 msgid "Could not scan this book for images."
 msgstr "Не вдалося знайти зображення в цій книзі."
@@ -200,11 +210,15 @@ msgstr "У вас найновіша версія (v%1)."
 msgid "No downloadable release package found."
 msgstr "Не знайдено пакета випуску для завантаження."
 
-msgid "Update available: %1\n"
-"(installed: v%2)\n\n"
+msgid ""
+"Update available: %1\n"
+"(installed: v%2)\n"
+"\n"
 "Download and install now?"
-msgstr "Доступне оновлення: %1\n"
-"(встановлено: v%2)\n\n"
+msgstr ""
+"Доступне оновлення: %1\n"
+"(встановлено: v%2)\n"
+"\n"
 "Завантажити й встановити зараз?"
 
 msgid "Update"
@@ -213,9 +227,11 @@ msgstr "Оновити"
 msgid "Updating to %1…"
 msgstr "Оновлення до %1…"
 
-msgid "Updated to %1.\n"
+msgid ""
+"Updated to %1.\n"
 "Restart KOReader now to load it?"
-msgstr "Оновлено до %1.\n"
+msgstr ""
+"Оновлено до %1.\n"
 "Перезапустити KOReader зараз, щоб завантажити?"
 
 msgid "Restart"
@@ -269,11 +285,17 @@ msgstr "Положення в портретній орієнтації"
 msgid "Enable Glimpse"
 msgstr "Увімкнути Glimpse"
 
-msgid "Tip: open Glimpse instantly with a gesture.\n\n"
-"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n\n"
+msgid ""
+"Tip: open Glimpse instantly with a gesture.\n"
+"\n"
+"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n"
+"\n"
 "(This tip is shown only once.)"
-msgstr "Порада: відкривайте Glimpse миттєво жестом.\n\n"
-"Задайте його в Налаштування → Дотики та жести → Менеджер жестів → виберіть жест → Читалка → 'Відкрити Glimpse'.\n\n"
+msgstr ""
+"Порада: відкривайте Glimpse миттєво жестом.\n"
+"\n"
+"Задайте його в Налаштування → Дотики та жести → Менеджер жестів → виберіть жест → Читалка → 'Відкрити Glimpse'.\n"
+"\n"
 "(Ця порада показується лише один раз.)"
 
 msgid "Mode: Show all images"
@@ -318,6 +340,18 @@ msgstr "Зведіть пальці для збільшення/зменшенн
 msgid "Layout: %1 · %2"
 msgstr "Розташування: %1 · %2"
 
+msgid "Panel Size: Compact"
+msgstr "Розмір панелі: компактна"
+
+msgid "Panel Size: Large"
+msgstr "Розмір панелі: велика"
+
+msgid "Large"
+msgstr "Велика"
+
+msgid "Compact"
+msgstr "Компактна"
+
 msgid "Maximum zoom: %1%"
 msgstr "Максимальний масштаб: %1 %"
 
@@ -326,6 +360,18 @@ msgstr "%1 % (рекомендовано)"
 
 msgid "%1%"
 msgstr "%1 %"
+
+msgid "Custom: %1%"
+msgstr "Власне: %1%"
+
+msgid "Custom…"
+msgstr "Власне…"
+
+msgid "Set the zoom ceiling as a percentage of the image's own resolution. Past 100% Glimpse enlarges the pixels, so a very high value can look soft."
+msgstr "Задайте межу збільшення у відсотках від власної роздільності зображення. Понад 100% Glimpse збільшує пікселі, тому дуже високе значення може виглядати розмитим."
+
+msgid "Set"
+msgstr "Задати"
 
 msgid "Navigation Loops Around"
 msgstr "Циклічна навігація"
@@ -387,3 +433,13 @@ msgstr "Перевірити оновлення (v%1)"
 msgid "Include pre-release versions"
 msgstr "Включати попередні версії"
 
+#, fuzzy
+#~ msgid "Mini Mode"
+#~ msgstr "Мінікарта"
+
+#, fuzzy
+#~ msgid "Maximum zoom"
+#~ msgstr "Максимальний масштаб: %1 %"
+
+#~ msgid "Glimpse works with EPUB books only."
+#~ msgstr "Glimpse працює лише з книгами EPUB."

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 11:21+0200\n"
+"POT-Creation-Date: 2026-09-07 18:00+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: fa\n"
@@ -50,6 +50,9 @@ msgstr "وارونه در حالت شب"
 
 msgid "Layout"
 msgstr "چیدمان"
+
+msgid "Panel Size Switch"
+msgstr "کلید اندازهٔ پنل"
 
 msgid "Page %1 (%2)"
 msgstr "صفحهٔ %1 (%2)"
@@ -96,6 +99,9 @@ msgstr "حالت: همهٔ تصاویر"
 msgid "Mode: Spoiler-free"
 msgstr "حالت: بدون لو دادن"
 
+msgid "Spoiler-free is not supported on MOBI files."
+msgstr "حالت بدون لو دادن برای پرونده‌های MOBI پشتیبانی نمی‌شود."
+
 msgid "Reset Rotation"
 msgstr "بازنشانی چرخش"
 
@@ -117,6 +123,12 @@ msgstr "گنجاندن نشانک‌ها"
 msgid "Invert in Night Mode"
 msgstr "وارونه در حالت شب"
 
+msgid "Switch to Large"
+msgstr "تغییر به بزرگ"
+
+msgid "Switch to Compact"
+msgstr "تغییر به فشرده"
+
 msgid "Image ignored."
 msgstr "تصویر نادیده گرفته شد."
 
@@ -129,22 +141,14 @@ msgstr "باز کردن Glimpse"
 msgid "No book is open."
 msgstr "هیچ کتابی باز نیست."
 
-msgid ""
-"Glimpse failed to load its scanner module. Try reinstalling the plugin."
-msgstr ""
-"‏Glimpse نتوانست پیمانهٔ پویش خود را بارگذاری کند. نصب دوبارهٔ افزونه را "
-"امتحان کنید."
+msgid "Glimpse failed to load its scanner module. Try reinstalling the plugin."
+msgstr "‏Glimpse نتوانست پیمانهٔ پویش خود را بارگذاری کند. نصب دوبارهٔ افزونه را امتحان کنید."
 
-msgid ""
-"Glimpse works with EPUB books only (this document format is not supported)."
-msgstr ""
-"‏Glimpse فقط با کتاب‌های EPUB کار می‌کند (این قالب سند پشتیبانی نمی‌شود)."
+msgid "Glimpse works with EPUB, FB2 and MOBI books only (this document format is not supported)."
+msgstr "‏Glimpse فقط با کتاب‌های EPUB، FB2 و MOBI کار می‌کند (این قالب سند پشتیبانی نمی‌شود)."
 
 msgid "Scanning book for images…"
 msgstr "در حال پویش کتاب برای تصاویر…"
-
-msgid "Glimpse works with EPUB books only."
-msgstr "‏Glimpse فقط با کتاب‌های EPUB کار می‌کند."
 
 msgid "Could not scan this book for images."
 msgstr "پویش این کتاب برای تصاویر ممکن نشد."
@@ -303,24 +307,14 @@ msgstr "حالت: نمایش تصاویر تا فصل کنونی"
 msgid "Show images up to current chapter"
 msgstr "نمایش تصاویر تا فصل کنونی"
 
-msgid ""
-"Images that appear beyond your current position stay hidden, so you can't "
-"spoil yourself. Granularity is per chapter: images in the chapter you are "
-"currently reading are shown."
-msgstr ""
-"تصاویری که فراتر از موقعیت کنونی شما ظاهر می‌شوند پنهان می‌مانند تا داستان "
-"را برای خودتان لو ندهید. دانه‌بندی بر پایهٔ فصل است: تصاویر فصلی که اکنون "
-"می‌خوانید نمایش داده می‌شوند."
+msgid "Images that appear beyond your current position stay hidden, so you can't spoil yourself. Granularity is per chapter: images in the chapter you are currently reading are shown."
+msgstr "تصاویری که فراتر از موقعیت کنونی شما ظاهر می‌شوند پنهان می‌مانند تا داستان را برای خودتان لو ندهید. دانه‌بندی بر پایهٔ فصل است: تصاویر فصلی که اکنون می‌خوانید نمایش داده می‌شوند."
 
 msgid "Show all images"
 msgstr "نمایش همهٔ تصاویر"
 
-msgid ""
-"Show reference images from anywhere in the book, including parts you haven't"
-" reached yet."
-msgstr ""
-"نمایش تصاویر مرجع از هر جای کتاب، از جمله بخش‌هایی که هنوز به آن‌ها "
-"نرسیده‌اید."
+msgid "Show reference images from anywhere in the book, including parts you haven't reached yet."
+msgstr "نمایش تصاویر مرجع از هر جای کتاب، از جمله بخش‌هایی که هنوز به آن‌ها نرسیده‌اید."
 
 msgid "Include Bookmarks in Gallery"
 msgstr "گنجاندن نشانک‌ها در نگارخانه"
@@ -346,6 +340,18 @@ msgstr "برای بزرگ/کوچک کردن انگشتان را باز/بسته 
 msgid "Layout: %1 · %2"
 msgstr "چیدمان: %1 · %2"
 
+msgid "Panel Size: Compact"
+msgstr "اندازهٔ پنل: فشرده"
+
+msgid "Panel Size: Large"
+msgstr "اندازهٔ پنل: بزرگ"
+
+msgid "Large"
+msgstr "بزرگ"
+
+msgid "Compact"
+msgstr "فشرده"
+
 msgid "Maximum zoom: %1%"
 msgstr "بیشترین بزرگ‌نمایی: %1%"
 
@@ -354,6 +360,18 @@ msgstr "%1% (توصیه‌شده)"
 
 msgid "%1%"
 msgstr "%1%"
+
+msgid "Custom: %1%"
+msgstr "سفارشی: %1%"
+
+msgid "Custom…"
+msgstr "سفارشی…"
+
+msgid "Set the zoom ceiling as a percentage of the image's own resolution. Past 100% Glimpse enlarges the pixels, so a very high value can look soft."
+msgstr "سقف بزرگ‌نمایی را به‌صورت درصدی از تفکیک‌پذیری خود تصویر تنظیم کنید. بالاتر از ۱۰۰٪ Glimpse پیکسل‌ها را بزرگ می‌کند، بنابراین مقدار بسیار بالا ممکن است محو به نظر برسد."
+
+msgid "Set"
+msgstr "تنظیم"
 
 msgid "Navigation Loops Around"
 msgstr "ناوبری چرخه‌ای"
@@ -414,6 +432,17 @@ msgstr "بررسی به‌روزرسانی‌ها (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "گنجاندن نسخه‌های پیش‌انتشار"
+
+#, fuzzy
+#~ msgid "Mini Mode"
+#~ msgstr "نقشهٔ کوچک"
+
+#, fuzzy
+#~ msgid "Maximum zoom"
+#~ msgstr "بیشترین بزرگ‌نمایی: %1%"
+
+#~ msgid "Glimpse works with EPUB books only."
+#~ msgstr "‏Glimpse فقط با کتاب‌های EPUB کار می‌کند."
 
 #~ msgid "Enable top menu tap zone"
 #~ msgstr "فعال‌سازی ناحیهٔ ضربهٔ منوی بالا"

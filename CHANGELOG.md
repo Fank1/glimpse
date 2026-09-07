@@ -1,5 +1,26 @@
 # Changelog
 
+## Unreleased
+
+**New formats**
+- FB2 (.fb2) books are now supported. Glimpse reads the embedded images and maps each one to its chapter for spoiler scope.
+- MOBI (.mobi, .prc) books are now supported. Glimpse reads the embedded images and skips the cover. A MOBI holds the whole book as one HTML document, so Glimpse cannot tell which chapter an image belongs to.
+- On a MOBI the mode is locked to "All images". The Mode row in the ⋯ menu and the Mode setting are greyed out, and a tap on the row explains why. Your setting is kept, and an EPUB gets it back.
+
+**Compact panel**
+- A new Quick Action shrinks the panel to a small free-floating card that sits over the page. The ⋯ menu row says where the tap goes: "Switch to Compact", then "Switch to Large". Drag the card by the grip in its top-right corner. Glimpse remembers where you put it, and puts it back next time.
+- The same choice is in Settings, under Layout, as "Panel Size: Large / Compact". Pick a size there while Glimpse is open and the panel changes at once.
+- The card keeps the image, the dot indicator, the ⋯ menu, and the zoom controls and mini map when those are on. It hides the captions, the bookmark label, the navigation buttons and the reset button. Zoom in and the dots go too, so the image gets the whole card. Double-tap still resets the zoom. Swipe still changes image.
+- The chrome on the card is drawn flat with a white outline instead of a drop shadow, so it stays readable over the image. The mini map sits in the bottom-left corner, the dot indicator on the bottom edge, and the zoom controls stack onto the ⋯ button in the bottom-right. Each one shares the card's own border, and the zoom controls join the ⋯ with the same faint hairline that separates + from −.
+- The card's mini map stays a small badge in the corner. A wide image shrinks to fit it.
+- Nav Buttons and Image Captions are dimmed in the ⋯ menu while the compact panel is on, because the card cannot show them.
+- Settings → Gestures applies to the large panel only. The compact panel always keeps swipe, pinch and double-tap on, because it hides the navigation buttons and the reset button.
+- Opening the Gallery restores the large panel, so the thumbnails stay usable. Leaving the Gallery brings the card back.
+
+**Maximum zoom**
+- The Maximum zoom setting now has a Custom option. Enter any value from 100% to 1000%, in place of the fixed presets. A very high value helps low-resolution images fill the screen.
+- The zoom-in ceiling now respects the memory limit of the image. The "+" button disables at the real maximum, so it no longer looks active when the image cannot grow further.
+
 ## 1.5.1
 
 **Gallery**

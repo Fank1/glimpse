@@ -1,8 +1,9 @@
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: glimpse-plugin\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 11:21+0200\n"
+"POT-Creation-Date: 2026-09-07 18:00+0200\n"
 "PO-Revision-Date: 2026-08-29 10:09\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
@@ -11,11 +12,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
-"X-Crowdin-Project: glimpse-plugin\n"
-"X-Crowdin-Project-ID: 923235\n"
-"X-Crowdin-Language: uk\n"
 "X-Crowdin-File: /plugin/l10n/templates/glimpse-help.pot\n"
 "X-Crowdin-File-ID: 20\n"
+"X-Crowdin-Language: uk\n"
+"X-Crowdin-Project: glimpse-plugin\n"
+"X-Crowdin-Project-ID: 923235\n"
 
 msgid "Master switch. When off, the bound gesture and the Open Glimpse entry do nothing – a quick way to silence Glimpse without unbinding its gesture."
 msgstr "Головний перемикач. Коли вимкнено, призначений жест і пункт Відкрити Glimpse нічого не роблять — швидкий спосіб вимкнути Glimpse, не знімаючи призначення жесту."
@@ -32,6 +33,9 @@ msgstr "Показувати в галереї також сторінки, як
 msgid "Choose which actions appear in the viewer's ⋯ menu. Reset Rotation is automatic (shown while an image is rotated)."
 msgstr "Виберіть, які дії з’являються в меню ⋯ переглядача. Скинути поворот — автоматична (показується, поки зображення повернуте)."
 
+msgid "These apply to the large panel. The compact panel always keeps swipe, pinch and double-tap on, because it hides the navigation buttons and the reset button."
+msgstr "Це стосується великої панелі. Компактна панель завжди залишає увімкненими проведення, щипок і подвійний дотик, бо вона приховує кнопки навігації та кнопку скидання."
+
 msgid "Double-tap the image to jump to the maximum zoom (centered on the tap), and again to return to the fitted view. On by default."
 msgstr "Двічі торкніться зображення, щоб перейти до максимального масштабу (по центру дотику), і ще раз, щоб повернутися до вписаного вигляду. Типово увімкнено."
 
@@ -43,6 +47,9 @@ msgstr "Зведіть або розведіть два пальці на зоб
 
 msgid "Where Glimpse opens: a side panel (left or right) or, in portrait, a band across the top or bottom. In landscape it always uses the preferred side."
 msgstr "Де відкривається Glimpse: бічна панель (зліва або справа) чи, у портретній орієнтації, смуга вгорі або внизу. В альбомній орієнтації завжди використовується бажаний бік."
+
+msgid "Large fills one edge of the screen. Compact is a small card that floats over the page, which you drag by the grip in its top-right corner. The compact card hides the captions, the bookmark label, the navigation buttons and the reset button, and the Gallery always opens at the large size."
+msgstr "Велика займає один край екрана. Компактна – це невелика картка, що плаває над сторінкою і яку ви перетягуєте за держак у її верхньому правому куті. Компактна картка приховує підписи, мітку закладки, кнопки навігації та кнопку скидання, а Галерея завжди відкривається у великому розмірі."
 
 msgid "How far you can zoom in, as a percentage of the image's own resolution. Double-tap jumps to this level and pinch stops here. Higher reveals more on detailed maps, but past 100% it is upscaling, so very high can look soft."
 msgstr "Наскільки сильно можна збільшувати, у відсотках від власної роздільної здатності зображення. Подвійний дотик переходить на цей рівень, а зведення пальців зупиняється тут. Вище значення показує більше на детальних картах, але понад 100 % це масштабування вгору, тож дуже високе може виглядати розмитим."
@@ -91,4 +98,3 @@ msgstr "Glimpse кешує сканування книги. Скористайт
 
 msgid "Also offer releases marked as pre-release on GitHub – test builds published before a proper release. Normal update checks never see those."
 msgstr "Також пропонувати випуски, позначені на GitHub як попередні, — тестові збірки, що публікуються перед повноцінним випуском. Звичайні перевірки оновлень їх ніколи не бачать."
-

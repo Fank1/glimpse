@@ -1,8 +1,9 @@
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: glimpse-plugin\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 11:21+0200\n"
+"POT-Creation-Date: 2026-09-07 18:00+0200\n"
 "PO-Revision-Date: 2026-08-29 10:07\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
@@ -11,11 +12,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Crowdin-Project: glimpse-plugin\n"
-"X-Crowdin-Project-ID: 923235\n"
-"X-Crowdin-Language: de\n"
 "X-Crowdin-File: /plugin/l10n/templates/glimpse-help.pot\n"
 "X-Crowdin-File-ID: 20\n"
+"X-Crowdin-Language: de\n"
+"X-Crowdin-Project: glimpse-plugin\n"
+"X-Crowdin-Project-ID: 923235\n"
 
 msgid "Master switch. When off, the bound gesture and the Open Glimpse entry do nothing – a quick way to silence Glimpse without unbinding its gesture."
 msgstr "Hauptschalter. Wenn aus, bewirken die zugewiesene Geste und der Eintrag „Glimpse öffnen“ nichts – eine schnelle Möglichkeit, Glimpse stummzuschalten, ohne die Geste zu lösen."
@@ -32,6 +33,9 @@ msgstr "Zeigen Sie auch die von Ihnen mit Lesezeichen versehenen Seiten (das Ese
 msgid "Choose which actions appear in the viewer's ⋯ menu. Reset Rotation is automatic (shown while an image is rotated)."
 msgstr "Wählen Sie, welche Aktionen im ⋯-Menü des Betrachters erscheinen. „Drehung zurücksetzen“ ist automatisch (angezeigt, während ein Bild gedreht ist)."
 
+msgid "These apply to the large panel. The compact panel always keeps swipe, pinch and double-tap on, because it hides the navigation buttons and the reset button."
+msgstr "Dies gilt für das große Panel. Das kompakte Panel lässt Wischen, Zwei-Finger-Zoom und Doppeltippen immer aktiv, da es die Navigationstasten und die Zurücksetzen-Taste ausblendet."
+
 msgid "Double-tap the image to jump to the maximum zoom (centered on the tap), and again to return to the fitted view. On by default."
 msgstr "Doppeltippen Sie auf das Bild, um zum maximalen Zoom zu springen (zentriert auf das Tippen), und erneut, um zur angepassten Ansicht zurückzukehren. Standardmäßig an."
 
@@ -43,6 +47,9 @@ msgstr "Ziehen Sie zwei Finger auf dem Bild zusammen oder auseinander, um heraus
 
 msgid "Where Glimpse opens: a side panel (left or right) or, in portrait, a band across the top or bottom. In landscape it always uses the preferred side."
 msgstr "Wo Glimpse sich öffnet: ein Seitenpanel (links oder rechts) oder, im Hochformat, ein Streifen oben oder unten. Im Querformat wird immer die bevorzugte Seite verwendet."
+
+msgid "Large fills one edge of the screen. Compact is a small card that floats over the page, which you drag by the grip in its top-right corner. The compact card hides the captions, the bookmark label, the navigation buttons and the reset button, and the Gallery always opens at the large size."
+msgstr "Groß füllt einen Bildschirmrand. Kompakt ist eine kleine Karte, die über der Seite schwebt und die Sie am Griff in ihrer rechten oberen Ecke ziehen. Die kompakte Karte blendet die Bildunterschriften, die Lesezeichen-Beschriftung, die Navigationstasten und die Zurücksetzen-Taste aus, und die Galerie öffnet sich immer in der großen Größe."
 
 msgid "How far you can zoom in, as a percentage of the image's own resolution. Double-tap jumps to this level and pinch stops here. Higher reveals more on detailed maps, but past 100% it is upscaling, so very high can look soft."
 msgstr "Wie weit Sie hineinzoomen können, als Prozentsatz der Eigenauflösung des Bildes. Doppeltippen springt zu dieser Stufe und Zusammenziehen stoppt hier. Höher zeigt mehr auf detaillierten Karten, aber über 100% wird hochskaliert, sodass sehr hohe Werte unscharf wirken können."
@@ -91,4 +98,3 @@ msgstr "Glimpse speichert seinen Buch-Scan zwischen. Verwenden Sie dies, wenn di
 
 msgid "Also offer releases marked as pre-release on GitHub – test builds published before a proper release. Normal update checks never see those."
 msgstr "Auch auf GitHub als Vorabversion markierte Veröffentlichungen anbieten – Testbuilds, die vor einer richtigen Veröffentlichung erscheinen. Normale Aktualisierungsprüfungen sehen diese nie."
-

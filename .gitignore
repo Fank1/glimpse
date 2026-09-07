@@ -18,6 +18,9 @@ for-readme-and-reddit/
 .playwright-mcp/
 figma-*.png
 
+# Drop-box for design exports; the ones in use are copied into plugin/assets/
+icons-to-use/
+
 # Local research/data archives — never belongs in the repo (e.g. reddit-dump.zip)
 *.zip
 

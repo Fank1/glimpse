@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 11:21+0200\n"
+"POT-Creation-Date: 2026-09-07 18:00+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: lt_LT\n"
@@ -50,6 +50,9 @@ msgstr "Invertuoti nakties veiksenoje"
 
 msgid "Layout"
 msgstr "Išdėstymas"
+
+msgid "Panel Size Switch"
+msgstr "Skydelio dydžio jungiklis"
 
 msgid "Page %1 (%2)"
 msgstr "Puslapis %1 (%2)"
@@ -96,6 +99,9 @@ msgstr "Veiksena: Visi paveikslėliai"
 msgid "Mode: Spoiler-free"
 msgstr "Veiksena: Be spoilerių"
 
+msgid "Spoiler-free is not supported on MOBI files."
+msgstr "Veiksena be spoilerių MOBI failams nepalaikoma."
+
 msgid "Reset Rotation"
 msgstr "Atstatyti pasukimą"
 
@@ -117,6 +123,12 @@ msgstr "Įtraukti žymes"
 msgid "Invert in Night Mode"
 msgstr "Invertuoti nakties veiksenoje"
 
+msgid "Switch to Large"
+msgstr "Perjungti į didelį"
+
+msgid "Switch to Compact"
+msgstr "Perjungti į kompaktišką"
+
 msgid "Image ignored."
 msgstr "Paveikslėlio nepaisyta."
 
@@ -129,22 +141,14 @@ msgstr "Atverti Glimpse"
 msgid "No book is open."
 msgstr "Nėra atvertos knygos."
 
-msgid ""
-"Glimpse failed to load its scanner module. Try reinstalling the plugin."
-msgstr ""
-"Glimpse nepavyko įkelti nuskaitymo modulio. Pabandykite iš naujo įdiegti "
-"papildinį."
+msgid "Glimpse failed to load its scanner module. Try reinstalling the plugin."
+msgstr "Glimpse nepavyko įkelti nuskaitymo modulio. Pabandykite iš naujo įdiegti papildinį."
 
-msgid ""
-"Glimpse works with EPUB books only (this document format is not supported)."
-msgstr ""
-"Glimpse veikia tik su EPUB knygomis (šis dokumento formatas nepalaikomas)."
+msgid "Glimpse works with EPUB, FB2 and MOBI books only (this document format is not supported)."
+msgstr "Glimpse veikia tik su EPUB, FB2 ir MOBI knygomis (šis dokumento formatas nepalaikomas)."
 
 msgid "Scanning book for images…"
 msgstr "Ieškoma paveikslėlių knygoje…"
-
-msgid "Glimpse works with EPUB books only."
-msgstr "Glimpse veikia tik su EPUB knygomis."
 
 msgid "Could not scan this book for images."
 msgstr "Nepavyko nuskaityti šios knygos paveikslėlių."
@@ -303,24 +307,14 @@ msgstr "Veiksena: Rodyti paveikslėlius iki dabartinio skyriaus"
 msgid "Show images up to current chapter"
 msgstr "Rodyti paveikslėlius iki dabartinio skyriaus"
 
-msgid ""
-"Images that appear beyond your current position stay hidden, so you can't "
-"spoil yourself. Granularity is per chapter: images in the chapter you are "
-"currently reading are shown."
-msgstr ""
-"Paveikslėliai, esantys už jūsų dabartinės padėties, lieka paslėpti, kad "
-"neatskleistumėte sau siužeto. Detalumas yra pagal skyrių: rodomi skaitomo "
-"skyriaus paveikslėliai."
+msgid "Images that appear beyond your current position stay hidden, so you can't spoil yourself. Granularity is per chapter: images in the chapter you are currently reading are shown."
+msgstr "Paveikslėliai, esantys už jūsų dabartinės padėties, lieka paslėpti, kad neatskleistumėte sau siužeto. Detalumas yra pagal skyrių: rodomi skaitomo skyriaus paveikslėliai."
 
 msgid "Show all images"
 msgstr "Rodyti visus paveikslėlius"
 
-msgid ""
-"Show reference images from anywhere in the book, including parts you haven't"
-" reached yet."
-msgstr ""
-"Rodyti nuorodinius paveikslėlius iš bet kurios knygos vietos, įskaitant "
-"dalis, kurių dar nepasiekėte."
+msgid "Show reference images from anywhere in the book, including parts you haven't reached yet."
+msgstr "Rodyti nuorodinius paveikslėlius iš bet kurios knygos vietos, įskaitant dalis, kurių dar nepasiekėte."
 
 msgid "Include Bookmarks in Gallery"
 msgstr "Įtraukti žymes į galeriją"
@@ -346,6 +340,18 @@ msgstr "Suglauskite mastelio keitimui"
 msgid "Layout: %1 · %2"
 msgstr "Išdėstymas: %1 · %2"
 
+msgid "Panel Size: Compact"
+msgstr "Skydelio dydis: kompaktiškas"
+
+msgid "Panel Size: Large"
+msgstr "Skydelio dydis: didelis"
+
+msgid "Large"
+msgstr "Didelis"
+
+msgid "Compact"
+msgstr "Kompaktiškas"
+
 msgid "Maximum zoom: %1%"
 msgstr "Maksimalus mastelis: %1%"
 
@@ -354,6 +360,18 @@ msgstr "%1% (rekomenduojama)"
 
 msgid "%1%"
 msgstr "%1%"
+
+msgid "Custom: %1%"
+msgstr "Pasirinktinis: %1%"
+
+msgid "Custom…"
+msgstr "Pasirinktinis…"
+
+msgid "Set the zoom ceiling as a percentage of the image's own resolution. Past 100% Glimpse enlarges the pixels, so a very high value can look soft."
+msgstr "Nustatykite mastelio viršutinę ribą kaip paveikslėlio savosios skiriamosios gebos procentą. Viršijus 100%, Glimpse didina pikselius, todėl labai didelė reikšmė gali atrodyti neryški."
+
+msgid "Set"
+msgstr "Nustatyti"
 
 msgid "Navigation Loops Around"
 msgstr "Ciklinis naršymas"
@@ -414,6 +432,17 @@ msgstr "Tikrinti atnaujinimus (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "Įtraukti išankstines laidas"
+
+#, fuzzy
+#~ msgid "Mini Mode"
+#~ msgstr "Mažasis žemėlapis"
+
+#, fuzzy
+#~ msgid "Maximum zoom"
+#~ msgstr "Maksimalus mastelis: %1%"
+
+#~ msgid "Glimpse works with EPUB books only."
+#~ msgstr "Glimpse veikia tik su EPUB knygomis."
 
 #~ msgid "Enable top menu tap zone"
 #~ msgstr "Įjungti viršutinio meniu bakstelėjimo zoną"

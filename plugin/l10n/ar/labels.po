@@ -1,8 +1,9 @@
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: glimpse-plugin\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 11:21+0200\n"
+"POT-Creation-Date: 2026-09-07 18:00+0200\n"
 "PO-Revision-Date: 2026-08-29 10:07\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
@@ -11,11 +12,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
-"X-Crowdin-Project: glimpse-plugin\n"
-"X-Crowdin-Project-ID: 923235\n"
-"X-Crowdin-Language: ar\n"
 "X-Crowdin-File: /plugin/l10n/templates/glimpse-labels.pot\n"
 "X-Crowdin-File-ID: 18\n"
+"X-Crowdin-Language: ar\n"
+"X-Crowdin-Project: glimpse-plugin\n"
+"X-Crowdin-Project-ID: 923235\n"
 
 msgid "Ignore Image"
 msgstr "تجاهل الصورة"
@@ -49,6 +50,9 @@ msgstr "العكس في الوضع الليلي"
 
 msgid "Layout"
 msgstr "التخطيط"
+
+msgid "Panel Size Switch"
+msgstr "مبدّل حجم اللوحة"
 
 msgid "Page %1 (%2)"
 msgstr "الصفحة %1 (%2)"
@@ -95,6 +99,9 @@ msgstr "الوضع: كل الصور"
 msgid "Mode: Spoiler-free"
 msgstr "الوضع: خالٍ من الحرق"
 
+msgid "Spoiler-free is not supported on MOBI files."
+msgstr "الوضع الخالي من الحرق غير مدعوم في ملفات MOBI."
+
 msgid "Reset Rotation"
 msgstr "إعادة تعيين التدوير"
 
@@ -116,6 +123,12 @@ msgstr "تضمين الإشارات المرجعية"
 msgid "Invert in Night Mode"
 msgstr "العكس في الوضع الليلي"
 
+msgid "Switch to Large"
+msgstr "التبديل إلى الكبير"
+
+msgid "Switch to Compact"
+msgstr "التبديل إلى المدمج"
+
 msgid "Image ignored."
 msgstr "تم تجاهل الصورة."
 
@@ -131,14 +144,11 @@ msgstr "لا يوجد كتاب مفتوح."
 msgid "Glimpse failed to load its scanner module. Try reinstalling the plugin."
 msgstr "فشل Glimpse في تحميل وحدة المسح الخاصة به. حاول إعادة تثبيت الإضافة."
 
-msgid "Glimpse works with EPUB books only (this document format is not supported)."
-msgstr "يعمل Glimpse مع كتب EPUB فقط (تنسيق المستند هذا غير مدعوم)."
+msgid "Glimpse works with EPUB, FB2 and MOBI books only (this document format is not supported)."
+msgstr "يعمل Glimpse مع كتب EPUB وFB2 وMOBI فقط (تنسيق المستند هذا غير مدعوم)."
 
 msgid "Scanning book for images…"
 msgstr "جارٍ مسح الكتاب بحثًا عن الصور…"
-
-msgid "Glimpse works with EPUB books only."
-msgstr "يعمل Glimpse مع كتب EPUB فقط."
 
 msgid "Could not scan this book for images."
 msgstr "تعذّر مسح هذا الكتاب بحثًا عن الصور."
@@ -200,11 +210,15 @@ msgstr "أنت محدَّث (v%1)."
 msgid "No downloadable release package found."
 msgstr "لم يُعثر على حزمة إصدار قابلة للتنزيل."
 
-msgid "Update available: %1\n"
-"(installed: v%2)\n\n"
+msgid ""
+"Update available: %1\n"
+"(installed: v%2)\n"
+"\n"
 "Download and install now?"
-msgstr "يتوفر تحديث: %1\n"
-"(المثبَّت: v%2)\n\n"
+msgstr ""
+"يتوفر تحديث: %1\n"
+"(المثبَّت: v%2)\n"
+"\n"
 "تنزيله وتثبيته الآن؟"
 
 msgid "Update"
@@ -213,9 +227,11 @@ msgstr "تحديث"
 msgid "Updating to %1…"
 msgstr "جارٍ التحديث إلى %1…"
 
-msgid "Updated to %1.\n"
+msgid ""
+"Updated to %1.\n"
 "Restart KOReader now to load it?"
-msgstr "تم التحديث إلى %1.\n"
+msgstr ""
+"تم التحديث إلى %1.\n"
 "إعادة تشغيل KOReader الآن لتحميله؟"
 
 msgid "Restart"
@@ -269,11 +285,17 @@ msgstr "الوضع العمودي"
 msgid "Enable Glimpse"
 msgstr "تفعيل Glimpse"
 
-msgid "Tip: open Glimpse instantly with a gesture.\n\n"
-"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n\n"
+msgid ""
+"Tip: open Glimpse instantly with a gesture.\n"
+"\n"
+"Set one under Settings → Taps and gestures → Gesture manager → pick a gesture → Reader → 'Open Glimpse'.\n"
+"\n"
 "(This tip is shown only once.)"
-msgstr "تلميح: افتح Glimpse فورًا بإيماءة.\n\n"
-"عيّن واحدة في الإعدادات → النقرات والإيماءات → مدير الإيماءات → اختر إيماءة → القارئ → 'فتح Glimpse'.\n\n"
+msgstr ""
+"تلميح: افتح Glimpse فورًا بإيماءة.\n"
+"\n"
+"عيّن واحدة في الإعدادات → النقرات والإيماءات → مدير الإيماءات → اختر إيماءة → القارئ → 'فتح Glimpse'.\n"
+"\n"
 "(يُعرض هذا التلميح مرة واحدة فقط.)"
 
 msgid "Mode: Show all images"
@@ -318,6 +340,18 @@ msgstr "اقرص للتكبير/التصغير"
 msgid "Layout: %1 · %2"
 msgstr "التخطيط: %1 · %2"
 
+msgid "Panel Size: Compact"
+msgstr "حجم اللوحة: مدمج"
+
+msgid "Panel Size: Large"
+msgstr "حجم اللوحة: كبير"
+
+msgid "Large"
+msgstr "كبير"
+
+msgid "Compact"
+msgstr "مدمج"
+
 msgid "Maximum zoom: %1%"
 msgstr "أقصى تكبير: %1%"
 
@@ -326,6 +360,18 @@ msgstr "%1% (موصى به)"
 
 msgid "%1%"
 msgstr "%1%"
+
+msgid "Custom: %1%"
+msgstr "مخصص: %1%"
+
+msgid "Custom…"
+msgstr "مخصص…"
+
+msgid "Set the zoom ceiling as a percentage of the image's own resolution. Past 100% Glimpse enlarges the pixels, so a very high value can look soft."
+msgstr "حدّد حد التكبير الأقصى كنسبة مئوية من دقة الصورة نفسها. بعد 100% يكبّر Glimpse البكسلات، لذا قد تبدو القيم العالية جدًا غير حادة."
+
+msgid "Set"
+msgstr "تعيين"
 
 msgid "Navigation Loops Around"
 msgstr "تنقل دائري"
@@ -387,3 +433,13 @@ msgstr "التحقق من التحديثات (v%1)"
 msgid "Include pre-release versions"
 msgstr "تضمين إصدارات ما قبل الإطلاق"
 
+#, fuzzy
+#~ msgid "Mini Mode"
+#~ msgstr "الخريطة المصغرة"
+
+#, fuzzy
+#~ msgid "Maximum zoom"
+#~ msgstr "أقصى تكبير: %1%"
+
+#~ msgid "Glimpse works with EPUB books only."
+#~ msgstr "يعمل Glimpse مع كتب EPUB فقط."

@@ -104,6 +104,8 @@ local BOOKMARKS_KEY = "glimpse_include_bookmarks" -- include the user's dogear-b
 local LAYOUT_RIGHT_KEY = "glimpse_layout_right" -- LEGACY (pre-1.3.4): drawer anchored to the RIGHT edge. Now only a migration fallback for PREF_ALIGN_KEY.
 local PREF_ALIGN_KEY = "glimpse_pref_align"    -- "left"/"right": the side used in landscape always, and in portrait when position=side. Default "left".
 local PORTRAIT_POS_KEY = "glimpse_portrait_pos" -- "side"/"bottom"/"top": where the drawer sits in PORTRAIT. Default "side".
+local MINI_MODE_KEY = "glimpse_mini_mode"      -- drawer shrinks to a small free-floating card the user can drag, OFF by default
+local MINI_POS_KEY = "glimpse_mini_pos"        -- {x=,y=}: where that card sits, as 0..1 ratios of the free travel
 local MAX_ZOOM_KEY = "glimpse_max_zoom"        -- zoom ceiling as a multiple of native resolution (double-tap target + pinch clamp)
 local GESTURE_TIP_KEY = "glimpse_gesture_tip_shown" -- one-time menu-open nudge to bind a gesture
 -- viewer gesture toggles (Settings → Gestures), all ON by default (nilOrTrue)
@@ -136,14 +138,46 @@ local function _resolvePlacement()
     return pref
 end
 
+-- Mini Mode (⋯ → Mini Mode): the drawer shrinks to a small free-floating card
+-- the user drags around by its top-right grip. The placement settings above
+-- still decide where the drawer goes when Mini Mode is OFF.
+local function _miniMode()
+    return G_reader_settings:isTrue(MINI_MODE_KEY)
+end
+-- Where that card sits, as two 0..1 ratios of the FREE TRAVEL (screen size
+-- minus card size) rather than pixels: a ratio still lands on-screen after a
+-- rotation or a DPI change, the same reasoning as the saved cx/cy pan centre.
+-- 0.5/0.5 (centred) until the user drags it somewhere.
+local function _miniPos()
+    local v = G_reader_settings:readSetting(MINI_POS_KEY)
+    local x, y = 0.5, 0.5
+    if type(v) == "table" then
+        local vx, vy = tonumber(v.x), tonumber(v.y)
+        if vx then x = math.min(1, math.max(0, vx)) end
+        if vy then y = math.min(1, math.max(0, vy)) end
+    end
+    return x, y
+end
+
 -- Zoom ceiling (multiple of the image's native resolution), user-configurable
 -- under Advanced → Maximum zoom. Double-tap jumps here and pinch stops here.
--- 2.0 (200%) by default; the menu offers 150%–400%.
+-- 2.0 (200%) by default; the menu offers 150%–400% presets plus a custom value.
 local DEFAULT_MAX_ZOOM = 2.0
 local MAX_ZOOM_CHOICES = { 1.5, 2.0, 2.5, 3.0, 4.0 }
+-- Floor and hard cap for the custom value. Below native (1.0) makes no sense as
+-- a ceiling; above 10.0 only enlarges the pixels further and costs memory.
+local MIN_MAX_ZOOM = 1.0
+local MAX_MAX_ZOOM = 10.0
 local function _maxZoomMult()
     local v = tonumber(G_reader_settings:readSetting(MAX_ZOOM_KEY))
-    return v or DEFAULT_MAX_ZOOM
+    if not v then return DEFAULT_MAX_ZOOM end
+    return math.min(MAX_MAX_ZOOM, math.max(MIN_MAX_ZOOM, v))
+end
+local function _isPresetZoom(mult)
+    for _, m in ipairs(MAX_ZOOM_CHOICES) do
+        if m == mult then return true end
+    end
+    return false
 end
 -- Which actions appear in the viewer's ⋯ popup ("Quick Actions", configured
 -- from the plugin menu). Table order = popup order; `default` = shown unless
@@ -165,6 +199,7 @@ local QUICK_ACTIONS = {
     { key = "bookmarks",  default = false },
     { key = "invert",     default = true  },
     { key = "layout",     default = false },
+    { key = "minimode",   default = true  },
 }
 local function _quick_enabled(key)
     local cfg = G_reader_settings:readSetting(QUICK_ACTIONS_KEY)
@@ -196,6 +231,7 @@ local function _quick_label(key)
         bookmarks  = _("Include Bookmarks Toggle"),
         invert     = _("Invert in Night Mode Toggle"),
         layout     = _("Layout"),
+        minimode   = _("Panel Size Switch"),
     })[key] or key
 end
 
@@ -398,9 +434,17 @@ end
 -- interior is filled and the edge carries a `stroke`-wide `outline` band. A
 -- square corner runs the edges straight into it (no arc). Used by the mini map
 -- and by the zoom control when a mini map docks to it (squared seam corners).
-local function make_corner_stencil(w, h, r, corners, stroke, fill, outline)
+local function make_corner_stencil(w, h, r, corners, stroke, fill, outline, sides)
     local bb = Blitbuffer.new(w, h, Blitbuffer.TYPE_BBRGB32)
     local no_fill = fill == nil
+    -- `sides` names the edges that carry the border (default all four). An edge
+    -- left out is filled to the very edge, so a widget that MERGES with its
+    -- neighbour draws no second black line in the seam.
+    -- any falsy value (nil or false) means "all four edges"
+    local side_t = (not sides) or sides.t
+    local side_b = (not sides) or sides.b
+    local side_l = (not sides) or sides.l
+    local side_r = (not sides) or sides.r
     -- nearest rounded-corner arc centre for (px,py), or nil when the pixel is
     -- not inside any rounded corner's quadrant (so it belongs to a straight
     -- edge and is treated as fully covered up to the border).
@@ -424,9 +468,12 @@ local function make_corner_stencil(w, h, r, corners, stroke, fill, outline)
                 dist_edge = r - d           -- distance inward from the outer edge
             else
                 cov = 1
-                -- straight edge: inward distance = min gap to any of the 4 sides
-                dist_edge = math.min(px + 0.5, w - 0.5 - px,
-                    py + 0.5, h - 0.5 - py)
+                -- straight edge: inward distance = min gap to any BORDERED side
+                dist_edge = math.huge
+                if side_l then dist_edge = math.min(dist_edge, px + 0.5) end
+                if side_r then dist_edge = math.min(dist_edge, w - 0.5 - px) end
+                if side_t then dist_edge = math.min(dist_edge, py + 0.5) end
+                if side_b then dist_edge = math.min(dist_edge, h - 0.5 - py) end
             end
             if cov > 0 then
                 local t_in = math.min(math.max(dist_edge - stroke + 0.5, 0), 1)
@@ -546,6 +593,37 @@ local function paint_drop_shadow(bb, x, y, w, h, r, blur, dy, day_op, night_op, 
     bb:alphablitFrom(s, ox + inR, oy + inT, inR, inT, sw - inR, inB - inT) -- right
 end
 
+-- Mini Mode chrome sits directly on the image inside a small card, where the
+-- soft drop shadow above reads as grime rather than lift. The design gives each
+-- control a crisp white ring instead (Figma: shadow-[0_0_0_2px_white]). Painted
+-- as a solid white rounded silhouette one ring wider than the widget, which
+-- then paints its own body on top — so only the ring shows.
+--
+-- `sides` says which edges to grow on (default all). A control that MERGES with
+-- its neighbour suppresses the shared edge, so no white band appears in the
+-- seam. Logical/day polarity like the controls themselves, so night mode
+-- inverts ring and body together. Cached: a handful of sizes, tiny buffers.
+local CHROME_OUTLINE = Screen:scaleBySize(2)
+local _outline_cache = {}
+local function paint_chrome_outline(bb, x, y, w, h, r, corners, sides)
+    local ow = CHROME_OUTLINE
+    local c = corners or { tl = true, tr = true, bl = true, br = true }
+    local s = sides or { t = true, b = true, l = true, r = true }
+    local gl, gr = s.l and ow or 0, s.r and ow or 0
+    local gt, gb = s.t and ow or 0, s.b and ow or 0
+    local ow_w, ow_h = w + gl + gr, h + gt + gb
+    if ow_w <= 0 or ow_h <= 0 then return end
+    local key = table.concat({ ow_w, ow_h, r + ow,
+        c.tl and 1 or 0, c.tr and 1 or 0, c.bl and 1 or 0, c.br and 1 or 0 }, ":")
+    local sbb = _outline_cache[key]
+    if not sbb then
+        -- fill == outline == white: a solid silhouette, not a ring
+        sbb = make_corner_stencil(ow_w, ow_h, r + ow, c, 1, 0xFF, 0xFF)
+        _outline_cache[key] = sbb
+    end
+    bb:alphablitFrom(sbb, x - gl, y - gt, 0, 0, ow_w, ow_h)
+end
+
 -- The pill behind the dots / "n / N" counter. Default is
 -- the design's black fill + 2px white stroke (keeps the dots legible over
 -- dark images). `inverted` flips it to a white fill + black stroke: used
@@ -558,6 +636,13 @@ local GlimpsePill = WidgetContainer:extend{
     radius = Screen:scaleBySize(8), -- Figma "less rounding" (was a full stadium)
     stroke = Screen:scaleBySize(2),
     inverted = nil,
+    -- Mini Mode docks the pill on the card's bottom border, so the two corners
+    -- that meet it are square (see _buildPill).
+    square_bottom = false,
+    -- Nudge the content off centre. The docked pill's bottom rows are covered by
+    -- the card's border, so the dots read as sitting high; a small downward
+    -- offset puts them back on the pill's optical centre.
+    inner_dy = 0,
 }
 
 function GlimpsePill:init()
@@ -580,15 +665,21 @@ function GlimpsePill:paintTo(bb, x, y)
         if self._bg_bb then self._bg_bb:free() end
         local fill = self.inverted and 0xFF or 0x00
         local outline = self.inverted and 0x00 or 0xFF
-        self._bg_bb = make_rounded_stencil(w, h, self.radius, self.stroke,
-            fill, outline)
+        if self.square_bottom then
+            self._bg_bb = make_corner_stencil(w, h, self.radius,
+                { tl = true, tr = true, bl = false, br = false },
+                self.stroke, fill, outline)
+        else
+            self._bg_bb = make_rounded_stencil(w, h, self.radius, self.stroke,
+                fill, outline)
+        end
         self._bg_w, self._bg_h = w, h
     end
     bb:alphablitFrom(self._bg_bb, x, y, 0, 0, w, h)
     local inner_size = self.inner:getSize()
     self.inner:paintTo(bb,
         x + math.floor((w - inner_size.w) / 2),
-        y + math.floor((h - inner_size.h) / 2))
+        y + math.floor((h - inner_size.h) / 2) + self.inner_dy)
 end
 
 function GlimpsePill:free(...)
@@ -697,26 +788,59 @@ local GlimpseMoreButton = Widget:extend{
     icon_size = Screen:scaleBySize(18),
     disabled = nil,
     disabled_gray = 0xB4,                -- border/icon gray when disabled
+    -- Mini Mode: a white ring instead of the drop shadow, and a squared TOP
+    -- edge when the zoom control sits directly above (the two read as one
+    -- vertical stack, sharing a single border line — see update()).
+    outline = false,
+    outline_sides = nil,                 -- which edges get the ring (default all)
+    square_top = false,
+    corners = nil,                       -- explicit {tl,tr,bl,br}; wins over
+                                         -- square_top (Mini Mode packs the
+                                         -- button into the card's corner)
 }
 
 function GlimpseMoreButton:getSize()
     return Geom:new{ w = self.size, h = self.size }
 end
 
+function GlimpseMoreButton:_corners()
+    if self.corners then return self.corners end
+    if not self.square_top then
+        return { tl = true, tr = true, bl = true, br = true }
+    end
+    return { tl = false, tr = false, bl = true, br = true }
+end
+
 function GlimpseMoreButton:paintTo(bb, x, y)
     self.dimen = Geom:new{ x = x, y = y, w = self.size, h = self.size }
+    local cc = self:_corners()
     -- active buttons cast a soft downward drop shadow; a disabled dead-end
     -- prev/next stays flat, reinforcing that it's inert
-    if not self.disabled then
+    if self.outline then
+        -- outline_sides (set by update()) drops the ring on edges that sit
+        -- flush against the card, and on the edge shared with the zoom control
+        paint_chrome_outline(bb, x, y, self.size, self.size, self.radius,
+            cc, self.outline_sides)
+    elseif not self.disabled then
         paint_drop_shadow(bb, x, y, self.size, self.size, self.radius,
             Screen:scaleBySize(2), Screen:scaleBySize(2), 0.3, 0.5)
+    end
+    -- the stencil bakes in the corner set and the disabled gray, so rebuild it
+    -- whenever either changes (entering or leaving Mini Mode does both)
+    local bgkey = table.concat({
+        cc.tl and 1 or 0, cc.tr and 1 or 0, cc.bl and 1 or 0, cc.br and 1 or 0,
+        tostring(self.disabled) }, ":")
+    if self._bg_bb and self._bg_key ~= bgkey then
+        self._bg_bb:free()
+        self._bg_bb = nil
     end
     if not self._bg_bb then
         -- disabled (dead-end prev/next): keep the white fill for consistency
         -- with the enabled buttons — just dim the outline ring and the icon
         -- (lifted to the same gray below) so it still reads as inactive.
-        self._bg_bb = make_rounded_stencil(self.size, self.size,
-            self.radius, self.stroke, 0xFF,
+        self._bg_key = bgkey
+        self._bg_bb = make_corner_stencil(self.size, self.size,
+            self.radius, cc, self.stroke, 0xFF,
             self.disabled and self.disabled_gray or 0x00)
     end
     bb:alphablitFrom(self._bg_bb, x, y, 0, 0, self.size, self.size)
@@ -806,7 +930,22 @@ local GlimpseZoomControl = Widget:extend{
     fit_disabled = false,                 -- middle icon: image already fitted
     minus_disabled = false,               -- at fit / minimum zoom
     plus_disabled = false,                -- at maximum zoom
-    inverted_zone = nil,                  -- 0/1/2: zone flashed while pressed
+    inverted_zone = nil,                  -- zone flashed while pressed (0-based,
+                                          -- top to bottom: +, [fit], −)
+    -- Mini Mode drops the middle "fit" zone: the card hides the reset affordance
+    -- entirely, so the control is just + and −, two zones tall (see update()).
+    no_fit = false,
+    -- Mini Mode: white ring instead of the drop shadow, and a squared BOTTOM
+    -- edge so the control merges into the ⋯ button directly below it.
+    outline = false,
+    outline_sides = nil,                  -- which edges get the ring (default all)
+    square_bottom = false,
+    square_right = false,                 -- Mini Mode: the stack runs flush into
+                                          -- the card's right border
+    merge_bottom = false,                 -- Mini Mode: the ⋯ button sits directly
+                                          -- below, so drop the bottom border and
+                                          -- draw the same faint hairline the zone
+                                          -- boundaries use
     square_side = nil,                    -- "left"/"right": squared corners where
                                           -- a mini map docks (so the pair merges)
     group_shadow = nil,                   -- {x_off,w,h}: when a map is docked, one
@@ -854,39 +993,57 @@ function GlimpseZoomControl:paintTo(bb, x, y)
     self.dimen = Geom:new{ x = x, y = y, w = w, h = h }
     -- Rebuild the background when the docked side changes: a docked mini map
     -- squares the two corners on the seam so the pair reads as one merged group.
-    if self._bg_side ~= self.square_side then
+    local bgkey = tostring(self.square_side) .. tostring(self.square_bottom)
+        .. tostring(self.square_right) .. tostring(self.merge_bottom)
+    if self._bg_side ~= bgkey then
         if self._bg_bb then self._bg_bb:free() end
         self._bg_bb = nil
-        self._bg_side = self.square_side
+        self._bg_side = bgkey
     end
+    local c = { tl = true, tr = true, bl = true, br = true }
+    if self.square_side == "left" then c.tl, c.bl = false, false
+    elseif self.square_side == "right" then c.tr, c.br = false, false end
+    if self.square_bottom then c.bl, c.br = false, false end
+    if self.square_right then c.tr, c.br = false, false end
     if not self._bg_bb then
-        local c = { tl = true, tr = true, bl = true, br = true }
-        if self.square_side == "left" then c.tl, c.bl = false, false
-        elseif self.square_side == "right" then c.tr, c.br = false, false end
+        -- merged with the ⋯ below: no bottom border, so the seam carries the
+        -- faint hairline drawn below instead of two stacked black lines
         self._bg_bb = make_corner_stencil(w, h, self.radius, c, self.stroke,
-            0xFF, 0x00)
+            0xFF, 0x00,
+            self.merge_bottom
+                and { t = true, b = false, l = true, r = true } or nil)
     end
     -- active control: same soft drop shadow as the buttons. When a mini map is
     -- docked, paint ONE shadow for the merged group's outer box instead of two.
     local s2 = Screen:scaleBySize(2)
-    if self.group_shadow then
+    if self.outline then
+        -- Mini Mode: white ring, minus the edges named by outline_sides (flush
+        -- against the card, or shared with the ⋯ button below)
+        paint_chrome_outline(bb, x, y, w, h, self.radius, c, self.outline_sides)
+    elseif self.group_shadow then
         local g = self.group_shadow
         paint_drop_shadow(bb, x + g.x_off, y, g.w, g.h, self.radius, s2, s2, 0.3, 0.5)
     else
         paint_drop_shadow(bb, x, y, w, h, self.radius, s2, s2, 0.3, 0.5)
     end
     bb:alphablitFrom(self._bg_bb, x, y, 0, 0, w, h)
-    -- two hairline dividers at the zone boundaries (h/3, 2h/3)
-    local third = h / 3
+    -- hairline dividers at each zone boundary (two zones in Mini Mode, else three)
+    local nz = self.no_fit and 2 or 3
+    local zone = h / nz
     local dth = math.max(1, Screen:scaleBySize(1))
     local dx = x + self.inset
     local dw = w - 2 * self.inset
     local dg = Screen.night_mode and self.divider_gray_night
         or self.divider_gray
     local dcol = Blitbuffer.ColorRGB32(dg, dg, dg, 0xFF)
-    bb:paintRect(dx, y + math.floor(third - dth / 2), dw, dth, dcol)
-    bb:paintRect(dx, y + math.floor(2 * third - dth / 2), dw, dth, dcol)
-    -- icons, centered in each zone (zone centers = h/6, h/2, 5h/6)
+    for i = 1, nz - 1 do
+        bb:paintRect(dx, y + math.floor(i * zone - dth / 2), dw, dth, dcol)
+    end
+    if self.merge_bottom then
+        -- the seam with the ⋯ button reads as one more zone boundary
+        bb:paintRect(dx, y + h - dth, dw, dth, dcol)
+    end
+    -- icons, centered in each zone
     self:_ensureIcons()
     local function icon(ibb, cy)
         if not ibb then return end
@@ -896,15 +1053,17 @@ function GlimpseZoomControl:paintTo(bb, x, y)
             0, 0, ibb:getWidth(), ibb:getHeight())
     end
     icon(self.plus_disabled and self._plus_dim_bb or self._plus_bb,
-        third / 2)
-    icon(self.fit_disabled and self._fit_dim_bb or self._fit_bb, h / 2)
+        zone / 2)
+    if not self.no_fit then
+        icon(self.fit_disabled and self._fit_dim_bb or self._fit_bb, h / 2)
+    end
     icon(self.minus_disabled and self._minus_dim_bb or self._minus_bb,
-        h - third / 2)
+        h - zone / 2)
     -- pressed feedback: invert just the tapped zone, clipped to the pill's
     -- rounded silhouette via the bg stencil's alpha (like GlimpseMoreButton)
     if self.inverted_zone then
-        local z0 = math.floor(self.inverted_zone * third)
-        local z1 = math.floor((self.inverted_zone + 1) * third)
+        local z0 = math.floor(self.inverted_zone * zone)
+        local z1 = math.floor((self.inverted_zone + 1) * zone)
         for yy = z0, z1 - 1 do
             for xx = 0, w - 1 do
                 local a = self._bg_bb:getPixel(xx, yy):getColorRGB32().alpha
@@ -923,6 +1082,44 @@ function GlimpseZoomControl:free()
         if self[k] then self[k]:free(); self[k] = nil end
     end
     self._icons_done = nil
+end
+
+-- ── Mini Mode drag grip ─────────────────────────────────────────────────────
+-- The dot-grid handle in the floating card's top-right corner (Figma 270:278).
+-- Hold it and drag to move the whole card; see onHold/onHoldRelease. It paints
+-- directly onto the image with no button background behind it, so the asset
+-- carries a white outline to stay legible over any picture.
+local GlimpseDragGrip = Widget:extend{
+    size = Screen:scaleBySize(24),
+    -- the asset's own proportions (assets/drag.svg is 19x13)
+    art_w = 19,
+    art_h = 13,
+}
+
+function GlimpseDragGrip:getSize()
+    return Geom:new{ w = self.size, h = self.size }
+end
+
+function GlimpseDragGrip:paintTo(bb, x, y)
+    local s = self.size
+    self.dimen = Geom:new{ x = x, y = y, w = s, h = s }
+    if not self._icon_bb then
+        local iw = math.floor(s * self.art_w / 24 + 0.5)
+        local ih = math.floor(iw * self.art_h / self.art_w + 0.5)
+        local ok, ibb = pcall(RenderImage.renderSVGImageFile, RenderImage,
+            _PLUGIN_DIR .. "/assets/drag.svg", iw, ih)
+        if ok and ibb then self._icon_bb = ibb end
+    end
+    local ibb = self._icon_bb
+    if not ibb then return end
+    bb:alphablitFrom(ibb,
+        x + math.floor((s - ibb:getWidth()) / 2),
+        y + math.floor((s - ibb:getHeight()) / 2),
+        0, 0, ibb:getWidth(), ibb:getHeight())
+end
+
+function GlimpseDragGrip:free()
+    if self._icon_bb then self._icon_bb:free(); self._icon_bb = nil end
 end
 
 -- ── mini map ────────────────────────────────────────────────────────────────
@@ -979,6 +1176,8 @@ local GlimpseMiniMap = Widget:extend{
     off_x = nil, off_y = nil,             -- letterbox origin of thumb in the box
     disp_w = nil, disp_h = nil,           -- drawn thumbnail size
     viewer = nil,                         -- for the live viewport rectangle
+    outline = false,                      -- Mini Mode: white ring, no shadow
+    outline_sides = nil,                  -- which edges get the ring (default all)
     no_shadow = false,                    -- docked: the zoom control paints one
                                           -- shadow for the merged group instead
 }
@@ -1069,7 +1268,13 @@ function GlimpseMiniMap:paintTo(bb, x, y)
     end
     -- soft drop shadow, same as the zoom control / buttons — but when docked the
     -- zoom control paints one shadow for the whole merged group, so skip ours
-    if not self.no_shadow then
+    if self.outline then
+        -- Mini Mode: a white ring, matching the rest of the card's chrome. The
+        -- map sits in the card's corner, so outline_sides drops the two edges
+        -- that would otherwise paint over the card's own border.
+        paint_chrome_outline(bb, x, y, w, h, self.radius, self.corners,
+            self.outline_sides)
+    elseif not self.no_shadow then
         paint_drop_shadow(bb, x, y, w, h, self.radius,
             Screen:scaleBySize(2), Screen:scaleBySize(2), 0.3, 0.5)
     end
@@ -1492,6 +1697,13 @@ local GlimpseMenuRow = Widget:extend{
     icon_col = 0,       -- reserved icon+gap width (0 if no row has an icon)
     icon_size = Screen:scaleBySize(18),
     pad_left = Screen:scaleBySize(16),
+    -- A row for a setting that cannot apply in the current mode (Nav Buttons
+    -- and Image Captions while Mini Mode is on): drawn gray and inert, so the
+    -- user can see the action exists but not toggle something with no effect.
+    -- A dimmed row with an SVG icon gets a gray copy of it, cached under its
+    -- own key (menu_icon's `dimmed` flag) — the shared black bb is never
+    -- mutated. A dimmed row with a checkbox grays the glyph instead.
+    dimmed = false,
 }
 
 function GlimpseMenuRow:init()
@@ -1499,7 +1711,8 @@ function GlimpseMenuRow:init()
         text = self.text,
         face = Font:getFace("cfont", 15),
         bold = true,
-        fgcolor = Blitbuffer.COLOR_BLACK,
+        fgcolor = self.dimmed and Blitbuffer.COLOR_GRAY
+            or Blitbuffer.COLOR_BLACK,
     }
 end
 
@@ -1589,13 +1802,28 @@ end
 -- pure waste (noticeable on e-ink, and worse in night mode where every blit
 -- is slower). The set is tiny and immutable, so these live for the session.
 local _menu_icon_cache = {}
-local function menu_icon(path, size)
-    local key = path .. ":" .. size
+local function menu_icon(path, size, dimmed)
+    local key = path .. ":" .. size .. (dimmed and ":dim" or "")
     local ibb = _menu_icon_cache[key]
     if ibb == nil then
         local ok, r = pcall(RenderImage.renderSVGImageFile, RenderImage,
             path, size, size)
         ibb = (ok and r) or false   -- cache the failure too, don't retry each open
+        if ibb and dimmed then
+            -- lift the black strokes to the same gray the dimmed label uses,
+            -- keeping the anti-aliased alpha. Cached under its own key so the
+            -- shared (black) bb is never mutated.
+            local gray = Blitbuffer.COLOR_GRAY:getColorRGB32()
+            for yy = 0, ibb:getHeight() - 1 do
+                for xx = 0, ibb:getWidth() - 1 do
+                    local c = ibb:getPixel(xx, yy):getColorRGB32()
+                    if c.alpha > 0 then
+                        ibb:setPixel(xx, yy, Blitbuffer.ColorRGB32(
+                            gray.r, gray.g, gray.b, c.alpha))
+                    end
+                end
+            end
+        end
         _menu_icon_cache[key] = ibb
     end
     return ibb or nil
@@ -1654,22 +1882,27 @@ function GlimpsePopupMenu:init()
             local icon_bb, lead_wg
             if it.icon then
                 -- shared, cached bb (do NOT free on close — see _menu_icon_cache)
-                icon_bb = menu_icon(it.icon, self.icon_size)
+                icon_bb = menu_icon(it.icon, self.icon_size, it.dimmed)
             elseif it.check ~= nil then
                 -- checkbox glyph, a bit larger than the label, drawn in the
                 -- icon column so it aligns with the other rows' icons
                 lead_wg = TextWidget:new{
                     text = it.check and "☑" or "☐",
                     face = Font:getFace("cfont", 22),
-                    fgcolor = Blitbuffer.COLOR_BLACK,
+                    fgcolor = it.dimmed and Blitbuffer.COLOR_GRAY
+                        or Blitbuffer.COLOR_BLACK,
                 }
             end
             local row = GlimpseMenuRow:new{
                 text = it.text, icon_bb = icon_bb, lead_wg = lead_wg,
                 width = row_w, height = self.row_h, icon_col = icon_col,
                 icon_size = self.icon_size, pad_left = self.pad_left,
+                dimmed = it.dimmed,
             }
+            row._dimmed = it.dimmed
             row._callback = it.callback
+            -- a dimmed row can still SAY why it is dimmed (see onTap)
+            row._dimmed_cb = it.dimmed_callback
             -- toggle rows (a checkbox that flips a setting live) carry a getter
             -- so onTap can refresh the glyph in place and keep the menu open
             row._check_get = it.check_get
@@ -1751,6 +1984,13 @@ end
 function GlimpsePopupMenu:onTap(_, ges)
     for _, row in ipairs(self._rows) do
         if row.dimen and ges.pos:intersectWith(row.dimen) then
+            -- a dimmed row is inert: swallow the tap and leave the menu open,
+            -- so the setting it names cannot be flipped where it has no effect.
+            -- A row with dimmed_callback still explains itself.
+            if row._dimmed then
+                if row._dimmed_cb then row._dimmed_cb() end
+                return true
+            end
             if row._check_get then
                 -- a live toggle (checkbox): apply the change immediately (the
                 -- callback flips the setting and re-lays-out the drawer beneath
@@ -1825,6 +2065,10 @@ local GlimpseViewer = ImageViewer:extend{
     on_show_menu = nil,    -- function(): open KOReader's top menu (only)
     scope = nil,           -- effective scope: "read_so_far" | "whole_book"
     on_toggle_scope = nil, -- function(): flip the scope setting and reopen
+    -- set for a book whose format cannot carry the spoiler scope (MOBI): the
+    -- ⋯ menu's Mode row is dimmed and says why instead of flipping
+    scope_locked = false,
+    scope_lock_reason = nil,
     on_toggle_bookmarks = nil, -- function(): flip "include bookmarks" and reopen
     on_choose_layout = nil, -- function(): open the Left/Right side chooser
     get_pref = nil,        -- function(meta) -> per-image prefs {rotation=}
@@ -1864,6 +2108,21 @@ local GlimpseViewer = ImageViewer:extend{
     -- gap between the image area and the panel's rounded right edge
     image_right_gap = Screen:scaleBySize(12),
     image_padding = Screen:scaleBySize(2),
+    -- Mini Mode card (Figma 270:81): a square whose side is half the SHORTER
+    -- screen edge, so it stays a small window in either orientation. Unlike the
+    -- drawer it floats free: border and rounded corners on all four edges, and
+    -- a soft drop shadow all round instead of the directional gradient.
+    mini_ratio = 0.5,
+    mini_radius = Screen:scaleBySize(12),
+    -- 10 in the design, widened by 25% on user request (2026-09-07)
+    -- Card shadow: mini_shadow is the MEAN reach, mini_shadow_bias how far down
+    -- the field shifts. The two bands are mini_shadow -/+ the offset, so tuning
+    -- the pair moves one edge without moving the other (the bottom was trimmed
+    -- while the top stayed at 27 device px).
+    mini_shadow = math.floor(Screen:scaleBySize(10) * 1.55 + 0.5),
+    mini_shadow_bias = 0.13,
+    mini_grip_inset = Screen:scaleBySize(6),
+    mini_map_max_w = Screen:scaleBySize(61),  -- widest the card's map ever gets
     -- Numeric alpha in (0,1) makes UIManager:setDirty flag every window
     -- below us dirty too, so the translucent shadow always blends against a
     -- freshly painted page instead of accumulating over its own output.
@@ -1912,6 +2171,66 @@ end
 -- same lifecycle, but the widget is a left-anchored drawer sized from
 -- panel_ratio, and the dot pill and ⋯ button are OVERLAID on the image
 -- instead of stacked below it.
+-- Resolve the drawer's placement and size into self._place/_horizontal/
+-- _on_right/_inner/_mini and self._panel_w/_panel_h/width/height.
+--
+-- Split out of update() because the Gallery has to know the drawer's FINAL
+-- width before it lays out: _enterGallery builds the masonry (which is cached
+-- and measured against self.width) before update() runs, and in Mini Mode the
+-- two differ — the card is small, the Gallery drawer is full size — so the grid
+-- was laid out against the card and drawn shifted off the panel.
+function GlimpseViewer:_resolveGeometry()
+    -- Layout (Settings → Layout): the drawer resolves to one of four placements
+    -- from the two settings + the current orientation (see _resolvePlacement):
+    -- a vertical SIDE panel on the left/right edge, or a horizontal BAND across
+    -- the top/bottom in portrait. Either way the outer (screen) edge is the
+    -- flush/borderless one and the inner (page-facing) edge carries the border,
+    -- rounded corners and gradient shadow. Derived flags the rest of the code
+    -- reads: _horizontal (band vs side), _on_right (right side panel), and
+    -- _inner (which edge is the inner one: right/left/bottom/top).
+    self._place = _resolvePlacement()
+    self._horizontal = self._place == "top" or self._place == "bottom"
+    self._on_right = self._place == "right"
+    self._inner = ({ left = "right", right = "left",
+                     top = "bottom", bottom = "top" })[self._place]
+
+    -- Mini Mode: a small free-floating card instead of an edge drawer. It is
+    -- SUSPENDED in the Gallery, which needs the full panel for its thumbnail
+    -- grid — leaving the Gallery brings the card back. The card has no flush
+    -- screen edge, so clear the two side-derived flags: _horizontal drives the
+    -- band layout and _on_right drives the mirror pass, and neither applies.
+    self._mini = _miniMode() and not self._gallery_mode
+    if self._mini then
+        self._horizontal = false
+        self._on_right = false
+    end
+
+    if self._mini then
+        local side = math.floor(
+            math.min(Screen:getWidth(), Screen:getHeight()) * self.mini_ratio)
+        self._panel_w, self._panel_h = side, side
+        -- border on all four edges (nothing is flush against a screen edge)
+        self.width = self._panel_w - 2 * self.panel_border
+        self.height = self._panel_h - 2 * self.panel_border
+    elseif self._horizontal then
+        -- horizontal band: full screen width, half screen height
+        self._panel_w = Screen:getWidth()
+        self._panel_h = math.floor(Screen:getHeight() * self.band_ratio)
+        -- border on the two side edges + the single inner edge; flush outer edge
+        self.width = self._panel_w - 2 * self.panel_border
+        self.height = self._panel_h - self.panel_border
+    else
+        self._panel_w = math.floor(Screen:getWidth() * self.panel_ratio)
+        self._panel_h = Screen:getHeight() - 2 * self.panel_vgap
+        -- content area inside the drawer's border (the outer/screen edge is
+        -- borderless and flush; the inner edge facing the page carries the border
+        -- and rounded corners); self.width/height are what the inherited zoom/pan
+        -- code sizes the image against
+        self.width = self._panel_w - self.panel_border
+        self.height = self._panel_h - 2 * self.panel_border
+    end
+end
+
 function GlimpseViewer:update()
     -- Zoom steps (pinch, +/− buttons, double-tap) only change the image and
     -- the zoom control's dim state — never the rest of the chrome. When a full
@@ -1930,36 +2249,21 @@ function GlimpseViewer:update()
     -- positions to clear the old side (the old ink otherwise lingers on e-ink).
     local orig_dimen = self.main_frame.dimen and self.main_frame.dimen:copy()
 
-    -- Layout (Settings → Layout): the drawer resolves to one of four placements
-    -- from the two settings + the current orientation (see _resolvePlacement):
-    -- a vertical SIDE panel on the left/right edge, or a horizontal BAND across
-    -- the top/bottom in portrait. Either way the outer (screen) edge is the
-    -- flush/borderless one and the inner (page-facing) edge carries the border,
-    -- rounded corners and gradient shadow. Derived flags the rest of the code
-    -- reads: _horizontal (band vs side), _on_right (right side panel), and
-    -- _inner (which edge is the inner one: right/left/bottom/top).
-    self._place = _resolvePlacement()
-    self._horizontal = self._place == "top" or self._place == "bottom"
-    self._on_right = self._place == "right"
-    self._inner = ({ left = "right", right = "left",
-                     top = "bottom", bottom = "top" })[self._place]
+    self:_resolveGeometry()
 
-    if self._horizontal then
-        -- horizontal band: full screen width, half screen height
-        self._panel_w = Screen:getWidth()
-        self._panel_h = math.floor(Screen:getHeight() * self.band_ratio)
-        -- border on the two side edges + the single inner edge; flush outer edge
-        self.width = self._panel_w - 2 * self.panel_border
-        self.height = self._panel_h - self.panel_border
-    else
-        self._panel_w = math.floor(Screen:getWidth() * self.panel_ratio)
-        self._panel_h = Screen:getHeight() - 2 * self.panel_vgap
-        -- content area inside the drawer's border (the outer/screen edge is
-        -- borderless and flush; the inner edge facing the page carries the border
-        -- and rounded corners); self.width/height are what the inherited zoom/pan
-        -- code sizes the image against
-        self.width = self._panel_w - self.panel_border
-        self.height = self._panel_h - 2 * self.panel_border
+    -- Both FrameContainer:paintTo and WidgetContainer:paintTo fill their dimen
+    -- in ONCE and afterwards reuse the cached w/h. Every placement so far kept
+    -- the drawer the same size, so that never mattered; Mini Mode is the first
+    -- thing that RESIZES it, and the stale boxes bit twice: main_frame kept
+    -- painting and refreshing at the old size, and the viewer's own dimen — used
+    -- to CENTRE its child — offset the whole drawer by half the size difference
+    -- (a 599-wide card left behind put a 1198-wide gallery at x = -300).
+    -- Drop both whenever the panel size changes; orig_dimen above already holds
+    -- the old rect for the refresh union.
+    local mfd = self.main_frame.dimen
+    if mfd and (mfd.w ~= self._panel_w or mfd.h ~= self._panel_h) then
+        self.main_frame.dimen = nil
+        self.dimen = nil
     end
 
     while table.remove(self.frame_elements) do end
@@ -1997,15 +2301,20 @@ function GlimpseViewer:update()
     self._image_layer = image_layer
     -- chrome is centered/aligned on the image area (content minus the gap
     -- that keeps it clear of the rounded right edge), like the design
-    local image_area_w = self.width - self.image_right_gap
+    -- Mini Mode packs the card's corners: the chrome runs flush to the content
+    -- edges (no right gap, no bottom inset) and the zoom control sits directly
+    -- on top of the ⋯ button so the two read as one stack, like the design.
+    local image_area_w = self._mini and self.width
+        or (self.width - self.image_right_gap)
     -- 14, not 16: the bottom row sits 2px closer to the drawer's bottom
     -- edge than before (the buttons also grew 2px, see GlimpseMoreButton).
     -- Top band: the rounded corners are on the BOTTOM (inner) edge, so lift the
     -- whole bottom row by the corner radius to clear the corner arcs (every
     -- bottom-row element keys off btn_inset, so they lift together).
-    local btn_inset = self._place == "top" and self.panel_radius
-        or Screen:scaleBySize(14)
-    local btn_gap = Screen:scaleBySize(10)
+    local btn_inset = self._mini and 0
+        or (self._place == "top" and self.panel_radius
+            or Screen:scaleBySize(14))
+    local btn_gap = self._mini and 0 or Screen:scaleBySize(10)
     -- the −/fit/+ zoom control (Quick Action, off by default): only in the
     -- single-image view. When on it occupies the slot above the bottom-right
     -- button, so ⋯ shifts to Next's LEFT (below) and the Reset pill is
@@ -2020,7 +2329,9 @@ function GlimpseViewer:update()
     if self._nav_prev_frame then self._nav_prev_frame:free() end
     if self._nav_next_frame then self._nav_next_frame:free() end
     self._nav_prev_frame, self._nav_next_frame = nil, nil
-    local nav = G_reader_settings:isTrue(NAV_BUTTONS_KEY)
+    -- Mini Mode hides the arrows entirely (the card is too small for them);
+    -- swipe still switches images and the dot pill still shows the position.
+    local nav = G_reader_settings:isTrue(NAV_BUTTONS_KEY) and not self._mini
         and self._images_list and (self._images_list_nb or 1) > 1
     local cur = self._images_list_cur or 1
     local nb = self._images_list_nb or 1
@@ -2090,7 +2401,27 @@ function GlimpseViewer:update()
             -- nav off: ⋯ takes the bottom-right slot Next would have used
             more_x = image_area_w - more_size.w
             more_y = self.height - more_size.h - btn_inset
+            if self._mini then
+                -- MERGE with the card: the overlay sits inside the card's
+                -- border (main_frame pads by panel_border on every edge), so
+                -- push the button out by that border. Its own right and bottom
+                -- borders then land ON the card's, and the pair reads as one
+                -- line instead of two. Same move the mini map makes, mirrored.
+                more_x = more_x + self.panel_border
+                more_y = more_y + self.panel_border
+            end
         end
+        -- Mini Mode: white ring instead of a shadow, and only the corner that
+        -- faces the image interior stays rounded. The top-right and bottom-left
+        -- run into the card's right and bottom borders, and the bottom-right is
+        -- the card's own corner, which _restoreCorners paints back on top.
+        self._more_frame.outline = self._mini or false
+        self._more_frame.square_top = (self._mini and show_zc) or false
+        self._more_frame.corners = self._mini
+            and { tl = not show_zc, tr = false, bl = false, br = false } or nil
+        -- flush to the card's right and bottom borders, so no ring there
+        self._more_frame.outline_sides = self._mini and
+            { t = not show_zc, b = false, l = true, r = false } or nil
         self._more_frame.overlap_offset = { more_x, more_y }
         table.insert(overlay, self._more_frame)
     elseif self._more_frame then
@@ -2111,11 +2442,18 @@ function GlimpseViewer:update()
         -- zoom control is OFF (see _buildPill); with it on the dots stay, so
         -- key off "is the pill a button", not _isOverFit — otherwise zooming
         -- past fit would drop the still-shown dots to the bottom baseline.
+        -- Mini Mode never swaps in a button: it has no Reset (see _buildPill),
+        -- so its pill is always the shorter dots strip.
         local pill_is_button = self._gallery_mode
-            or (self:_isOverFit()
+            or (self:_isOverFit() and not self._mini
                 and not G_reader_settings:isTrue(ZOOMCTL_KEY))
         local bottom_inset
-        if pill_is_button then
+        if self._mini then
+            -- DOCK to the card's bottom edge, like the mini map and the ⋯
+            -- stack: the overlay sits inside the border, so a negative inset
+            -- puts the pill's bottom line on the card's own border.
+            bottom_inset = -self.panel_border
+        elseif pill_is_button then
             bottom_inset = btn_inset
         else
             local pill_h = self._pill_frame:getSize().h
@@ -2170,9 +2508,18 @@ function GlimpseViewer:update()
         self._zoomctl_frame:free()
         self._zoomctl_frame = nil
     end
+    -- Mini Mode drops the middle "fit" zone, so the control has to be rebuilt
+    -- when the mode changes (its height and zone count both differ).
+    if self._zoomctl_frame and self._zoomctl_frame.no_fit ~= (self._mini or false) then
+        self._zoomctl_frame:free()
+        self._zoomctl_frame = nil
+    end
     if show_zc then
         if not self._zoomctl_frame then
-            self._zoomctl_frame = GlimpseZoomControl:new{}
+            self._zoomctl_frame = GlimpseZoomControl:new{
+                no_fit = self._mini or false,
+                height = GlimpseMoreButton.size * (self._mini and 2 or 3),
+            }
         end
         local zc = self._zoomctl_frame
         local over_fit = self:_isOverFit()
@@ -2192,7 +2539,34 @@ function GlimpseViewer:update()
         else
             zx = image_area_w - zsz.w
             zy = self.height - zsz.h - btn_inset
+            if self._mini then
+                -- no ⋯ to anchor on (every Quick Action off): merge with the
+                -- card's own right and bottom borders instead
+                zx = zx + self.panel_border
+                zy = zy + self.panel_border
+            end
         end
+        -- Mini Mode: white ring instead of a shadow, and merge downward into
+        -- the ⋯ button — overlap by one border so the two share a single line
+        -- rather than stacking two, and square the corners on that seam.
+        zc.outline = self._mini or false
+        -- the stack runs flush into the card's right border, so square the two
+        -- corners on that edge as well (the ⋯ below does the same). The bottom
+        -- is always squared in Mini Mode: it meets either the ⋯ or, with no ⋯,
+        -- the card's bottom border.
+        zc.square_right = self._mini or false
+        zc.square_bottom = self._mini or false
+        zc.merge_bottom = false
+        if self._mini and self._more_frame and self._more_frame.overlap_offset then
+            zy = zy + self.panel_border
+            -- the control paints AFTER the ⋯ (later in the overlay), and the
+            -- overlap is exactly one border, so it covers the ⋯'s top border.
+            -- Drop its own bottom border and draw the faint hairline instead.
+            zc.merge_bottom = true
+        end
+        -- flush to the card's right and bottom borders; no ring on the ⋯ seam
+        zc.outline_sides = self._mini and
+            { t = true, b = false, l = true, r = false } or nil
         zc.overlap_offset = { zx, zy }
         table.insert(overlay, zc)
     end
@@ -2204,7 +2578,9 @@ function GlimpseViewer:update()
         self._bookmark_pill_wg = nil
     end
     local inset = Screen:scaleBySize(12)
-    if not self._gallery_mode then
+    -- Mini Mode shows no bookmark label and no caption: the card is mostly
+    -- image, and a text pill over it would cover most of what it shows.
+    if not self._gallery_mode and not self._mini then
         local meta = self.image_metas
             and self.image_metas[self._images_list_cur or 1]
         if meta and meta.is_bookmark
@@ -2231,7 +2607,8 @@ function GlimpseViewer:update()
         self._caption_wg:free()
         self._caption_wg = nil
     end
-    if G_reader_settings:nilOrTrue(CAPTIONS_KEY) and not self._gallery_mode then
+    if G_reader_settings:nilOrTrue(CAPTIONS_KEY) and not self._gallery_mode
+            and not self._mini then
         local meta = self.image_metas
             and self.image_metas[self._images_list_cur or 1]
         local caption = meta and meta.caption
@@ -2282,6 +2659,22 @@ function GlimpseViewer:update()
     -- resolved position and squares the shared corners (see _buildMiniMap). Also
     -- refreshed on the zoom light path, since it appears and disappears as the
     -- zoom crosses the fitted view.
+    -- Mini Mode drag grip: top-right corner of the card, inset a few pixels off
+    -- both edges. Added after the mirror pass (which never runs in Mini Mode) so
+    -- its rect is already final for the hit test in onHold.
+    if self._grip_frame then
+        self._grip_frame:free()
+        self._grip_frame = nil
+    end
+    if self._mini then
+        self._grip_frame = GlimpseDragGrip:new{}
+        local gs = self._grip_frame:getSize()
+        self._grip_frame.overlap_offset = {
+            self.width - gs.w - self.mini_grip_inset,
+            self.mini_grip_inset,
+        }
+        table.insert(overlay, self._grip_frame)
+    end
     self:_buildMiniMap()
     table.insert(self.frame_elements, overlay)
     self.frame_elements:resetLayout()
@@ -2300,7 +2693,13 @@ function GlimpseViewer:update()
     -- named by self._place — is flush and borderless. Side panels also carry the
     -- optional vgap on their top/bottom (currently 0).
     local b = self.panel_border
-    if self._horizontal then
+    if self._mini then
+        -- floating card: border on every edge
+        self.main_frame.padding_left = b
+        self.main_frame.padding_right = b
+        self.main_frame.padding_top = b
+        self.main_frame.padding_bottom = b
+    elseif self._horizontal then
         self.main_frame.padding_left = b
         self.main_frame.padding_right = b
         self.main_frame.padding_top = self._place == "top" and 0 or b
@@ -2317,7 +2716,17 @@ function GlimpseViewer:update()
     -- a bottom band.
     self[1].align = nil
     local SW, SH = Screen:getWidth(), Screen:getHeight()
-    if self._place == "right" then
+    if self._mini then
+        -- Free-floating card: the saved ratios name a point in the free travel
+        -- (screen minus card), so the card always lands fully on-screen even
+        -- after a rotation. Keep the resolved pixel origin for the drag math.
+        local rx, ry = _miniPos()
+        local mx = math.floor((SW - self._panel_w) * rx + 0.5)
+        local my = math.floor((SH - self._panel_h) * ry + 0.5)
+        self._mini_x, self._mini_y = mx, my
+        self[1].dimen = Geom:new{ x = mx, y = my,
+            w = self._panel_w, h = self._panel_h }
+    elseif self._place == "right" then
         self[1].dimen = Geom:new{ x = SW - self._panel_w, y = 0,
             w = self._panel_w, h = SH }
     elseif self._place == "top" then
@@ -2335,6 +2744,7 @@ function GlimpseViewer:update()
         self.main_frame.paintTo = function(frame, bb, x, y)
             viewer:_paintPanel(bb, x, y)
             orig_paintTo(frame, bb, x, y)
+            viewer:_paintMiniBorder(bb, x, y)
             viewer:_restoreCorners(bb, x, y)
         end
     end
@@ -2444,7 +2854,223 @@ end
 -- transparent corner notches. Blending is safe against accumulation
 -- because self.alpha makes UIManager repaint the windows below us
 -- first (see the class comment).
+-- Corner radius in play. The floating Mini Mode card rounds all FOUR corners
+-- with its own smaller radius; the edge drawer rounds only the two at the ends
+-- of its inner edge. Everything that walks corners reads this.
+function GlimpseViewer:_cornerRadius()
+    return self._mini and self.mini_radius or self.panel_radius
+end
+
+-- How far the Mini Mode card's shadow reaches beyond the card on EVERY side.
+-- The shadow is biased DOWNWARD by soff (the distance field is centred on a card
+-- shifted down), so its longest reach is mini_shadow + soff, below the card. The
+-- stencil and the refresh region both size off this.
+function GlimpseViewer:_miniShadowPad()
+    return self.mini_shadow + self:_miniShadowOffset()
+end
+
+-- How far DOWN the shadow's distance field is biased. Kept small: at half the
+-- reach the ring above the card collapsed into a hard line against the border
+-- with no gradient left. The band above is mini_shadow - this, the band below
+-- mini_shadow + this.
+function GlimpseViewer:_miniShadowOffset()
+    return math.floor(self.mini_shadow * self.mini_shadow_bias + 0.5)
+end
+
+-- Mini Mode card paint. The drawer's directional gradient assumes one inner
+-- edge facing the page; a free-floating card has four, so it gets its own soft
+-- drop shadow cast on all sides (biased downward like the design) and a body
+-- stencil bordered and rounded on every edge. Kept separate from _paintPanel so
+-- the drawer path stays exactly as it was.
+function GlimpseViewer:_paintMiniCard(bb, x, y)
+    local w, h = self._panel_w, self._panel_h
+    -- Same night/inverse reasoning as _paintPanel: paint logical (day) colors
+    -- and let the panel or KOReader invert, except on SW-invert non-Android
+    -- where we flag-match so the C blitter copies the stencil raw.
+    local night = Screen.night_mode
+    local inv = bb.getInverse and bb:getInverse() == 1
+    local render_inv = inv
+        and not (night and Device.isAndroid and Device:isAndroid())
+    local skey = tostring(night) .. tostring(render_inv) .. "mini"
+    local shadow_disabled = G_reader_settings:isTrue(SHADOW_KEY)
+    local s = self.mini_shadow
+
+    -- Soft drop shadow: a dithered ring around the card (the interior stays
+    -- transparent — the card body paints over it). Density falls off
+    -- quadratically with distance from the card edge. Biased down by soff, so
+    -- the card reads as lifted off the page rather than outlined. The ring must
+    -- TOUCH the card on every side: shifting the field the wrong way leaves a
+    -- clean gap between the card's top border and the start of the shadow.
+    local soff = self:_miniShadowOffset()
+    local pad = self:_miniShadowPad()          -- = s + soff, room on every side
+    local sw_, sh_ = w + 2 * pad, h + 2 * pad
+    if not shadow_disabled and (not self._mini_shadow_bb
+            or self._mini_shadow_bb:getWidth() ~= sw_
+            or self._mini_shadow_bb:getHeight() ~= sh_
+            or self._mini_shadow_key ~= skey) then
+        if self._mini_shadow_bb then self._mini_shadow_bb:free() end
+        self._mini_shadow_key = skey
+        self._mini_shadow_bb = Blitbuffer.new(sw_, sh_, Blitbuffer.TYPE_BBRGB32)
+        local sv = render_inv and 0x00 or (night and 0xFF or 0x00)
+        local peak = night and 1.0 or 0.8
+        -- Distance to the ROUNDED card, not to its bounding rectangle: the
+        -- standard rounded-box distance. With half-extents (hw, hh) and radius
+        -- rr, q = |p - centre| - (half-extents - rr); outside the box the
+        -- distance is |max(q,0)| + min(max(qx,qy),0) - rr. Measuring from the
+        -- plain rectangle instead left square shadow corners poking past the
+        -- card's rounded ones.
+        local hw, hh = w / 2, h / 2
+        local rr = math.min(self.mini_radius, hw, hh)
+        -- The card sits at (pad, pad) in the stencil. TWO distances per pixel:
+        --   d0, measured from the card itself, gates the ring — so the shadow
+        --        starts at the card's border on every side, with no gap;
+        --   d,  measured from a copy of the card shifted DOWN by soff, sets the
+        --        density — so more of the shadow falls below.
+        -- Using the shifted distance for BOTH left a soff-wide clean gap under
+        -- the card, exactly as wide as the border.
+        local ccx, cy0 = pad + hw, pad + hh
+        local ccy = cy0 + soff
+        for py2 = 0, sh_ - 1 do
+            local qy0 = math.abs(py2 + 0.5 - cy0) - (hh - rr)
+            local qy = math.abs(py2 + 0.5 - ccy) - (hh - rr)
+            for px2 = 0, sw_ - 1 do
+                local qx = math.abs(px2 + 0.5 - ccx) - (hw - rr)
+                local mx = math.max(qx, 0)
+                local m0 = math.max(qy0, 0)
+                local d0 = math.sqrt(mx * mx + m0 * m0)
+                    + math.min(math.max(qx, qy0), 0) - rr
+                -- inside the card: leave the pixel at the buffer's zero alpha
+                if d0 > 0 then
+                    local my = math.max(qy, 0)
+                    local d = math.sqrt(mx * mx + my * my)
+                        + math.min(math.max(qx, qy), 0) - rr
+                    if d <= s then
+                        local t = 1 - math.max(d, 0) / s
+                        local level = peak * t * t * 255
+                        local threshold =
+                            (SHADOW_BAYER8[(px2 % 8) + 1][(py2 % 8) + 1] + 0.5) * 4
+                        if level > threshold then
+                            self._mini_shadow_bb:setPixel(px2, py2,
+                                Blitbuffer.ColorRGB32(sv, sv, sv, 255))
+                        end
+                    end
+                end
+            end
+        end
+        self._mini_shadow_bb:setInverse(render_inv and 1 or 0)
+    end
+    local skip_shadow = self._skip_shadow_paint
+    self._skip_shadow_paint = nil
+    if not skip_shadow and not shadow_disabled then
+        bb:alphablitFrom(self._mini_shadow_bb, x - pad, y - pad, 0, 0, sw_, sh_)
+    end
+
+    -- Under-corner snapshots, same contract as the drawer: the arcs carry
+    -- partial alpha and are not idempotent, so keep a pristine copy of what
+    -- sits under each of the four corner squares.
+    local r = self:_cornerRadius()
+    local geo = self:_cornerGeom(x, y)
+    local n = #geo
+    if self._under_corner_bbs and (self._under_corner_r ~= r
+            or #self._under_corner_bbs ~= n) then
+        for _, b in ipairs(self._under_corner_bbs) do b:free() end
+        self._under_corner_bbs = nil
+    end
+    if not self._under_corner_bbs then
+        self._under_corner_bbs = {}
+        for k = 1, n do
+            self._under_corner_bbs[k] = Blitbuffer.new(r, r, Blitbuffer.TYPE_BBRGB32)
+        end
+        self._under_corner_r = r
+    end
+    local ucb = self._under_corner_bbs
+    for k = 1, n do
+        if skip_shadow then
+            bb:blitFrom(ucb[k], geo[k][1], geo[k][2], 0, 0, r, r)
+        else
+            ucb[k]:setInverse(render_inv and 1 or 0)
+            ucb[k]:blitFrom(bb, 0, 0, geo[k][1], geo[k][2], r, r)
+        end
+    end
+
+    -- Card body: white (logical) fill, border on all four edges, four AA arcs.
+    if not self._mini_card_bb or self._mini_card_bb:getWidth() ~= w
+            or self._mini_card_bb:getHeight() ~= h
+            or self._mini_card_key ~= skey then
+        if self._mini_card_bb then self._mini_card_bb:free() end
+        self._mini_card_key = skey
+        self._mini_card_bb = Blitbuffer.new(w, h, Blitbuffer.TYPE_BBRGB32)
+        local body = render_inv and 0x00 or 0xFF
+        local edge = render_inv and 0xFF or 0x00
+        local c_body = Blitbuffer.ColorRGB32(body, body, body, 0xFF)
+        local c_edge = Blitbuffer.ColorRGB32(edge, edge, edge, 0xFF)
+        local bw = night and math.max(2, Screen:scaleBySize(1))
+            or self.panel_border
+        self._mini_card_bb:paintRectRGB32(0, 0, w, h, c_body)
+        self._mini_card_bb:paintRectRGB32(0, 0, w, bw, c_edge)
+        self._mini_card_bb:paintRectRGB32(0, h - bw, w, bw, c_edge)
+        self._mini_card_bb:paintRectRGB32(0, 0, bw, h, c_edge)
+        self._mini_card_bb:paintRectRGB32(w - bw, 0, bw, h, c_edge)
+        local corners = {
+            { cx = r,     cy = r,     xd = -1, yd = -1 },
+            { cx = w - r, cy = r,     xd = 1,  yd = -1 },
+            { cx = r,     cy = h - r, xd = -1, yd = 1  },
+            { cx = w - r, cy = h - r, xd = 1,  yd = 1  },
+        }
+        for _, c in ipairs(corners) do
+            local sq_x = c.xd > 0 and c.cx or (c.cx - r)
+            local sq_y = c.yd > 0 and c.cy or (c.cy - r)
+            for px2 = sq_x, sq_x + r - 1 do
+                for py2 = sq_y, sq_y + r - 1 do
+                    local fx, fy = px2 + 0.5, py2 + 0.5
+                    local d = math.sqrt((fx - c.cx) ^ 2 + (fy - c.cy) ^ 2)
+                    local cov = math.min(math.max(r - d + 0.5, 0), 1)
+                    local t_in = math.min(math.max((r - bw) - d + 0.5, 0), 1)
+                    local g = math.floor(edge + t_in * (body - edge) + 0.5)
+                    self._mini_card_bb:setPixel(px2, py2,
+                        Blitbuffer.ColorRGB32(g, g, g,
+                            math.floor(cov * 255 + 0.5)))
+                end
+            end
+        end
+        self._mini_card_bb:setInverse(render_inv and 1 or 0)
+    end
+    bb:alphablitFrom(self._mini_card_bb, x, y, 0, 0, w, h)
+    self:_saveCorners(bb, x, y)
+end
+
+-- The card's black border, repainted AFTER the children. The corner chrome runs
+-- flush into the border, and its white ring is one ring WIDER than the widget —
+-- so the ring spills onto the border (above the zoom control's top-right, left
+-- of the ⋯ button's bottom-left) and eats a bite out of it. Drawing the four
+-- straight edges again on top restores an unbroken frame. The four corner arcs
+-- are handled by _restoreCorners, which runs right after this.
+function GlimpseViewer:_paintMiniBorder(bb, x, y)
+    if not self._mini then return end
+    local w, h = self._panel_w, self._panel_h
+    local r = self:_cornerRadius()
+    local night = Screen.night_mode
+    local inv = bb.getInverse and bb:getInverse() == 1
+    local render_inv = inv
+        and not (night and Device.isAndroid and Device:isAndroid())
+    local edge = render_inv and 0xFF or 0x00
+    local c_edge = Blitbuffer.ColorRGB32(edge, edge, edge, 0xFF)
+    local bw = night and math.max(2, Screen:scaleBySize(1)) or self.panel_border
+    -- straight runs only: skip the corner squares, whose arcs _restoreCorners
+    -- blends back with per-pixel alpha
+    local mid_w, mid_h = w - 2 * r, h - 2 * r
+    if mid_w > 0 then
+        bb:paintRect(x + r, y, mid_w, bw, c_edge)
+        bb:paintRect(x + r, y + h - bw, mid_w, bw, c_edge)
+    end
+    if mid_h > 0 then
+        bb:paintRect(x, y + r, bw, mid_h, c_edge)
+        bb:paintRect(x + w - bw, y + r, bw, mid_h, c_edge)
+    end
+end
+
 function GlimpseViewer:_paintPanel(bb, x, y)
+    if self._mini then return self:_paintMiniCard(bb, x, y) end
     local w, h = self._panel_w, self._panel_h
     local py = y + self.panel_vgap
     -- Right-side layout mirrors the panel horizontally: the border and rounded
@@ -2623,11 +3249,19 @@ function GlimpseViewer:_paintPanel(bb, x, y)
     -- eating the AA against the page.
     local cr = self.panel_radius
     local cpy = y + self.panel_vgap
+    -- Leaving Mini Mode leaves four cached squares at the card's radius behind:
+    -- rebuild whenever the radius or the count no longer matches this path.
+    if self._under_corner_bbs and (self._under_corner_r ~= cr
+            or #self._under_corner_bbs ~= 2) then
+        for _, b in ipairs(self._under_corner_bbs) do b:free() end
+        self._under_corner_bbs = nil
+    end
     if not self._under_corner_bbs then
         self._under_corner_bbs = {
             Blitbuffer.new(cr, cr, Blitbuffer.TYPE_BBRGB32),
             Blitbuffer.new(cr, cr, Blitbuffer.TYPE_BBRGB32),
         }
+        self._under_corner_r = cr
     end
     local ucb = self._under_corner_bbs
     -- the two rounded corners sit at the ends of the inner edge (see _cornerGeom)
@@ -2723,7 +3357,17 @@ end
 -- _restoreCorners: { {ox, oy, ccx_local, ccy_local}, {...} }. Requires py, the
 -- panel's top in screen coords (x + panel_vgap already folded in by callers).
 function GlimpseViewer:_cornerGeom(x, py)
-    local w, h, r = self._panel_w, self._panel_h, self.panel_radius
+    local w, h, r = self._panel_w, self._panel_h, self:_cornerRadius()
+    if self._mini then
+        -- floating card: every corner is rounded, so all four squares are
+        -- outer quadrants with the disc centre r inward on both axes
+        return {
+            { x,         py,         r, r },  -- top-left
+            { x + w - r, py,         0, r },  -- top-right
+            { x,         py + h - r, r, 0 },  -- bottom-left
+            { x + w - r, py + h - r, 0, 0 },  -- bottom-right
+        }
+    end
     if self._horizontal then
         -- inner edge is horizontal (bottom for a top band, top for a bottom
         -- band); corners at the left and right ends of that edge
@@ -2754,18 +3398,36 @@ end
 -- have painted — the image's corners end up rounded, with the same white
 -- gap against the border as along the straight edges.
 function GlimpseViewer:_saveCorners(bb, x, py)
-    local r, bw = self.panel_radius, self.panel_border
-    if not self._corner_bbs then
-        self._corner_bbs = {
-            Blitbuffer.new(r, r, Blitbuffer.TYPE_BBRGB32),
-            Blitbuffer.new(r, r, Blitbuffer.TYPE_BBRGB32),
-        }
-    end
+    local r, bw = self:_cornerRadius(), self.panel_border
     local geo = self:_cornerGeom(x, py)
-    local keep_r = r - bw - self.image_padding
-    for k = 1, 2 do
+    local n = #geo
+    -- entering or leaving Mini Mode changes BOTH the radius and the count
+    if self._corner_bbs and (self._corner_r ~= r or #self._corner_bbs ~= n) then
+        for _, b in ipairs(self._corner_bbs) do b:free() end
+        self._corner_bbs = nil
+    end
+    if not self._corner_bbs then
+        self._corner_bbs = {}
+        for k = 1, n do
+            self._corner_bbs[k] = Blitbuffer.new(r, r, Blitbuffer.TYPE_BBRGB32)
+        end
+        self._corner_r = r
+    end
+    -- The opaque part of a saved corner is the border arc plus an
+    -- image_padding-wide white ring that keeps the image off the border.
+    -- Mini Mode splits the two pairs (_cornerGeom returns tl, tr, bl, br):
+    --   * TOP corners keep the ring, so the image's square corner reads as
+    --     rounded and the card looks like one white rounded frame;
+    --   * BOTTOM corners drop it — they are OCCUPIED by the mini map and the ⋯
+    --     stack, and the ring painted a white curve across them.
+    local ring = self.image_padding
+    local keep_r = r - bw - ring
+    for k = 1, n do
         local g = geo[k]
         local cbb = self._corner_bbs[k]
+        if self._mini then
+            keep_r = (k <= 2) and (r - bw - ring) or (r - bw)
+        end
         cbb:blitFrom(bb, 0, 0, g[1], g[2], r, r)
         local ccx, ccy = g[3], g[4]
         for pyy = 0, r - 1 do
@@ -2784,11 +3446,15 @@ end
 
 function GlimpseViewer:_restoreCorners(bb, x, y)
     if not self._corner_bbs then return end
-    local r = self.panel_radius
-    local py = y + self.panel_vgap
+    local r = self:_cornerRadius()
+    -- a stale cache (mode just changed) is skipped; the next _saveCorners
+    -- rebuilds it at the new radius and count
+    if self._corner_r ~= r then return end
+    local py = y + (self._mini and 0 or self.panel_vgap)
     local geo = self:_cornerGeom(x, py)
-    bb:alphablitFrom(self._corner_bbs[1], geo[1][1], geo[1][2], 0, 0, r, r)
-    bb:alphablitFrom(self._corner_bbs[2], geo[2][1], geo[2][2], 0, 0, r, r)
+    for k = 1, math.min(#geo, #self._corner_bbs) do
+        bb:alphablitFrom(self._corner_bbs[k], geo[k][1], geo[k][2], 0, 0, r, r)
+    end
 end
 
 -- Grow a refresh Geom to cover the gradient shadow, which casts from the inner
@@ -2797,6 +3463,16 @@ end
 -- promoted flash never reaches the untouched page. Mutates and returns d.
 function GlimpseViewer:_growForShadow(d)
     if G_reader_settings:isTrue(SHADOW_KEY) then return d end
+    if self._mini then
+        -- the card's shadow reaches the same distance on every side
+        local s = self:_miniShadowPad()
+        local nx = math.max(0, d.x - s)
+        local ny = math.max(0, d.y - s)
+        d.w = math.min(Screen:getWidth() - nx, d.w + (d.x - nx) + s)
+        d.h = math.min(Screen:getHeight() - ny, d.h + (d.y - ny) + s)
+        d.x, d.y = nx, ny
+        return d
+    end
     local extra = 2 * self.shadow_width - self.shadow_overlap + 1
     if self._place == "right" then
         local nx = math.max(0, d.x - extra)
@@ -3019,7 +3695,9 @@ function GlimpseViewer:_updateImageOnly()
     -- but only when the −/fit/+ zoom control is OFF (with it on the dots always
     -- stay). The light path never rebuilds that chrome, so when a zoom step
     -- crosses the fit boundary with the control off, fall back to a full update.
-    if not G_reader_settings:isTrue(ZOOMCTL_KEY)
+    -- Mini Mode HIDES the dots past fit whether or not the control is on, so it
+    -- needs the full rebuild at that boundary either way.
+    if (self._mini or not G_reader_settings:isTrue(ZOOMCTL_KEY))
             and self:_isOverFit() ~= self._chrome_over_fit then
         self._zooming = nil
         return self:update()
@@ -3105,7 +3783,13 @@ function GlimpseViewer:_buildPill()
         end
         return
     end
-    if self:_isOverFit() and not G_reader_settings:isTrue(ZOOMCTL_KEY) then
+    -- Mini Mode has no Reset button at all: the card is small, and a button in
+    -- the bottom row would crowd the mini map and the ⋯ stack. Zoomed in it
+    -- drops the dots too, leaving the image the whole card. A double tap still
+    -- resets to fit.
+    if self._mini and self:_isOverFit() then return end
+    if self:_isOverFit() and not G_reader_settings:isTrue(ZOOMCTL_KEY)
+            and not self._mini then
         -- genuinely spilling past fit: image switching is disabled, and
         -- the indicator becomes a tappable "reset to fit" button, styled
         -- to match the ⋯ button (see onTap). When the −/fit/+ zoom control
@@ -3119,6 +3803,14 @@ function GlimpseViewer:_buildPill()
     end
     if not (self._images_list and self._images_list_nb > 1) then return end
     local nb = self._images_list_nb
+    -- Mini Mode docks the pill on the card's bottom border: the two corners that
+    -- meet the border are square, and the design gives the container a 14px body
+    -- (the 2px stroke sits on top of that, hence the + 2 * stroke). The dots ride
+    -- 1px below centre, since the border covers the pill's last rows.
+    local pill_square = self._mini or false
+    local pill_h = self._mini
+        and (Screen:scaleBySize(14) + 2 * GlimpsePill.stroke) or nil
+    local pill_dy = self._mini and Screen:scaleBySize(1) or nil
     -- Fit as many dots as the space between the chrome buttons allows,
     -- compressing the pitch down toward the dots' own diameter before
     -- giving up. Only when even that won't fit do we fall back to "n / N".
@@ -3152,13 +3844,21 @@ function GlimpseViewer:_buildPill()
             is_bookmark = bm,
         }
         self._pill_dots = inner
-        self._pill_frame = GlimpsePill:new{ inner = inner }
+        self._pill_frame = GlimpsePill:new{
+            inner = inner,
+            square_bottom = pill_square,
+            height = pill_h,
+            inner_dy = pill_dy,
+        }
     else
         -- truly too many to fit even compressed: "n / N" counter, INVERTED
         -- (light pill + dark text). As a solid black block with white text
         -- it drew far more attention than the dots pill it stands in for.
         self._pill_frame = GlimpsePill:new{
             inverted = true,
+            square_bottom = pill_square,
+            height = pill_h,
+            inner_dy = pill_dy,
             inner = TextWidget:new{
                 text = string.format("%d / %d", self._images_list_cur or 1, nb),
                 face = Font:getFace("cfont", 12),
@@ -3174,11 +3874,12 @@ end
 -- are off) to the ⋯/more button's left edge, less a gap on each side.
 -- Mirrors the button geometry in update() so it can run before layout.
 function GlimpseViewer:_pillAvailWidth()
-    local image_area_w = self.width - self.image_right_gap
-    local btn_inset = Screen:scaleBySize(16)
-    local btn_gap = Screen:scaleBySize(10)
+    local image_area_w = self._mini and self.width
+        or (self.width - self.image_right_gap)
+    local btn_inset = self._mini and 0 or Screen:scaleBySize(16)
+    local btn_gap = self._mini and 0 or Screen:scaleBySize(10)
     local btn_size = GlimpseMoreButton.size
-    local nav = G_reader_settings:isTrue(NAV_BUTTONS_KEY)
+    local nav = G_reader_settings:isTrue(NAV_BUTTONS_KEY) and not self._mini
         and self._images_list and (self._images_list_nb or 1) > 1
     local more_left
     if nav then
@@ -3244,9 +3945,25 @@ function GlimpseViewer:_switchGalleryTab(tab)
     self:update()
 end
 
+-- Entering or leaving the Gallery while Mini Mode is on swaps a small floating
+-- card for a full drawer and back. That footprint change is too large for the
+-- combined old+new region to clear reliably (the drawer's directional shadow
+-- reaches past both rects), so refresh the whole screen once instead.
+-- "all", not nil: a nil widget only QUEUES an e-ink refresh of the region, it
+-- repaints nothing, so the page the old drawer covered keeps its stale ink.
+-- Marking every window dirty repaints the book page underneath first.
+function GlimpseViewer:_refreshWholeScreen()
+    UIManager:setDirty("all", "full", Geom:new{
+        x = 0, y = 0, w = Screen:getWidth(), h = Screen:getHeight() })
+end
+
 function GlimpseViewer:_enterGallery(page, tab)
     self._gallery_mode = true
     self._gallery_tab = tab or self.primary_tab or "shown"
+    -- Size the drawer for the Gallery BEFORE laying out the grid: the masonry is
+    -- measured against self.width, and in Mini Mode the card we are leaving is
+    -- far narrower than the Gallery drawer we are entering.
+    self:_resolveGeometry()
     local layout = self:_galleryLayout()
     if page then
         self._gallery_page = math.min(math.max(page, 1), #layout.pages)
@@ -3259,6 +3976,7 @@ function GlimpseViewer:_enterGallery(page, tab)
     self._center_x_ratio, self._center_y_ratio = 0.5, 0.5
     self._full_band_refresh = true
     self:update()
+    if _miniMode() then self:_refreshWholeScreen() end
 end
 
 function GlimpseViewer:_exitGallery(idx)
@@ -3281,6 +3999,7 @@ function GlimpseViewer:_exitGallery(idx)
     else
         self:update()
     end
+    if _miniMode() then self:_refreshWholeScreen() end
 end
 
 function GlimpseViewer:_galleryPages()
@@ -3394,6 +4113,13 @@ end
 -- relative to the drawer content origin (the onTap hit-test space).
 function GlimpseViewer:_galleryLayout()
     local tab = self._gallery_tab or "shown"
+    -- The cache assumed the drawer size never changed while the viewer was open.
+    -- Mini Mode breaks that (the card and the Gallery drawer differ), so drop
+    -- every cached layout whenever the content width moves.
+    if self._gallery_layout_w ~= self.width then
+        self._gallery_layouts = nil
+        self._gallery_layout_w = self.width
+    end
     self._gallery_layouts = self._gallery_layouts or {}
     if self._gallery_layouts[tab] then return self._gallery_layouts[tab] end
     local _, metas, nb = self:_tabList()
@@ -3817,12 +4543,22 @@ function GlimpseViewer:_showMoreMenu()
         end
     end
     if _quick_enabled("mode") then
+        -- A MOBI cannot carry the spoiler scope, so the row is locked on
+        -- "All images": dimmed, and a tap says why instead of flipping it.
+        local locked = self.scope_locked or false
         items[#items + 1] = {
             -- scope switch: reflects the current view, tap flips it and reopens
             text = self.scope == "whole_book"
                 and _("Mode: All images")
                 or _("Mode: Spoiler-free"),
             icon = _PLUGIN_DIR .. "/assets/mode.svg",
+            dimmed = locked,
+            dimmed_callback = locked and function()
+                UIManager:show(Notification:new{
+                    text = self.scope_lock_reason
+                        or _("Spoiler-free is not supported on MOBI files."),
+                })
+            end or nil,
             callback = function()
                 if self.on_toggle_scope then self.on_toggle_scope() end
             end,
@@ -3852,12 +4588,17 @@ function GlimpseViewer:_showMoreMenu()
             callback = function() self:_showInBook() end,
         }
     end
+    -- Mini Mode shows neither the nav arrows nor captions, so both rows are
+    -- dimmed and inert while it is on (the setting still stands for when the
+    -- user leaves Mini Mode).
+    local mini_on = self._mini or false
     if _quick_enabled("prevnext") then
         items[#items + 1] = {
             text = _("Nav Buttons"),
             check = G_reader_settings:isTrue(NAV_BUTTONS_KEY),
             check_get = function() return G_reader_settings:isTrue(NAV_BUTTONS_KEY) end,
             callback = function() self:_togglePrevNext() end,
+            dimmed = mini_on,
         }
     end
     if _quick_enabled("zoomctl") then
@@ -3882,6 +4623,7 @@ function GlimpseViewer:_showMoreMenu()
             check = G_reader_settings:nilOrTrue(CAPTIONS_KEY),
             check_get = function() return G_reader_settings:nilOrTrue(CAPTIONS_KEY) end,
             callback = function() self:_toggleCaptions() end,
+            dimmed = mini_on,
         }
     end
     if _quick_enabled("bookmarks") then
@@ -3912,6 +4654,20 @@ function GlimpseViewer:_showMoreMenu()
             callback = function()
                 if self.on_choose_layout then self.on_choose_layout() end
             end,
+        }
+    end
+    if _quick_enabled("minimode") then
+        -- An ACTION row naming the destination, not a checkbox: "Mini" read too
+        -- close to "Mini Map", and a checkbox row would have to stay open while
+        -- this toggle resizes the whole drawer, leaving the popup anchored where
+        -- the ⋯ button no longer is. The label and the icon both flip with the
+        -- current size, so the row always says where the tap goes.
+        local compact = G_reader_settings:isTrue(MINI_MODE_KEY)
+        items[#items + 1] = {
+            text = compact and _("Switch to Large") or _("Switch to Compact"),
+            icon = _PLUGIN_DIR .. "/assets/"
+                .. (compact and "scale-up.svg" or "scale-down.svg"),
+            callback = function() self:_toggleMiniMode() end,
         }
     end
     -- Gallery is always available, set apart at the very bottom as its own
@@ -3955,7 +4711,18 @@ function GlimpseViewer:_showMoreMenu()
             -- edge to the button's right (it grows left, away from the screen
             -- edge). Right drawer: ⋯ sits at the bottom-left, so align the LEFT
             -- edges instead (it grows right), keeping the menu on-screen.
-            local x = self._on_right and d.x or (d.x + d.w - w)
+            local x
+            if self._mini then
+                -- The card's ⋯ sits low on screen and this menu is tall, so it
+                -- cannot fit above the button and clamps down ON it. Move it
+                -- clear of the button's column instead: right edge against the
+                -- button's left, or the other side when there is no room.
+                x = d.x - gap - w
+                if x < 0 then x = d.x + d.w + gap end
+                x = math.max(0, math.min(x, Screen:getWidth() - w))
+            else
+                x = self._on_right and d.x or (d.x + d.w - w)
+            end
             return Geom:new{ x = x, y = d.y - gap, w = 0, h = d.h }, true
         end,
     }
@@ -4053,6 +4820,27 @@ function GlimpseViewer:_toggleMiniMap()
     self:update()
 end
 
+-- Mini Mode swaps a full edge drawer for a small floating card, so the drawer
+-- stops covering most of what it covered a moment ago. Reset to the fitted view
+-- (the old scale means nothing in a box of a completely different size) and
+-- refresh the WHOLE screen: the vacated area is large and irregular, and a
+-- flashing full refresh is the only thing that reliably clears it on e-ink.
+-- The mode is rare and deliberate, so the cost is acceptable here.
+function GlimpseViewer:_toggleMiniMode()
+    G_reader_settings:saveSetting(MINI_MODE_KEY,
+        not G_reader_settings:isTrue(MINI_MODE_KEY))
+    self._fit_scale_factor = nil
+    self._scale_factor_0 = nil
+    self.scale_factor = 0
+    self._center_x_ratio, self._center_y_ratio = 0.5, 0.5
+    -- take the band path, not the interior one: the interior path assumes the
+    -- drawer's footprint is unchanged and so skips repainting the page below,
+    -- which would leave the old drawer's ink where the card no longer covers
+    self._full_band_refresh = true
+    self:update()
+    self:_refreshWholeScreen()
+end
+
 -- One discrete zoom step for the +/− buttons: geometric, so ~4 taps span
 -- best-fit → the maximum (Advanced → Maximum zoom). Clamped by
 -- _applyNewScaleFactor, which snaps back to fit at/below the floor and caps
@@ -4087,9 +4875,19 @@ end
 -- in time and position counts as a double-tap. Only consulted where the
 -- single tap would do nothing (middle area at fit, anywhere while zoomed),
 -- so no single-tap action ever has to be delayed or undone.
+-- Is this viewer gesture available right now? Settings → Gestures governs the
+-- FULL drawer only. Mini Mode hides the ‹/› arrows, the reset button and the
+-- zoom control's fit zone, so swipe, pinch and double tap are the only way left
+-- to switch image, zoom and reset — the card therefore keeps all three on
+-- whatever the settings say. The Gallery is never Mini Mode, so it is unchanged.
+function GlimpseViewer:_gestureOn(key)
+    if self._mini then return true end
+    return G_reader_settings:nilOrTrue(key)
+end
+
 function GlimpseViewer:_checkDoubleTap(ges)
     -- Settings → Gestures → Double-tap for maximum zoom (on by default)
-    if not G_reader_settings:nilOrTrue(GESTURE_DOUBLETAP_KEY) then return end
+    if not self:_gestureOn(GESTURE_DOUBLETAP_KEY) then return end
     local now = time.now()
     local slop = Screen:scaleBySize(50)
     local lt = self._last_tap
@@ -4144,11 +4942,27 @@ end
 -- later and supersedes it before the panel ever shows the flash. The
 -- rebuilt button from the switch's update() clears the pressed state.
 -- Disabled buttons consume the tap without flashing or acting.
+-- Repaint the Mini Mode card's own frame (straight border, then the corner
+-- arcs) over whatever just painted inside it. Any partial repaint that touches
+-- a control docked on the card's edge needs this: the control's border sits ON
+-- the card's, so inverting it for a press flash turns that line white and
+-- squares off the card's corner. No-op outside Mini Mode.
+function GlimpseViewer:_reapplyCardFrame()
+    if not self._mini then return end
+    local mf = self.main_frame
+    if not (mf and mf.dimen) then return end
+    self:_paintMiniBorder(Screen.bb, mf.dimen.x, mf.dimen.y)
+    if self._corner_bbs then
+        self:_restoreCorners(Screen.bb, mf.dimen.x, mf.dimen.y)
+    end
+end
+
 function GlimpseViewer:_flashButton(frame, action)
     if frame.disabled then return end
     local d = frame.dimen
     frame.inverted = true
     UIManager:widgetRepaint(frame, d.x, d.y)
+    self:_reapplyCardFrame()
     UIManager:setDirty(nil, "fast", d)
     UIManager:forceRePaint()
     UIManager:yieldToEPDC()
@@ -4162,6 +4976,7 @@ function GlimpseViewer:_flashZoomZone(zone, action)
     if not zc or not zc.dimen then action(); return end
     zc.inverted_zone = zone
     UIManager:widgetRepaint(zc, zc.dimen.x, zc.dimen.y)
+    self:_reapplyCardFrame()
     UIManager:setDirty(nil, "fast", zc.dimen)
     UIManager:forceRePaint()
     UIManager:yieldToEPDC()
@@ -4204,6 +5019,14 @@ function GlimpseViewer:onTap(_, ges)
         self.on_show_menu()
         return true
     end
+    -- The drag grip's touch area reaches PAST the card's top-right corner, so
+    -- test it before the close-on-tap-outside rule: a drag too short to register
+    -- as a pan arrives here as a tap, and closing the viewer is the last thing
+    -- the user meant by it. A tap on the grip does nothing.
+    local grip = self:_gripHitRect()
+    if grip and ges.pos:intersectWith(grip) then
+        return true
+    end
     if ges.pos:notIntersectWith(self.main_frame.dimen) then
         self:onClose()
         return true
@@ -4230,6 +5053,7 @@ function GlimpseViewer:onTap(_, ges)
             local d = self._more_frame.dimen
             self._more_frame.inverted = true
             UIManager:widgetRepaint(self._more_frame, d.x, d.y)
+            self:_reapplyCardFrame()
             UIManager:setDirty(nil, "fast", d)
             self:_showMoreMenu()
         end
@@ -4252,12 +5076,15 @@ function GlimpseViewer:onTap(_, ges)
         return true
     end
     -- zoom control: three stacked zones — plus (top), fit-reset (middle,
-    -- inert when already at fit), minus (bottom)
+    -- inert when already at fit), minus (bottom). Mini Mode has no fit zone,
+    -- so there the control is two zones and the bottom one is minus.
     if self._zoomctl_frame and self._zoomctl_frame.dimen
        and ges.pos:intersectWith(self._zoomctl_frame.dimen) then
         local d = self._zoomctl_frame.dimen
-        local zone = math.min(2, math.max(0,
-            math.floor((ges.pos.y - d.y) / (d.h / 3))))
+        local nz = self._zoomctl_frame.no_fit and 2 or 3
+        local zone = math.min(nz - 1, math.max(0,
+            math.floor((ges.pos.y - d.y) / (d.h / nz))))
+        if nz == 2 and zone == 1 then zone = 2 end   -- bottom zone is minus
         if zone == 0 then
             if not self:_isAtMax() then
                 self:_flashZoomZone(0, function() self:_zoomStep(1) end)
@@ -4272,7 +5099,8 @@ function GlimpseViewer:onTap(_, ges)
             end
         else
             if self:_isOverFit() then
-                self:_flashZoomZone(2, function() self:_zoomStep(-1) end)
+                -- flash the LAST visual zone, which is 1 of 2 in Mini Mode
+                self:_flashZoomZone(nz - 1, function() self:_zoomStep(-1) end)
             end
         end
         return true
@@ -4450,6 +5278,21 @@ end
 -- accidentally now that switching is swipe-only (closing stays on
 -- tap-outside). Zoomed in, delegate to upstream so swipes keep panning.
 function GlimpseViewer:onSwipe(arg, ges)
+    -- A drag off the grip arrives as a Swipe whenever the finger never pauses
+    -- ("swipe happens if we don't hold at any moment") — which is what a brisk
+    -- drag looks like. Move the card here too, or the gesture does nothing at
+    -- all. For a swipe, gesturedetector reports pos = the CONTACT point and
+    -- end_pos = the lift point (unlike every other gesture), so the delta is
+    -- end_pos - pos and the hit test uses pos directly.
+    if self._mini and ges and ges.pos and self:_startCardDrag(ges.pos) then
+        local ep = ges.end_pos
+        if ep then
+            self:_commitCardDrag(ep.x - ges.pos.x, ep.y - ges.pos.y)
+        else
+            self._dragging = false
+        end
+        return true
+    end
     if self._gallery_mode then
         local d = ges.direction
         if d == "west" or d == "east" then
@@ -4465,7 +5308,7 @@ function GlimpseViewer:onSwipe(arg, ges)
         -- its primary affordance and stays on.
         local d = ges.direction
         if self._images_list and (d == "west" or d == "east")
-                and G_reader_settings:nilOrTrue(GESTURE_SWIPE_KEY) then
+                and self:_gestureOn(GESTURE_SWIPE_KEY) then
             local forward = d == "west"
             if BD.mirroredUILayout() then forward = not forward end
             if forward then
@@ -4492,12 +5335,12 @@ end
 -- in, pinch zooms out (upstream ImageViewer); swallow both when the user has
 -- turned the gesture off, so a stray pinch can't change the zoom.
 function GlimpseViewer:onSpread(arg, ges)
-    if not G_reader_settings:nilOrTrue(GESTURE_PINCH_KEY) then return true end
+    if not self:_gestureOn(GESTURE_PINCH_KEY) then return true end
     return ImageViewer.onSpread(self, arg, ges)
 end
 
 function GlimpseViewer:onPinch(arg, ges)
-    if not G_reader_settings:nilOrTrue(GESTURE_PINCH_KEY) then return true end
+    if not self:_gestureOn(GESTURE_PINCH_KEY) then return true end
     return ImageViewer.onPinch(self, arg, ges)
 end
 
@@ -4511,7 +5354,82 @@ function GlimpseViewer:onHold(_, ges)
         if cell then self:_openMoveMenu(cell, ges.pos) end
         return true
     end
+    -- Mini Mode: a hold that starts on the drag grip moves the whole card
+    -- (a press-and-drag without the hold arrives as Pan instead — see onPan).
+    if self:_startCardDrag(ges.pos) then return true end
     return ImageViewer.onHold(self, _, ges)
+end
+
+-- Touch area of the drag grip, which is larger than the glyph. The grip is a
+-- small mark tucked into the card's top-right corner, so a finger that lands a
+-- few pixels off used to miss it: a short drag then fell through as a tap on
+-- the page, and a tap outside the card CLOSES the viewer. The rect therefore
+-- grows on all sides, and further up and to the right, past the card's own edge
+-- (out = the grip's inset + the border + the same margin). onTap also swallows
+-- taps inside it, so a miss does nothing instead of closing.
+function GlimpseViewer:_gripHitRect()
+    local d = self._mini and self._grip_frame and self._grip_frame.dimen
+    if not d then return nil end
+    local pad = Screen:scaleBySize(8)
+    local out = self.mini_grip_inset + self.panel_border + pad
+    return Geom:new{
+        x = d.x - pad, y = d.y - out,
+        w = d.w + pad + out, h = d.h + out + pad,
+    }
+end
+
+-- Begin a card drag if `pos` is on the grip. Records where the card sits so
+-- both gesture paths can apply their delta to the same origin. Returns true
+-- when the drag was claimed, so the caller consumes the gesture and no image
+-- pan starts underneath.
+function GlimpseViewer:_startCardDrag(pos)
+    local hit = self:_gripHitRect()
+    if not hit then return false end
+    if not pos or not pos.intersectWith or pos:notIntersectWith(hit) then
+        return false
+    end
+    self._drag_org_x = self._mini_x or 0
+    self._drag_org_y = self._mini_y or 0
+    -- the hold path measures its delta from the press point; the pan path
+    -- reads ges.relative instead and overwrites _drag_dx/_drag_dy as it goes
+    self._drag_from_x, self._drag_from_y = pos.x, pos.y
+    self._drag_dx, self._drag_dy = 0, 0
+    self._dragging = true
+    return true
+end
+
+-- Commit a Mini Mode card drag: move the card by (dx, dy), clamp it fully
+-- on-screen, store the position as free-travel ratios and repaint. Like panBy
+-- this lands the card in ONE step on release rather than tracking the finger —
+-- e-ink has no waveform that redraws a moving window cleanly.
+function GlimpseViewer:_commitCardDrag(dx, dy)
+    self._dragging = false
+    local SW, SH = Screen:getWidth(), Screen:getHeight()
+    local w, h = self._panel_w, self._panel_h
+    local nx = self._drag_org_x + (dx or 0)
+    local ny = self._drag_org_y + (dy or 0)
+    nx = math.min(math.max(nx, 0), math.max(0, SW - w))
+    ny = math.min(math.max(ny, 0), math.max(0, SH - h))
+    if nx == self._mini_x and ny == self._mini_y then return end
+    local tx, ty = SW - w, SH - h
+    G_reader_settings:saveSetting(MINI_POS_KEY, {
+        x = tx > 0 and (nx / tx) or 0,
+        y = ty > 0 and (ny / ty) or 0,
+    })
+    -- The card vacates its old rect, so the refresh has to span both positions
+    -- (and both shadows) AND repaint the page underneath. _full_band_refresh
+    -- takes the path that keeps the numeric alpha (page repainted below) and
+    -- combines the old and new rects, instead of the interior path that assumes
+    -- the footprint never moved.
+    local old = self.main_frame.dimen and self.main_frame.dimen:copy()
+    self._full_band_refresh = true
+    self:update()
+    if old then
+        local region = self:_growForShadow(old)
+        local now = self.main_frame.dimen
+        if now then region = region:combine(self:_growForShadow(now:copy())) end
+        UIManager:setDirty("all", "ui", region)
+    end
 end
 
 -- Upstream ImageViewer:onHoldRelease turns a hold-with-no-move into a
@@ -4522,6 +5440,11 @@ end
 -- the gallery the hold already opened the move menu, so nothing to release.)
 function GlimpseViewer:onHoldRelease(_, ges)
     if self._gallery_mode then return true end
+    if self._dragging then
+        self:_commitCardDrag(ges.pos.x - (self._drag_from_x or ges.pos.x),
+            ges.pos.y - (self._drag_from_y or ges.pos.y))
+        return true
+    end
     if self._panning then
         self._panning = false
         self._pan_relative_x = ges.pos.x - self._pan_relative_x
@@ -4567,7 +5490,9 @@ function GlimpseViewer:_repaintOverlayFast(mode)
     -- rounded corners here too — otherwise the drawer reads as a full rectangle
     -- after a zoom step.
     local mf = self.main_frame
-    if self._corner_bbs and mf and mf.dimen then
+    if self._mini then
+        self:_reapplyCardFrame()
+    elseif self._corner_bbs and mf and mf.dimen then
         self:_restoreCorners(Screen.bb, mf.dimen.x, mf.dimen.y)
     end
     UIManager:setDirty(nil, mode, region)
@@ -4597,7 +5522,39 @@ function GlimpseViewer:onPan(arg, ges)
         end
         return true
     end
+    -- Mini Mode card drag. A Hold only fires when the user holds STILL at the
+    -- start; a plain press-and-drag arrives here as Pan, which is what the grip
+    -- has to answer or the gesture falls through and pans the image instead.
+    -- ges.pos is the CURRENT point and ges.relative the delta since the press,
+    -- so the press point is pos - relative — that is what must be on the grip.
+    if self._mini and ges and ges.pos and ges.relative then
+        if not self._dragging then
+            -- gesturedetector gives the press point as start_pos; fall back to
+            -- pos - relative, which is the same point, if it is ever absent
+            local sp = ges.start_pos
+            if not sp then
+                sp = Geom:new{ x = ges.pos.x - (ges.relative.x or 0),
+                               y = ges.pos.y - (ges.relative.y or 0), w = 1, h = 1 }
+            end
+            self:_startCardDrag(sp)
+        end
+        if self._dragging then
+            -- keep only the latest cumulative delta; the card jumps once on
+            -- release, exactly like the image pan below
+            self._drag_dx = ges.relative.x or 0
+            self._drag_dy = ges.relative.y or 0
+            return true
+        end
+    end
     return ImageViewer.onPan(self, arg, ges)
+end
+
+function GlimpseViewer:onPanRelease(arg, ges)
+    if self._dragging then
+        self:_commitCardDrag(self._drag_dx, self._drag_dy)
+        return true
+    end
+    return ImageViewer.onPanRelease(self, arg, ges)
 end
 
 -- Zoom-out floor: never below best-fit. The fit factor is captured while
@@ -4719,12 +5676,14 @@ function GlimpseViewer:_buildMiniMap()
     if not show_mm then return end
     local iw, ih = self:_displayedImageSize()
     if not (iw and ih) then return end
-    local image_area_w = self.width - self.image_right_gap
-    local btn_gap = Screen:scaleBySize(10)
+    local image_area_w = self._mini and self.width
+        or (self.width - self.image_right_gap)
+    local btn_gap = self._mini and 0 or Screen:scaleBySize(10)
     -- match the bottom-row lift used in update() (top band clears its rounded
     -- bottom corners), so the standalone-fallback map anchors on the same line
-    local btn_inset = self._place == "top" and self.panel_radius
-        or Screen:scaleBySize(14)
+    local btn_inset = self._mini and 0
+        or (self._place == "top" and self.panel_radius
+            or Screen:scaleBySize(14))
     local show_zc = (not self._gallery_mode)
         and G_reader_settings:isTrue(ZOOMCTL_KEY)
     local border = GlimpseMiniMap.border
@@ -4732,7 +5691,11 @@ function GlimpseViewer:_buildMiniMap()
     -- The map is EXACTLY as tall as the zoom control so the two merge into one
     -- group; when docked they overlap by one border so their shared edge reads
     -- as a single seam, and the four outer corners are the only rounded ones.
-    local box_h = (show_zc and zc and zc:getSize().h) or GlimpseZoomControl.height
+    -- Mini Mode breaks the equal-height merge: the map lives in the card's
+    -- bottom-LEFT corner and the zoom control on the right, so they never touch.
+    -- Size it off the card instead (about a third of it, as in the design).
+    local box_h = self._mini and math.floor(self.height / 3)
+        or (show_zc and zc and zc:getSize().h) or GlimpseZoomControl.height
     -- Fit the WHOLE image to that height and wrap the box tightly around it (no
     -- letterbox): the box width follows the image's aspect. If that would spill
     -- across the image area, cap the width and shrink the image to fit, centring
@@ -4740,8 +5703,17 @@ function GlimpseViewer:_buildMiniMap()
     local inner_h = box_h - 2 * border
     local disp_h = math.max(1, inner_h)
     local disp_w = math.max(1, math.floor(disp_h * iw / ih + 0.5))
-    local max_inner = image_area_w - 2 * Screen:scaleBySize(14) - 2 * border
-    if show_zc and zc then max_inner = max_inner - zc:getSize().w - btn_gap + border end
+    local max_inner
+    if self._mini then
+        -- keep the card's map to a corner badge of a fixed maximum width; a
+        -- wide image just shrinks to fit it (see mini_map_max_w)
+        max_inner = self.mini_map_max_w - 2 * border
+    else
+        max_inner = image_area_w - 2 * Screen:scaleBySize(14) - 2 * border
+        if show_zc and zc then
+            max_inner = max_inner - zc:getSize().w - btn_gap + border
+        end
+    end
     -- Cap a wide (landscape/panorama) map so it can't stretch across the image.
     -- Past max_aspect the whole image letterboxes into a bounded box; box_h stays
     -- the zoom control height, so the equal-height merge still holds.
@@ -4751,6 +5723,13 @@ function GlimpseViewer:_buildMiniMap()
         disp_h = math.max(1, math.floor(disp_w * ih / iw + 0.5))
     end
     local box_w = disp_w + 2 * border
+    if self._mini then
+        -- nothing docks to the card's map, so its height need not stay fixed:
+        -- wrap the box tightly around the image instead of letterboxing it,
+        -- which on a small card would only waste the corner
+        inner_h = disp_h
+        box_h = disp_h + 2 * border
+    end
     box_h = math.floor(box_h + 0.5)
     local inner_w = box_w - 2 * border
     local off_x = border + math.floor((inner_w - disp_w) / 2 + 0.5)
@@ -4761,9 +5740,24 @@ function GlimpseViewer:_buildMiniMap()
         disp_w = disp_w, disp_h = disp_h,
         thumb = self:_minimapThumb(disp_w, disp_h),
         viewer = self,
+        outline = self._mini or false,   -- Mini Mode: white ring, no shadow
+        -- flush into the card's bottom-left corner, so no ring on those edges
+        outline_sides = self._mini and
+            { t = true, b = false, l = false, r = true } or nil,
     }
     local mx, my
-    if show_zc and zc and zc.overlap_offset then
+    if self._mini then
+        -- MERGE into the card's bottom-left corner: the overlay sits inside the
+        -- card's border (main_frame pads by panel_border on every edge), so push
+        -- the map out by that border. Its own left and bottom borders then land
+        -- ON the card's, and the pair reads as one line instead of two.
+        -- Only the corner facing the image interior stays rounded; the other
+        -- three follow the card's own edge (the bottom-left is the card's own
+        -- corner, which _restoreCorners paints back on top).
+        mx = -self.panel_border
+        my = self.height - box_h + self.panel_border
+        mm.corners = { tl = false, bl = false, br = false, tr = true }
+    elseif show_zc and zc and zc.overlap_offset then
         -- dock against the control's RESOLVED position (post right-side mirror):
         -- overlap the seam by one border, square the two touching corners on both
         -- widgets, and keep the outer corners rounded.
@@ -4925,10 +5919,23 @@ end
 
 -- Zoom ceiling in capped-bitmap units: native size × the readability
 -- multiplier (max_zoom_of_native). Both the pinch clamp and the double-tap
--- target land here.
+-- target land here. The base ImageWidget also caps scaling by a memory/area
+-- limit (getScaleFactorExtrema); when the readability ceiling is higher than
+-- that limit, the widget cap is the real ceiling. Take the smaller of the two
+-- so "at max" (the disabled +, the double-tap target) matches what the widget
+-- will actually render — this matters most for a high custom max_zoom_of_native
+-- on an already-large image, where the memory cap binds well below the setting.
 function GlimpseViewer:_maxScale()
     local nat = self:_nativeScale()
-    return nat and nat * self.max_zoom_of_native
+    local ceil = nat and nat * self.max_zoom_of_native
+    local wg = self._image_wg
+    if wg and wg._bb and wg.getScaleFactorExtrema then
+        local ok, _minf, wmax = pcall(wg.getScaleFactorExtrema, wg)
+        if ok and wmax and (not ceil or wmax < ceil) then
+            ceil = wmax
+        end
+    end
+    return ceil
 end
 
 -- Forked from ImageWidget:panBy — the same crop-offset math on the
@@ -5138,7 +6145,23 @@ end
 
 -- ── settings ────────────────────────────────────────────────────────────────
 
+-- True when this book cannot honour the spoiler scope, so Glimpse forces
+-- "whole book". A MOBI holds the entire text as ONE HTML document, so every
+-- image lands in the same fragment and the scanner cannot say which chapter an
+-- image belongs to (see scan_mobi, which writes spine_index = 1 for all of
+-- them). Clipping at the reading position would then hide either nothing or
+-- everything. The stored preference is left alone, so an EPUB gets it back.
+function Glimpse:isScopeLocked()
+    return self:_docFormat() == "mobi"
+end
+
+-- Why the scope is locked, for the ⋯ menu and the settings screen.
+function Glimpse:scopeLockReason()
+    return _("Spoiler-free is not supported on MOBI files.")
+end
+
 function Glimpse:getScope()
+    if self:isScopeLocked() then return "whole_book" end
     return G_reader_settings:readSetting(SCOPE_KEY) or "read_so_far"
 end
 
@@ -5211,7 +6234,7 @@ function Glimpse:_metaPageNumber(meta)
         if ok and doc:isXPointerInDocument(cand) then xp = cand end
     end
     if not xp and meta.spine_index and meta.spine_index > 0 then
-        xp = string.format("/body/DocFragment[%d]", meta.spine_index)
+        xp = self:_chapterXPointer(meta.spine_index)
     end
     if not xp then return 0 end
     local ok, page = pcall(function() return doc:getPageFromXPointer(xp) end)
@@ -5498,6 +6521,53 @@ end
 
 -- ── document access ─────────────────────────────────────────────────────────
 
+-- Which book format Glimpse handles this document as:
+--   "fb2"   a single FictionBook XML file (images self-parsed from <binary>)
+--   "epub"  any other crengine container format (EPUB scanner path)
+--   "other" no crengine file access (PDF/DjVu and the like) — unsupported
+-- FB2 is detected by extension because it is not a container; the EPUB path
+-- reads image files by archive path through crengine.
+function Glimpse:_docFormat()
+    local doc = self.ui and self.ui.document
+    if not doc or not doc.file then return nil end
+    if type(doc.getDocumentFileContent) ~= "function" then return "other" end
+    local low = doc.file:lower()
+    if low:match("%.fb2$") then return "fb2" end
+    if low:match("%.mobi$") or low:match("%.prc$") then return "mobi" end
+    return "epub"
+end
+
+-- The raw byte size of the MOBI cover image, from crengine, or nil. scan_mobi
+-- flags the enumerated image whose bytes match, so the filter sets the cover
+-- aside. The cover data is C-owned, so free it after reading its size.
+function Glimpse:_mobiCoverSize()
+    local doc = self.ui and self.ui.document
+    local cre = doc and doc._document
+    if not (cre and cre.getCoverPageImageData) then return nil end
+    local ok, data, size = pcall(function() return cre:getCoverPageImageData() end)
+    if not (ok and data and size and size > 0) then return nil end
+    pcall(function() require("ffi").C.free(data) end)
+    return size
+end
+
+-- Read the whole FB2 file once and cache it (keyed by path, so a new book
+-- reloads it). FB2 has no archive; the scanner and the viewer both work from
+-- this text.
+function Glimpse:_fb2Text()
+    local doc = self.ui and self.ui.document
+    local file = doc and doc.file
+    if not file then return nil end
+    if self._fb2_text_file == file and self._fb2_text ~= nil then
+        return self._fb2_text or nil
+    end
+    local f = io.open(file, "rb")
+    local data = f and f:read("*a")
+    if f then f:close() end
+    self._fb2_text_file = file
+    self._fb2_text = data or false
+    return data
+end
+
 function Glimpse:_supportedReason()
     local doc = self.ui and self.ui.document
     if not doc or not doc.file then
@@ -5509,7 +6579,7 @@ function Glimpse:_supportedReason()
     -- crengine documents expose getDocumentFileContent; paged formats
     -- (PDF/DjVu) do not, and their APIs must not be touched at all
     if type(doc.getDocumentFileContent) ~= "function" then
-        return false, _("Glimpse works with EPUB books only (this document format is not supported)."), "unsupported"
+        return false, _("Glimpse works with EPUB, FB2 and MOBI books only (this document format is not supported)."), "unsupported"
     end
     return true
 end
@@ -5518,6 +6588,16 @@ end
 -- archive handle. Primary path is crengine's own archive access; libarchive
 -- is the fallback for entries crengine won't hand over.
 function Glimpse:_makeReader()
+    -- FB2: no archive. read_file(id) decodes the <binary> block by id from the
+    -- in-memory FB2 text.
+    if self:_docFormat() == "fb2" then
+        local fb2 = self:_fb2Text()
+        local function read_file(id)
+            if not fb2 or not id then return nil end
+            return scanner.fb2_read_binary(fb2, id)
+        end
+        return read_file, function() end
+    end
     local doc = self.ui.document
     local arc
     local function read_file(path)
@@ -5558,10 +6638,25 @@ function Glimpse:_currentSpineIndex()
     if type(doc.getXPointer) ~= "function" then return nil end
     local ok, xp = pcall(doc.getXPointer, doc)
     if ok and type(xp) == "string" then
+        -- EPUB: /body/DocFragment[N]/... — N is the spine document index.
         local n = xp:match("DocFragment%[(%d+)%]")
         if n then return tonumber(n) end
+        -- FB2: /FictionBook/body/section[N]/... — N is the top-level section.
+        -- The first section[N] in the path is the top-level ancestor.
+        local sect = xp:match("[sS]ection%[(%d+)%]")
+        if sect then return tonumber(sect) end
     end
     return nil
+end
+
+-- The xpointer for the top of a chapter (spine_index), per format: EPUB spine
+-- fragments and FB2 top-level sections use different DOM paths.
+function Glimpse:_chapterXPointer(spine_index)
+    if not spine_index or spine_index < 1 then return nil end
+    if self:_docFormat() == "fb2" then
+        return string.format("/FictionBook/body/section[%d]", spine_index)
+    end
+    return string.format("/body/DocFragment[%d]", spine_index)
 end
 
 -- ── scan + sidecar cache ────────────────────────────────────────────────────
@@ -5605,9 +6700,25 @@ function Glimpse:_getScan(force, cache_only)
     end
     if cache_only then return nil end
 
-    local read_file, close = self:_makeReader()
-    local ok, result, err = pcall(scanner.scan, read_file)
-    close()
+    local ok, result, err
+    local fmt = self:_docFormat()
+    if fmt == "fb2" then
+        local fb2 = self:_fb2Text()
+        if not fb2 then
+            self._scan_err = "error"
+            return nil
+        end
+        ok, result, err = pcall(scanner.scan_fb2, fb2)
+    elseif fmt == "mobi" then
+        local read_file, close = self:_makeReader()
+        local cover_size = self:_mobiCoverSize()
+        ok, result, err = pcall(scanner.scan_mobi, read_file, cover_size)
+        close()
+    else
+        local read_file, close = self:_makeReader()
+        ok, result, err = pcall(scanner.scan, read_file)
+        close()
+    end
     if not ok then
         logger.warn("Glimpse: scan failed:", result)
         self._scan_err = "error"
@@ -5724,7 +6835,7 @@ function Glimpse:showViewer(whole_book_once)
     if not scan then
         local why
         if self._scan_err == "no_container" or self._scan_err == "no_opf" then
-            why = _("Glimpse works with EPUB books only.")
+            why = _("Glimpse works with EPUB, FB2 and MOBI books only (this document format is not supported).")
         else
             why = _("Could not scan this book for images.")
         end
@@ -6047,7 +7158,8 @@ function Glimpse:showViewer(whole_book_once)
             -- the built xpointer resolves to THIS image (its filename appears
             -- in the element's HTML) before trusting it, else fall back to the
             -- chapter top (the pre-fix behaviour).
-            local target = string.format("/body/DocFragment[%d]", meta.spine_index)
+            local target = self:_chapterXPointer(meta.spine_index)
+            if not target then return end
             local doc = self.ui.document
             if meta.node_path and doc and doc.isXPointerInDocument then
                 local xp = string.format("/body/DocFragment[%d]/body/%s",
@@ -6080,6 +7192,8 @@ function Glimpse:showViewer(whole_book_once)
             self.ui:handleEvent(Event:new("ShowMenu"))
         end,
         scope = effective_scope,
+        scope_locked = self:isScopeLocked(),
+        scope_lock_reason = self:scopeLockReason(),
         -- ⋯ → "Showing: …": flip the persistent scope to the opposite of
         -- what's on screen, then close and reopen so the image list rebuilds
         -- (onClose runs onCloseWidget synchronously, clearing self._viewer,
@@ -6246,7 +7360,13 @@ function Glimpse:showViewer(whole_book_once)
     -- the shadow: left/right for a side panel, top/bottom for a band.
     local SW, SH = Screen:getWidth(), Screen:getHeight()
     local open_region
-    if viewer._horizontal then
+    if viewer._mini then
+        -- Mini Mode has no flush screen edge to hug: the card floats anywhere,
+        -- so the region is the card's own rect (grown for its shadow below).
+        -- The edge-band branches would start at x=0 and cut the card in half.
+        open_region = Geom:new{ x = viewer._mini_x or 0, y = viewer._mini_y or 0,
+            w = viewer._panel_w, h = viewer._panel_h }
+    elseif viewer._horizontal then
         local rh = math.min(SH, viewer._panel_h + 2)
         local ry = viewer._place == "bottom" and (SH - rh) or 0
         open_region = Geom:new{ x = 0, y = ry, w = SW, h = rh }
@@ -6978,13 +8098,44 @@ function Glimpse:_showLayoutDialog()
     })
 end
 
+-- One radio row of the "Panel Size" setting. Picking a size while the viewer is
+-- open applies it there and then, the same way the ⋯ row does — otherwise the
+-- menu would report a size the drawer on screen is not using.
+function Glimpse:_panelSizeItem(compact, text)
+    return {
+        text = text,
+        radio = true,
+        checked_func = function()
+            return G_reader_settings:isTrue(MINI_MODE_KEY) == compact
+        end,
+        callback = function()
+            if G_reader_settings:isTrue(MINI_MODE_KEY) == compact then return end
+            local v = self._viewer
+            if v and v._toggleMiniMode then
+                v:_toggleMiniMode()       -- saves the setting AND re-lays out
+            else
+                G_reader_settings:saveSetting(MINI_MODE_KEY, compact)
+            end
+        end,
+    }
+end
+
 function Glimpse:_menuItems()
     local function scope_item(value, text, help)
         return {
             text = text,
-            help_text = help,
+            -- a locked book (MOBI) explains itself in the help text too
+            help_text_func = function()
+                if self:isScopeLocked() then
+                    return self:scopeLockReason() .. "\n\n" .. help
+                end
+                return help
+            end,
             radio = true,
             checked_func = function() return self:getScope() == value end,
+            -- greyed out where the format cannot carry the scope, so the radio
+            -- can never show a mode the book will not actually use
+            enabled_func = function() return not self:isScopeLocked() end,
             callback = function()
                 G_reader_settings:saveSetting(SCOPE_KEY, value)
             end,
@@ -7099,6 +8250,11 @@ function Glimpse:_menuItems()
             sub_item_table = {
                 {
                     text = _("Gestures"),
+                    -- One new string on the submenu row, rather than a sentence
+                    -- appended to each of the three below: editing those msgids
+                    -- would fuzzy them in every language and drop the existing
+                    -- translations (see the l10n notes).
+                    help_text = _("These apply to the large panel. The compact panel always keeps swipe, pinch and double-tap on, because it hides the navigation buttons and the reset button."),
                     sub_item_table = {
                         {
                             text = _("Double-tap for maximum zoom"),
@@ -7148,6 +8304,22 @@ function Glimpse:_menuItems()
                     callback = function() self:_showLayoutDialog() end,
                 },
                 {
+                    -- Sits under Layout: both decide the shape of the drawer.
+                    -- Also a Quick Action ("Switch to Compact"/"Switch to
+                    -- Large"), so the two must always agree — they read and
+                    -- write the same setting.
+                    text_func = function()
+                        return G_reader_settings:isTrue(MINI_MODE_KEY)
+                            and _("Panel Size: Compact")
+                            or _("Panel Size: Large")
+                    end,
+                    help_text = _("Large fills one edge of the screen. Compact is a small card that floats over the page, which you drag by the grip in its top-right corner. The compact card hides the captions, the bookmark label, the navigation buttons and the reset button, and the Gallery always opens at the large size."),
+                    sub_item_table = {
+                        self:_panelSizeItem(false, _("Large")),
+                        self:_panelSizeItem(true, _("Compact")),
+                    },
+                },
+                {
                     text_func = function()
                         return T(_("Maximum zoom: %1%"),
                             math.floor(_maxZoomMult() * 100 + 0.5))
@@ -7170,6 +8342,49 @@ function Glimpse:_menuItems()
                                 end,
                             }
                         end
+                        t[#t + 1] = {
+                            text_func = function()
+                                local cur = _maxZoomMult()
+                                if not _isPresetZoom(cur) then
+                                    return T(_("Custom: %1%"),
+                                        math.floor(cur * 100 + 0.5))
+                                end
+                                return _("Custom…")
+                            end,
+                            radio = true,
+                            checked_func = function()
+                                return not _isPresetZoom(_maxZoomMult())
+                            end,
+                            keep_menu_open = true,
+                            separator = true,
+                            callback = function(touchmenu_instance)
+                                local SpinWidget = require("ui/widget/spinwidget")
+                                UIManager:show(SpinWidget:new{
+                                    -- Reuse the menu row's own string rather than
+                                    -- adding a bare "Maximum zoom" msgid: gettext
+                                    -- fuzzy-matches the two, and every language
+                                    -- then inherits a translation carrying a %1
+                                    -- the plain title has no argument for.
+                                    title_text = T(_("Maximum zoom: %1%"),
+                                        math.floor(_maxZoomMult() * 100 + 0.5)),
+                                    info_text = _("Set the zoom ceiling as a percentage of the image's own resolution. Past 100% Glimpse enlarges the pixels, so a very high value can look soft."),
+                                    value = math.floor(_maxZoomMult() * 100 + 0.5),
+                                    value_min = math.floor(MIN_MAX_ZOOM * 100 + 0.5),
+                                    value_max = math.floor(MAX_MAX_ZOOM * 100 + 0.5),
+                                    value_step = 25,
+                                    value_hold_step = 100,
+                                    unit = "%",
+                                    ok_text = _("Set"),
+                                    callback = function(spin)
+                                        G_reader_settings:saveSetting(
+                                            MAX_ZOOM_KEY, spin.value / 100)
+                                        if touchmenu_instance then
+                                            touchmenu_instance:updateItems()
+                                        end
+                                    end,
+                                })
+                            end,
+                        }
                         return t
                     end)(),
                 },

@@ -1,8 +1,9 @@
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: glimpse-plugin\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 11:21+0200\n"
+"POT-Creation-Date: 2026-09-07 18:00+0200\n"
 "PO-Revision-Date: 2026-08-29 10:09\n"
 "Last-Translator: \n"
 "Language-Team: Swedish\n"
@@ -11,11 +12,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Crowdin-Project: glimpse-plugin\n"
-"X-Crowdin-Project-ID: 923235\n"
-"X-Crowdin-Language: sv-SE\n"
 "X-Crowdin-File: /plugin/l10n/templates/glimpse-help.pot\n"
 "X-Crowdin-File-ID: 20\n"
+"X-Crowdin-Language: sv-SE\n"
+"X-Crowdin-Project: glimpse-plugin\n"
+"X-Crowdin-Project-ID: 923235\n"
 
 msgid "Master switch. When off, the bound gesture and the Open Glimpse entry do nothing – a quick way to silence Glimpse without unbinding its gesture."
 msgstr "Huvudströmbrytare. När den är av gör den bundna gesten och posten Öppna Glimpse ingenting – ett snabbt sätt att tysta Glimpse utan att koppla bort dess gest."
@@ -32,6 +33,9 @@ msgstr "Visa även sidorna du har bokmärkt (öronbokmärket) i galleriet, som s
 msgid "Choose which actions appear in the viewer's ⋯ menu. Reset Rotation is automatic (shown while an image is rotated)."
 msgstr "Välj vilka åtgärder som visas i visarens ⋯-meny. Återställ rotation är automatisk (visas medan en bild är roterad)."
 
+msgid "These apply to the large panel. The compact panel always keeps swipe, pinch and double-tap on, because it hides the navigation buttons and the reset button."
+msgstr "Detta gäller den stora panelen. Den kompakta panelen har alltid svep, nyp och dubbeltryck på, eftersom den döljer navigeringsknapparna och återställningsknappen."
+
 msgid "Double-tap the image to jump to the maximum zoom (centered on the tap), and again to return to the fitted view. On by default."
 msgstr "Dubbeltryck på bilden för att hoppa till maximal zoom (centrerad på trycket), och igen för att återgå till den anpassade vyn. På som standard."
 
@@ -43,6 +47,9 @@ msgstr "Nyp ihop eller dra isär två fingrar på bilden för att zooma ut eller
 
 msgid "Where Glimpse opens: a side panel (left or right) or, in portrait, a band across the top or bottom. In landscape it always uses the preferred side."
 msgstr "Var Glimpse öppnas: en sidopanel (vänster eller höger) eller, i stående läge, ett fält längst upp eller längst ned. I liggande läge används alltid den föredragna sidan."
+
+msgid "Large fills one edge of the screen. Compact is a small card that floats over the page, which you drag by the grip in its top-right corner. The compact card hides the captions, the bookmark label, the navigation buttons and the reset button, and the Gallery always opens at the large size."
+msgstr "Stor fyller en av skärmens kanter. Kompakt är ett litet kort som svävar över sidan och som du drar i handtaget i dess övre högra hörn. Det kompakta kortet döljer bildtexterna, bokmärkesetiketten, navigeringsknapparna och återställningsknappen, och Galleriet öppnas alltid i stor storlek."
 
 msgid "How far you can zoom in, as a percentage of the image's own resolution. Double-tap jumps to this level and pinch stops here. Higher reveals more on detailed maps, but past 100% it is upscaling, so very high can look soft."
 msgstr "Hur långt du kan zooma in, som en procentandel av bildens egen upplösning. Dubbeltryck hoppar till den här nivån och nyp stannar här. Högre visar mer på detaljerade kartor, men över 100 % är det uppskalning, så mycket högt kan se suddigt ut."
@@ -91,4 +98,3 @@ msgstr "Glimpse cachar sin genomsökning av boken. Använd detta om bokfilen har
 
 msgid "Also offer releases marked as pre-release on GitHub – test builds published before a proper release. Normal update checks never see those."
 msgstr "Erbjud även versioner som är märkta som förhandsversioner på GitHub – testbyggen som publiceras före en riktig version. Vanliga uppdateringskontroller ser aldrig dessa."
-

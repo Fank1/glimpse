@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Glimpse\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 11:21+0200\n"
+"POT-Creation-Date: 2026-09-07 18:00+0200\n"
 "PO-Revision-Date: 2026-08-25 00:00+0000\n"
 "Last-Translator: AI seed <noreply@glimpse>\n"
 "Language-Team: th\n"
@@ -50,6 +50,9 @@ msgstr "กลับสีในโหมดกลางคืน"
 
 msgid "Layout"
 msgstr "เค้าโครง"
+
+msgid "Panel Size Switch"
+msgstr "สลับขนาดแผง"
 
 msgid "Page %1 (%2)"
 msgstr "หน้า %1 (%2)"
@@ -96,6 +99,9 @@ msgstr "โหมด: รูปภาพทั้งหมด"
 msgid "Mode: Spoiler-free"
 msgstr "โหมด: ปลอดสปอยล์"
 
+msgid "Spoiler-free is not supported on MOBI files."
+msgstr "โหมดไม่สปอยล์ไม่รองรับไฟล์ MOBI"
+
 msgid "Reset Rotation"
 msgstr "รีเซ็ตการหมุน"
 
@@ -117,6 +123,12 @@ msgstr "รวมบุ๊กมาร์ก"
 msgid "Invert in Night Mode"
 msgstr "กลับสีในโหมดกลางคืน"
 
+msgid "Switch to Large"
+msgstr "สลับเป็นใหญ่"
+
+msgid "Switch to Compact"
+msgstr "สลับเป็นกะทัดรัด"
+
 msgid "Image ignored."
 msgstr "ละเว้นรูปภาพแล้ว"
 
@@ -129,19 +141,14 @@ msgstr "เปิด Glimpse"
 msgid "No book is open."
 msgstr "ไม่มีหนังสือที่เปิดอยู่"
 
-msgid ""
-"Glimpse failed to load its scanner module. Try reinstalling the plugin."
+msgid "Glimpse failed to load its scanner module. Try reinstalling the plugin."
 msgstr "Glimpse โหลดโมดูลสแกนไม่สำเร็จ ลองติดตั้งปลั๊กอินใหม่"
 
-msgid ""
-"Glimpse works with EPUB books only (this document format is not supported)."
-msgstr "Glimpse ใช้ได้กับหนังสือ EPUB เท่านั้น (ไม่รองรับรูปแบบเอกสารนี้)"
+msgid "Glimpse works with EPUB, FB2 and MOBI books only (this document format is not supported)."
+msgstr "Glimpse ทำงานกับหนังสือ EPUB, FB2 และ MOBI เท่านั้น (ไม่รองรับรูปแบบเอกสารนี้)"
 
 msgid "Scanning book for images…"
 msgstr "กำลังสแกนหนังสือเพื่อหารูปภาพ…"
-
-msgid "Glimpse works with EPUB books only."
-msgstr "Glimpse ใช้ได้กับหนังสือ EPUB เท่านั้น"
 
 msgid "Could not scan this book for images."
 msgstr "ไม่สามารถสแกนหารูปภาพในหนังสือเล่มนี้ได้"
@@ -300,21 +307,13 @@ msgstr "โหมด: แสดงรูปภาพจนถึงบทปั�
 msgid "Show images up to current chapter"
 msgstr "แสดงรูปภาพจนถึงบทปัจจุบัน"
 
-msgid ""
-"Images that appear beyond your current position stay hidden, so you can't "
-"spoil yourself. Granularity is per chapter: images in the chapter you are "
-"currently reading are shown."
-msgstr ""
-"รูปภาพที่ปรากฏเลยตำแหน่งปัจจุบันของคุณจะถูกซ่อนไว้ "
-"เพื่อไม่ให้คุณสปอยล์ตัวเอง ความละเอียดเป็นรายบท: "
-"รูปภาพในบทที่คุณกำลังอ่านอยู่จะถูกแสดง"
+msgid "Images that appear beyond your current position stay hidden, so you can't spoil yourself. Granularity is per chapter: images in the chapter you are currently reading are shown."
+msgstr "รูปภาพที่ปรากฏเลยตำแหน่งปัจจุบันของคุณจะถูกซ่อนไว้ เพื่อไม่ให้คุณสปอยล์ตัวเอง ความละเอียดเป็นรายบท: รูปภาพในบทที่คุณกำลังอ่านอยู่จะถูกแสดง"
 
 msgid "Show all images"
 msgstr "แสดงรูปภาพทั้งหมด"
 
-msgid ""
-"Show reference images from anywhere in the book, including parts you haven't"
-" reached yet."
+msgid "Show reference images from anywhere in the book, including parts you haven't reached yet."
 msgstr "แสดงรูปภาพอ้างอิงจากที่ใดก็ได้ในหนังสือ รวมถึงส่วนที่คุณยังอ่านไม่ถึง"
 
 msgid "Include Bookmarks in Gallery"
@@ -341,6 +340,18 @@ msgstr "หนีบนิ้วเพื่อซูมเข้า/ออก"
 msgid "Layout: %1 · %2"
 msgstr "เค้าโครง: %1 · %2"
 
+msgid "Panel Size: Compact"
+msgstr "ขนาดแผง: กะทัดรัด"
+
+msgid "Panel Size: Large"
+msgstr "ขนาดแผง: ใหญ่"
+
+msgid "Large"
+msgstr "ใหญ่"
+
+msgid "Compact"
+msgstr "กะทัดรัด"
+
 msgid "Maximum zoom: %1%"
 msgstr "ซูมสูงสุด: %1%"
 
@@ -349,6 +360,18 @@ msgstr "%1% (แนะนำ)"
 
 msgid "%1%"
 msgstr "%1%"
+
+msgid "Custom: %1%"
+msgstr "กำหนดเอง: %1%"
+
+msgid "Custom…"
+msgstr "กำหนดเอง…"
+
+msgid "Set the zoom ceiling as a percentage of the image's own resolution. Past 100% Glimpse enlarges the pixels, so a very high value can look soft."
+msgstr "ตั้งเพดานการซูมเป็นเปอร์เซ็นต์ของความละเอียดจริงของภาพ เกิน 100% Glimpse จะขยายพิกเซล ดังนั้นค่าที่สูงมากอาจดูไม่คมชัด"
+
+msgid "Set"
+msgstr "ตั้งค่า"
 
 msgid "Navigation Loops Around"
 msgstr "การนำทางแบบวนรอบ"
@@ -409,6 +432,17 @@ msgstr "ตรวจสอบการอัปเดต (v%1)"
 
 msgid "Include pre-release versions"
 msgstr "รวมเวอร์ชันก่อนวางจำหน่าย"
+
+#, fuzzy
+#~ msgid "Mini Mode"
+#~ msgstr "แผนที่ย่อ"
+
+#, fuzzy
+#~ msgid "Maximum zoom"
+#~ msgstr "ซูมสูงสุด: %1%"
+
+#~ msgid "Glimpse works with EPUB books only."
+#~ msgstr "Glimpse ใช้ได้กับหนังสือ EPUB เท่านั้น"
 
 #~ msgid "Enable top menu tap zone"
 #~ msgstr "เปิดใช้งานพื้นที่แตะเมนูด้านบน"

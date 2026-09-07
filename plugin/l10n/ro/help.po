@@ -1,8 +1,9 @@
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: glimpse-plugin\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 11:21+0200\n"
+"POT-Creation-Date: 2026-09-07 18:00+0200\n"
 "PO-Revision-Date: 2026-08-29 10:06\n"
 "Last-Translator: \n"
 "Language-Team: Romanian\n"
@@ -11,11 +12,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : (n==0 || (n%100>0 && n%100<20)) ? 1 : 2);\n"
-"X-Crowdin-Project: glimpse-plugin\n"
-"X-Crowdin-Project-ID: 923235\n"
-"X-Crowdin-Language: ro\n"
 "X-Crowdin-File: /plugin/l10n/templates/glimpse-help.pot\n"
 "X-Crowdin-File-ID: 20\n"
+"X-Crowdin-Language: ro\n"
+"X-Crowdin-Project: glimpse-plugin\n"
+"X-Crowdin-Project-ID: 923235\n"
 
 msgid "Master switch. When off, the bound gesture and the Open Glimpse entry do nothing – a quick way to silence Glimpse without unbinding its gesture."
 msgstr "Comutator principal. Când este dezactivat, gestul asociat și opțiunea Deschide Glimpse nu fac nimic – un mod rapid de a reduce Glimpse la tăcere fără a-i dezlega gestul."
@@ -32,6 +33,9 @@ msgstr "Arată în galerie și paginile pe care le-ai marcat (marcajul cu colț 
 msgid "Choose which actions appear in the viewer's ⋯ menu. Reset Rotation is automatic (shown while an image is rotated)."
 msgstr "Alege ce acțiuni apar în meniul ⋯ al vizualizatorului. Resetează rotația este automată (afișată cât timp o imagine este rotită)."
 
+msgid "These apply to the large panel. The compact panel always keeps swipe, pinch and double-tap on, because it hides the navigation buttons and the reset button."
+msgstr "Acestea se aplică panoului mare. Panoul compact păstrează întotdeauna active glisarea, ciupirea și atingerea dublă, deoarece ascunde butoanele de navigare și butonul de resetare."
+
 msgid "Double-tap the image to jump to the maximum zoom (centered on the tap), and again to return to the fitted view. On by default."
 msgstr "Atinge imaginea de două ori pentru a sări la zoomul maxim (centrat pe atingere) și din nou pentru a reveni la vizualizarea încadrată. Activat implicit."
 
@@ -43,6 +47,9 @@ msgstr "Apropie sau depărtează două degete pe imagine pentru a micșora sau m
 
 msgid "Where Glimpse opens: a side panel (left or right) or, in portrait, a band across the top or bottom. In landscape it always uses the preferred side."
 msgstr "Unde se deschide Glimpse: un panou lateral (stânga sau dreapta) sau, în portret, o bandă sus ori jos. În peisaj folosește întotdeauna partea preferată."
+
+msgid "Large fills one edge of the screen. Compact is a small card that floats over the page, which you drag by the grip in its top-right corner. The compact card hides the captions, the bookmark label, the navigation buttons and the reset button, and the Gallery always opens at the large size."
+msgstr "Mare umple una dintre marginile ecranului. Compact este un card mic care plutește peste pagină și pe care îl tragi de mânerul din colțul din dreapta sus. Cardul compact ascunde legendele imaginilor, eticheta semnului de carte, butoanele de navigare și butonul de resetare, iar Galeria se deschide întotdeauna la dimensiunea mare."
 
 msgid "How far you can zoom in, as a percentage of the image's own resolution. Double-tap jumps to this level and pinch stops here. Higher reveals more on detailed maps, but past 100% it is upscaling, so very high can look soft."
 msgstr "Cât de mult poți mări, ca procent din rezoluția proprie a imaginii. Atingerea dublă sare la acest nivel, iar apropierea degetelor se oprește aici. O valoare mai mare dezvăluie mai mult pe hărțile detaliate, dar peste 100% este scalare în sus, deci o valoare foarte mare poate părea neclară."
@@ -91,4 +98,3 @@ msgstr "Glimpse păstrează în cache scanarea cărții. Folosește aceasta dac�
 
 msgid "Also offer releases marked as pre-release on GitHub – test builds published before a proper release. Normal update checks never see those."
 msgstr "Oferă și versiunile marcate ca preliminare pe GitHub – compilări de test publicate înaintea unei versiuni propriu-zise. Verificările normale de actualizare nu le văd niciodată."
-

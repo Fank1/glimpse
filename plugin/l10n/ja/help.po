@@ -1,8 +1,9 @@
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: glimpse-plugin\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 11:21+0200\n"
+"POT-Creation-Date: 2026-09-07 18:00+0200\n"
 "PO-Revision-Date: 2026-08-29 10:08\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
@@ -11,11 +12,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Crowdin-Project: glimpse-plugin\n"
-"X-Crowdin-Project-ID: 923235\n"
-"X-Crowdin-Language: ja\n"
 "X-Crowdin-File: /plugin/l10n/templates/glimpse-help.pot\n"
 "X-Crowdin-File-ID: 20\n"
+"X-Crowdin-Language: ja\n"
+"X-Crowdin-Project: glimpse-plugin\n"
+"X-Crowdin-Project-ID: 923235\n"
 
 msgid "Master switch. When off, the bound gesture and the Open Glimpse entry do nothing – a quick way to silence Glimpse without unbinding its gesture."
 msgstr "メインスイッチ。オフにすると、割り当てたジェスチャーと「Glimpse を開く」項目は何もしなくなります。ジェスチャーの割り当てを解除せずに Glimpse を無効化する手早い方法です。"
@@ -32,6 +33,9 @@ msgstr "ブックマークしたページ（ドッグイヤーのブックマー
 msgid "Choose which actions appear in the viewer's ⋯ menu. Reset Rotation is automatic (shown while an image is rotated)."
 msgstr "ビューアーの ⋯ メニューに表示する操作を選びます。「回転をリセット」は自動です（画像が回転している間に表示されます）。"
 
+msgid "These apply to the large panel. The compact panel always keeps swipe, pinch and double-tap on, because it hides the navigation buttons and the reset button."
+msgstr "これらは大きいパネルに適用されます。コンパクトパネルではナビゲーションボタンとリセットボタンが隠れるため、スワイプ・ピンチ・ダブルタップは常に有効のままです。"
+
 msgid "Double-tap the image to jump to the maximum zoom (centered on the tap), and again to return to the fitted view. On by default."
 msgstr "画像をダブルタップすると（タップした位置を中心に）最大ズームに移り、もう一度ダブルタップするとフィット表示に戻ります。既定ではオンです。"
 
@@ -43,6 +47,9 @@ msgstr "画像の上で 2 本の指をピンチまたは広げると、縮小ま
 
 msgid "Where Glimpse opens: a side panel (left or right) or, in portrait, a band across the top or bottom. In landscape it always uses the preferred side."
 msgstr "Glimpse が開く位置：サイドパネル（左または右）、または縦向きでは上部か下部の帯。横向きでは常に優先する側を使います。"
+
+msgid "Large fills one edge of the screen. Compact is a small card that floats over the page, which you drag by the grip in its top-right corner. The compact card hides the captions, the bookmark label, the navigation buttons and the reset button, and the Gallery always opens at the large size."
+msgstr "大は画面の一辺を占めます。コンパクトはページの上に浮かぶ小さなカードで、右上隅のつまみでドラッグします。コンパクトカードは画像キャプション、しおりラベル、ナビゲーションボタン、リセットボタンを隠し、ギャラリーは常に大きいサイズで開きます。"
 
 msgid "How far you can zoom in, as a percentage of the image's own resolution. Double-tap jumps to this level and pinch stops here. Higher reveals more on detailed maps, but past 100% it is upscaling, so very high can look soft."
 msgstr "画像自体の解像度に対する割合で、どこまで拡大できるかを指定します。ダブルタップでこのレベルに移り、ピンチはここで止まります。値が高いほど詳細な地図で多く見えますが、100% を超えるとアップスケーリングになるため、非常に高い値ではぼやけて見えることがあります。"
@@ -91,4 +98,3 @@ msgstr "Glimpse は本のスキャン結果をキャッシュします。本の�
 
 msgid "Also offer releases marked as pre-release on GitHub – test builds published before a proper release. Normal update checks never see those."
 msgstr "GitHub でプレリリースとしてマークされたリリース（正式リリース前に公開されるテストビルド）も提示します。通常の更新確認ではこれらは表示されません。"
-

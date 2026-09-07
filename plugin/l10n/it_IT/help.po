@@ -1,8 +1,9 @@
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: glimpse-plugin\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 11:21+0200\n"
+"POT-Creation-Date: 2026-09-07 18:00+0200\n"
 "PO-Revision-Date: 2026-08-29 10:08\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
@@ -11,11 +12,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Crowdin-Project: glimpse-plugin\n"
-"X-Crowdin-Project-ID: 923235\n"
-"X-Crowdin-Language: it\n"
 "X-Crowdin-File: /plugin/l10n/templates/glimpse-help.pot\n"
 "X-Crowdin-File-ID: 20\n"
+"X-Crowdin-Language: it\n"
+"X-Crowdin-Project: glimpse-plugin\n"
+"X-Crowdin-Project-ID: 923235\n"
 
 msgid "Master switch. When off, the bound gesture and the Open Glimpse entry do nothing – a quick way to silence Glimpse without unbinding its gesture."
 msgstr "Interruttore principale. Quando è disattivato, il gesto associato e la voce Apri Glimpse non fanno nulla: un modo rapido per silenziare Glimpse senza dissociarne il gesto."
@@ -32,6 +33,9 @@ msgstr "Mostra nella galleria anche le pagine che hai contrassegnato con un segn
 msgid "Choose which actions appear in the viewer's ⋯ menu. Reset Rotation is automatic (shown while an image is rotated)."
 msgstr "Scegli quali azioni compaiono nel menu ⋯ del visualizzatore. Reimposta rotazione è automatica (mostrata mentre un'immagine è ruotata)."
 
+msgid "These apply to the large panel. The compact panel always keeps swipe, pinch and double-tap on, because it hides the navigation buttons and the reset button."
+msgstr "Questi valgono per il pannello grande. Il pannello compatto mantiene sempre attivi scorrimento, pizzico e doppio tocco, perché nasconde i pulsanti di navigazione e il pulsante di reimpostazione."
+
 msgid "Double-tap the image to jump to the maximum zoom (centered on the tap), and again to return to the fitted view. On by default."
 msgstr "Tocca due volte l'immagine per passare allo zoom massimo (centrato sul tocco), e di nuovo per tornare alla vista adattata. Attivo per impostazione predefinita."
 
@@ -43,6 +47,9 @@ msgstr "Pizzica o allarga due dita sull'immagine per rimpicciolire o ingrandire.
 
 msgid "Where Glimpse opens: a side panel (left or right) or, in portrait, a band across the top or bottom. In landscape it always uses the preferred side."
 msgstr "Dove si apre Glimpse: un pannello laterale (sinistra o destra) o, in verticale, una fascia in alto o in basso. In orizzontale usa sempre il lato preferito."
+
+msgid "Large fills one edge of the screen. Compact is a small card that floats over the page, which you drag by the grip in its top-right corner. The compact card hides the captions, the bookmark label, the navigation buttons and the reset button, and the Gallery always opens at the large size."
+msgstr "Grande occupa un bordo dello schermo. Compatto è una piccola scheda che fluttua sulla pagina e che si trascina dall'impugnatura nell'angolo in alto a destra. La scheda compatta nasconde le didascalie, l'etichetta del segnalibro, i pulsanti di navigazione e il pulsante di reimpostazione, e la Galleria si apre sempre nella dimensione grande."
 
 msgid "How far you can zoom in, as a percentage of the image's own resolution. Double-tap jumps to this level and pinch stops here. Higher reveals more on detailed maps, but past 100% it is upscaling, so very high can look soft."
 msgstr "Quanto puoi ingrandire, come percentuale della risoluzione propria dell'immagine. Il tocco doppio salta a questo livello e il pizzico si ferma qui. Un valore più alto rivela di più sulle mappe dettagliate, ma oltre il 100% si tratta di un ingrandimento, quindi valori molto alti possono apparire sfocati."
@@ -91,4 +98,3 @@ msgstr "Glimpse memorizza nella cache la scansione del libro. Usa questa opzione
 
 msgid "Also offer releases marked as pre-release on GitHub – test builds published before a proper release. Normal update checks never see those."
 msgstr "Proponi anche le versioni contrassegnate come preliminari su GitHub: build di prova pubblicate prima di una versione vera e propria. Le normali ricerche di aggiornamenti non le vedono mai."
-
