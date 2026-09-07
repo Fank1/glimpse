@@ -29,3 +29,6 @@ plugin/l10n/*/*.mo
 
 # Local Crowdin project id (see ~/.config/crowdin/token.env for the token)
 .crowdin.env
+
+# QA sweep output (screenshots + findings), regenerated per run
+qa/
