@@ -12,7 +12,12 @@
 - The same choice is in Settings, under Layout, as "Panel Size: Large / Compact". Pick a size there while Glimpse is open and the panel changes at once.
 - The card keeps the image, the dot indicator, the ⋯ menu, and the zoom controls and mini map when those are on. It hides the captions, the bookmark label, the navigation buttons and the reset button. Zoom in and the dots go too, so the image gets the whole card. Double-tap still resets the zoom. Swipe still changes image.
 - The chrome on the card is drawn flat with a white outline instead of a drop shadow, so it stays readable over the image. The mini map sits in the bottom-left corner, the dot indicator on the bottom edge, and the zoom controls stack onto the ⋯ button in the bottom-right. Each one shares the card's own border, and the zoom controls join the ⋯ with the same faint hairline that separates + from −.
-- The card's mini map stays a small badge in the corner. A wide image shrinks to fit it.
+- The card's mini map stays a small badge in the corner. A wide image shrinks to fit it. Its top-right corner now carries the same slight rounding as the design.
+- **In night mode the card gets its border back.** The four straight edges were painted black on a black page, so the card had no visible frame: only its four corner arcs showed, as if it were torn. The frame is now an unbroken white line, the way it is in day mode.
+- The dot indicator now sits on the middle of the card's bottom edge. It used to centre itself in the space left over beside the ⋯ button, which pushed it off to the left.
+
+**Mini map**
+- The rectangle that marks where you are in the image now has slightly rounded corners, in both the large panel and the compact card.
 - Nav Buttons and Image Captions are dimmed in the ⋯ menu while the compact panel is on, because the card cannot show them.
 - Settings → Gestures applies to the large panel only. The compact panel always keeps swipe, pinch and double-tap on, because it hides the navigation buttons and the reset button.
 - Opening the Gallery restores the large panel, so the thumbnails stay usable. Leaving the Gallery brings the card back.

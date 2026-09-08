@@ -1164,6 +1164,7 @@ local GlimpseMiniMap = Widget:extend{
     radius = Screen:scaleBySize(8),       -- match the buttons' corner radius
     border = Screen:scaleBySize(2),
     rect_border = Screen:scaleBySize(2),
+    rect_radius = Screen:scaleBySize(3),  -- slight rounding on the position rect
     fade = 0.68,                          -- how far the non-visible area dims
     max_aspect = 1.0,                     -- cap width at 1× height (square); a
                                           -- wider (landscape) image letterboxes
@@ -1289,16 +1290,54 @@ function GlimpseMiniMap:paintTo(bb, x, y)
         local cx, cy = math.max(0, rx), math.max(0, ry)
         local cw = math.min(rx + rw, w) - cx
         local ch = math.min(ry + rh, h) - cy
-        if cw > 0 and ch > 0 then
-            temp:blitFrom(self._ibright, cx, cy, cx, cy, cw, ch)
-        end
-        -- viewport rectangle border (drawn on the un-dimmed region)
         local t = self.rect_border
-        local rcol = Blitbuffer.ColorRGB32(ink, ink, ink, 0xFF)
-        temp:paintRect(rx, ry, rw, t, rcol)
-        temp:paintRect(rx, ry + rh - t, rw, t, rcol)
-        temp:paintRect(rx, ry, t, rh, rcol)
-        temp:paintRect(rx + rw - t, ry, t, rh, rcol)
+        -- Slightly rounded corners. The rect only changes size on a ZOOM step
+        -- (pans move it), so the ring and the corner mask are cached by size and
+        -- the per-pixel Lua work below touches four r x r corners, not the rect.
+        local r = math.min(self.rect_radius,
+            math.floor(rw / 2), math.floor(rh / 2))
+        if cw == rw and ch == rh and r >= 1 then
+            local vkey = rw .. "x" .. rh .. ":" .. r
+            if self._vkey ~= vkey then
+                if self._vp_ring then self._vp_ring:free() end
+                if self._vp_mask then self._vp_mask:free() end
+                if self._vp_piece then self._vp_piece:free() end
+                self._vp_ring = make_rounded_stencil(rw, rh, r, t, nil, ink)
+                self._vp_mask = make_rounded_stencil(rw, rh, r, 0, 0xFF, 0xFF)
+                self._vp_piece = Blitbuffer.new(rw, rh, Blitbuffer.TYPE_BBRGB32)
+                self._vkey = vkey
+            end
+            local piece = self._vp_piece
+            piece:blitFrom(self._ibright, 0, 0, rx, ry, rw, rh)
+            -- carry the mask's corner alpha over, so the bright region does not
+            -- poke out square behind the rounded ring
+            for _, corner in ipairs({ { 0, 0 }, { rw - r, 0 },
+                                      { 0, rh - r }, { rw - r, rh - r } }) do
+                for py = corner[2], corner[2] + r - 1 do
+                    for px = corner[1], corner[1] + r - 1 do
+                        local a = self._vp_mask:getPixel(px, py)
+                            :getColorRGB32().alpha
+                        if a < 0xFF then
+                            local c = piece:getPixel(px, py):getColorRGB32()
+                            piece:setPixel(px, py,
+                                Blitbuffer.ColorRGB32(c.r, c.g, c.b, a))
+                        end
+                    end
+                end
+            end
+            temp:alphablitFrom(piece, rx, ry, 0, 0, rw, rh)
+            temp:alphablitFrom(self._vp_ring, rx, ry, 0, 0, rw, rh)
+        else
+            -- degenerate rect (too small to round, or clipped): square corners
+            if cw > 0 and ch > 0 then
+                temp:blitFrom(self._ibright, cx, cy, cx, cy, cw, ch)
+            end
+            local rcol = Blitbuffer.ColorRGB32(ink, ink, ink, 0xFF)
+            temp:paintRect(rx, ry, rw, t, rcol)
+            temp:paintRect(rx, ry + rh - t, rw, t, rcol)
+            temp:paintRect(rx, ry, t, rh, rcol)
+            temp:paintRect(rx + rw - t, ry, t, rh, rcol)
+        end
     end
     bb:alphablitFrom(temp, x, y, 0, 0, w, h)
     temp:free()
@@ -1306,11 +1345,13 @@ function GlimpseMiniMap:paintTo(bb, x, y)
 end
 
 function GlimpseMiniMap:free()
-    for _, k in ipairs({ "_base", "_ring", "_ibright", "_idim", "thumb" }) do
+    for _, k in ipairs({ "_base", "_ring", "_ibright", "_idim", "thumb",
+                         "_vp_ring", "_vp_mask", "_vp_piece" }) do
         if self[k] and self[k].free then self[k]:free() end
         self[k] = nil
     end
     self._skey = nil
+    self._vkey = nil
 end
 
 -- Caption overlay: the image's caption shown as a floating pill in the same
@@ -2694,8 +2735,19 @@ function GlimpseViewer:update()
             }
         else
             local pill_size = self._pill_frame:getSize()
+            local pill_x =
+                math.floor(left_bound + (right_bound - left_bound - pill_size.w) / 2)
+            if self._mini then
+                -- The card docks the pill on its bottom edge, and the design
+                -- centres it on the CARD, not on the span left over between the
+                -- chrome. Centre it there and only slide it left when a wide
+                -- pill would otherwise run under the ⋯ / zoom column.
+                pill_x = math.floor((self.width - pill_size.w) / 2)
+                pill_x = math.min(pill_x, right_bound - pill_size.w)
+                pill_x = math.max(pill_x, 0)
+            end
             self._pill_frame.overlap_offset = {
-                math.floor(left_bound + (right_bound - left_bound - pill_size.w) / 2),
+                pill_x,
                 self.height - pill_size.h - bottom_inset,
             }
         end
@@ -3254,18 +3306,47 @@ function GlimpseViewer:_paintMiniBorder(bb, x, y)
     local render_inv = inv
         and not (night and Device.isAndroid and Device:isAndroid())
     local edge = render_inv and 0xFF or 0x00
-    local c_edge = Blitbuffer.ColorRGB32(edge, edge, edge, 0xFF)
     local bw = night and math.max(2, Screen:scaleBySize(1)) or self.panel_border
     -- straight runs only: skip the corner squares, whose arcs _restoreCorners
     -- blends back with per-pixel alpha
     local mid_w, mid_h = w - 2 * r, h - 2 * r
-    if mid_w > 0 then
-        bb:paintRect(x + r, y, mid_w, bw, c_edge)
-        bb:paintRect(x + r, y + h - bw, mid_w, bw, c_edge)
+    -- Blit flag-matched stencils instead of calling bb:paintRect. In SW-invert
+    -- night mode the framebuffer carries inverse=1, and paintRect's C fast path
+    -- (BB_fill_rect) writes the value RAW — it never applies the inversion the
+    -- Lua path does. So the white edge reached the screen as black and the card
+    -- lost its frame in night mode: only the four corner arcs stayed white,
+    -- because _paintMiniCard blits THEM from a buffer whose inverse flag
+    -- matches. A blit between two buffers whose flags agree is a raw copy on
+    -- either path, so the colour survives. Cached: two tiny buffers per shape.
+    local key = table.concat({ mid_w, mid_h, bw, edge,
+        render_inv and 1 or 0 }, ":")
+    if self._mini_edge_key ~= key then
+        for _, k in ipairs({ "_mini_edge_h", "_mini_edge_v" }) do
+            if self[k] then self[k]:free(); self[k] = nil end
+        end
+        local c_edge = Blitbuffer.ColorRGB32(edge, edge, edge, 0xFF)
+        if mid_w > 0 and bw > 0 then
+            local b = Blitbuffer.new(mid_w, bw, Blitbuffer.TYPE_BBRGB32)
+            b:paintRectRGB32(0, 0, mid_w, bw, c_edge)
+            b:setInverse(render_inv and 1 or 0)
+            self._mini_edge_h = b
+        end
+        if mid_h > 0 and bw > 0 then
+            local b = Blitbuffer.new(bw, mid_h, Blitbuffer.TYPE_BBRGB32)
+            b:paintRectRGB32(0, 0, bw, mid_h, c_edge)
+            b:setInverse(render_inv and 1 or 0)
+            self._mini_edge_v = b
+        end
+        self._mini_edge_key = key
     end
-    if mid_h > 0 then
-        bb:paintRect(x, y + r, bw, mid_h, c_edge)
-        bb:paintRect(x + w - bw, y + r, bw, mid_h, c_edge)
+    local eh, ev = self._mini_edge_h, self._mini_edge_v
+    if eh then
+        bb:blitFrom(eh, x + r, y, 0, 0, mid_w, bw)
+        bb:blitFrom(eh, x + r, y + h - bw, 0, 0, mid_w, bw)
+    end
+    if ev then
+        bb:blitFrom(ev, x, y + r, 0, 0, bw, mid_h)
+        bb:blitFrom(ev, x + w - bw, y + r, 0, 0, bw, mid_h)
     end
 end
 
@@ -5940,6 +6021,9 @@ function GlimpseViewer:_buildMiniMap()
         disp_w = disp_w, disp_h = disp_h,
         thumb = self:_minimapThumb(disp_w, disp_h),
         viewer = self,
+        -- The card's map is small and sits in a corner, so the design gives it
+        -- a tighter arc than the docked one, which matches the zoom control.
+        radius = self._mini and Screen:scaleBySize(4) or nil,
         outline = self._mini or false,   -- Mini Mode: white ring, no shadow
         -- flush into the card's bottom-left corner, so no ring on those edges
         outline_sides = self._mini and
