@@ -26,6 +26,10 @@
 - A pressed button keeps its outline.
 - Turn every Quick Action off and the ⋯ button opens the Gallery directly. Turn one back on and the menu returns. The button follows the setting at once.
 
+**Updates**
+- The update check gives up sooner when the network does not answer. It used to hold the screen for up to a minute. It now stops after about 5 seconds and says what went wrong.
+- The banner says that a tap cancels the check, and its text changes while the check tries again, so the screen no longer looks frozen.
+
 **Translations**
 - "Show Mini Map" is corrected in 15 languages.
 

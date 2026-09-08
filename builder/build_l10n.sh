@@ -129,7 +129,15 @@ for langdir in "$L10N"/*/; do
         # already sitting in an existing .po unless told otherwise, so without
         # this the 116 translated files would carry stale line numbers forever
         # and the churn this whole change exists to stop would continue there.
-        msgmerge --quiet --update --backup=off --no-location "$po" \
+        # --no-fuzzy-matching: without it, msgmerge tries to seed a NEW msgid
+        # from the most similar old one and marks the result fuzzy — and
+        # msgfmt DROPS fuzzy entries, so the string ships untranslated. Adding
+        # "Still checking…" beside "Checking for updates…" was enough to flag
+        # the second one fuzzy in all 52 languages at once, silently taking a
+        # correct translation out of every catalogue. Crowdin is where a new
+        # string gets translated, so a guess here buys nothing and costs that.
+        msgmerge --quiet --update --backup=off --no-location \
+            --no-fuzzy-matching "$po" \
             "$L10N/templates/glimpse-$component.pot"
         pos+=("$po")
     done

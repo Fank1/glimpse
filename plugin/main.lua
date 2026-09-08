@@ -7791,10 +7791,20 @@ local function _http_fetch(url, dest_path, accept, depth)
         headers["Authorization"] = "token " .. token
     end
 
-    -- KOReader's standard short timeouts (10s/op, 30s total): socketutil
-    -- has globally overridden socket.tcp, so these bound connect/read.
-    socketutil:set_timeout(socketutil.LARGE_BLOCK_TIMEOUT,
-        socketutil.LARGE_TOTAL_TIMEOUT)
+    -- socketutil has globally overridden socket.tcp, so these bound
+    -- connect/read. Two budgets, because the two callers are not alike.
+    -- A DOWNLOAD streams a zip of a few hundred KB and deserves patience.
+    -- The update CHECK fetches a few KB of JSON, and it runs in front of a
+    -- banner the reader is waiting on. KOReader's LARGE preset (10s per
+    -- operation, 30s total) applied to the check turned an unreachable
+    -- network into a 23-second stare at a screen that never repaints, so the
+    -- check gets the short budget instead: 5s per operation, 15s total.
+    if dest_path then
+        socketutil:set_timeout(socketutil.LARGE_BLOCK_TIMEOUT,
+            socketutil.LARGE_TOTAL_TIMEOUT)
+    else
+        socketutil:set_timeout(5, 15)
+    end
     local ok, code, resp_headers = requester.request{
         url      = url,
         method   = "GET",
@@ -7905,19 +7915,43 @@ function Glimpse:_runUpdateCheck(Trapper)
     local pre = G_reader_settings:isTrue(PRERELEASE_KEY)
     local api = "https://api.github.com/repos/" .. self.github_repo
         .. (pre and "/releases?per_page=10" or "/releases/latest")
-    -- fetch in a subprocess so the UI stays responsive and dismissable. Retry
-    -- once after a short pause on failure: right after Wi-Fi associates, DNS
-    -- (resolv.conf) can lag a second or two, so the first resolve fails; the
-    -- pause happens in the subprocess, so the UI never blocks.
-    local completed, body = Trapper:dismissableRunInSubprocess(function()
-        local b, err = _http_fetch(api)
-        if not b then
-            require("socket").sleep(1.5)
-            b, err = _http_fetch(api)
-        end
-        return b or ("ERR:" .. tostring(err))
-    end, _("Checking for updates…"), true)
-    if not completed then return end -- dismissed by the user
+    -- Fetch in a subprocess so the UI stays responsive and dismissable.
+    --
+    -- Two attempts at most, and each one is its OWN subprocess call. That is
+    -- deliberate: Trapper draws the banner when the call starts and removes it
+    -- when the call ends, so the second attempt redraws the screen with its
+    -- own text. On e-ink a screen that never changes reads as a hang, and the
+    -- reader has no other sign that the check is still alive.
+    --
+    -- The retry exists for one case: right after Wi-Fi associates, the
+    -- resolver is not ready yet and the first attempt fails in a second or
+    -- two. It must never DOUBLE a long wait, so an attempt that ran to its
+    -- timeout is not retried. A network that hangs is not a network that is
+    -- slow to start, and asking it twice only makes the reader wait twice.
+    local RETRY_IF_FAILED_WITHIN = 5     -- seconds; see above
+    -- Two independent LINES, not a sentence, so joining them here is safe and
+    -- it keeps "Checking for updates…" as the msgid the 52 catalogues already
+    -- translate. Folding the hint into that msgid would have orphaned every
+    -- one of them and shown the banner in English until Crowdin caught up.
+    local tap_hint = _("Tap to cancel")
+    local labels = {
+        _("Checking for updates…") .. "\n" .. tap_hint,
+        _("Still checking…") .. "\n" .. tap_hint,
+    }
+    local completed, body
+    for attempt = 1, 2 do
+        local started = os.time()
+        local first = attempt == 1
+        completed, body = Trapper:dismissableRunInSubprocess(function()
+            -- the pause happens in the CHILD, so the UI never blocks
+            if not first then require("socket").sleep(1.5) end
+            local b, err = _http_fetch(api)
+            return b or ("ERR:" .. tostring(err))
+        end, labels[attempt], true)
+        if not completed then return end -- dismissed by the user
+        if body and not body:match("^ERR:") then break end
+        if os.time() - started >= RETRY_IF_FAILED_WITHIN then break end
+    end
     if not body or body:match("^ERR:") then
         UIManager:show(InfoMessage:new{
             text = _("Update check failed:") .. "\n"
