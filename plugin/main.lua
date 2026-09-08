@@ -643,6 +643,11 @@ local GlimpsePill = WidgetContainer:extend{
     -- the card's border, so the dots read as sitting high; a small downward
     -- offset puts them back on the pill's optical centre.
     inner_dy = 0,
+    -- Take `height` as final instead of growing to the content. A text line box
+    -- is taller than its ink, so the "n / N" counter would otherwise stand 5px
+    -- prouder than the dots pill it stands in for; on the card, where both dock
+    -- on the bottom border, that reads as two different components.
+    fixed_height = false,
 }
 
 function GlimpsePill:init()
@@ -653,7 +658,8 @@ function GlimpsePill:getSize()
     local inner = self.inner:getSize()
     return Geom:new{
         w = inner.w + 2 * self.padding_h,
-        h = math.max(self.height, inner.h),
+        h = self.fixed_height and self.height
+            or math.max(self.height, inner.h),
     }
 end
 
@@ -4131,19 +4137,28 @@ function GlimpseViewer:_buildPill()
             inner_dy = pill_dy,
         }
     else
-        -- truly too many to fit even compressed: "n / N" counter, INVERTED
-        -- (light pill + dark text). As a solid black block with white text
-        -- it drew far more attention than the dots pill it stands in for.
+        -- Truly too many to fit even compressed: the "n / N" counter.
+        -- In the LARGE panel it is INVERTED (light pill + dark text): as a solid
+        -- black block with white text it drew far more attention than the dots
+        -- pill it stands in for.
+        -- The CARD keeps the dots pill's own polarity instead, so the two read
+        -- as the same component docked on the bottom border — in night mode that
+        -- is the white pill the design asks for. Polarity cannot be picked per
+        -- mode here: the chrome is painted day-side and night mode inverts the
+        -- whole framebuffer, so "white at night" IS "black by day".
+        local counter_inverted = not self._mini
         self._pill_frame = GlimpsePill:new{
-            inverted = true,
+            inverted = counter_inverted,
             square_bottom = pill_square,
             height = pill_h,
             inner_dy = pill_dy,
+            fixed_height = self._mini or false,
             inner = TextWidget:new{
                 text = string.format("%d / %d", self._images_list_cur or 1, nb),
                 face = Font:getFace("cfont", 12),
                 bold = true,
-                fgcolor = Blitbuffer.COLOR_BLACK,
+                fgcolor = counter_inverted and Blitbuffer.COLOR_BLACK
+                    or Blitbuffer.COLOR_WHITE,
             },
         }
     end
