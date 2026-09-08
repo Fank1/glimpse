@@ -30,6 +30,10 @@
 - **Zooming in is much quicker, and it no longer slows down the further you go.** Each step used to rebuild the whole image at the new size and then show a screen-sized piece of it, so the work grew with the square of the zoom: on a 1920×2778 image the fourth step built a 109-megapixel picture to show 1.3 of them, and took 480 ms. Glimpse now builds only the part you can see. The same step takes 9 ms, and every step costs the same however far in you are.
 - You can now zoom all the way to the value you set. The old path had to stop early to stay inside the memory limit, which also left the "+" button looking active when the image could not grow further. Both are gone: "+" greys out exactly at your Maximum zoom.
 
+**Settings apply while Glimpse is open**
+- Change Maximum zoom with the panel open and the new ceiling applies at once. It used to be read when the panel opened, so you had to close and reopen before it took effect.
+- The same was true of the ⋯ button. Turn every Quick Action off and it becomes a Gallery button; turn one back on and it becomes the ⋯ menu again. Both the action and the icon now follow the setting straight away.
+
 **Translations**
 - The "Show Mini Map" setting is corrected in 15 languages. Italian and Dutch showed the English words. Thirteen more used a different word, spelling or capitalisation from the one the same language uses for "Mini Map" on its own. Every one now matches, and follows how that language writes its other settings rows.
 

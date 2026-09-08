@@ -2339,9 +2339,9 @@ local GlimpseViewer = ImageViewer:extend{
     with_title_bar = false,
     -- Zoom ceiling as a multiple of the image's native resolution: pinch may
     -- push past 100% (actual pixel size) for readability. User-configurable
-    -- under Advanced → Maximum zoom; the viewer is created with the chosen
-    -- value (see showViewer). This literal is only the fallback if unset.
-    max_zoom_of_native = DEFAULT_MAX_ZOOM,
+    -- under Advanced → Maximum zoom, and read live by _maxScale, so a change
+    -- made while the panel is open takes effect at once. There is deliberately
+    -- no field holding it: a copy taken at construction went stale.
     -- Drawer metrics from the design (design px == px at the reference DPI)
     panel_ratio = 505 / 630,               -- side panel: of screen width
     band_ratio = 0.5,                      -- top/bottom band: of screen height
@@ -2492,6 +2492,14 @@ function GlimpseViewer:update()
         return self:_updateImageOnly()
     end
     self:_clean_image_wg()
+    -- Quick Actions can be switched on or off in Settings WHILE the panel is
+    -- open, and they decide both what the ⋯ button does and which icon it
+    -- carries. Re-decide on every full update instead of once at init, so the
+    -- button matches the setting without a close and reopen.
+    if self._more_frame and self._more_is_gallery == _any_quick_enabled() then
+        self._more_frame:free()
+        self:_buildMoreButton()
+    end
     -- COPY, not a reference: FrameContainer:paintTo mutates self.dimen.x/y in
     -- place on every repaint, so a bare reference would silently become the NEW
     -- position by the time the refresh-region callback runs — collapsing
@@ -6239,7 +6247,11 @@ end
 -- on an already-large image, where the memory cap binds well below the setting.
 function GlimpseViewer:_maxScale()
     local nat = self:_nativeScale()
-    local ceil = nat and nat * self.max_zoom_of_native
+    -- Read the setting HERE, not once at construction. Advanced -> Maximum zoom
+    -- is reachable from KOReader's top menu while the panel is open, and a
+    -- viewer that had copied the value into a field stayed on the old ceiling
+    -- until it was closed and reopened.
+    local ceil = nat and nat * _maxZoomMult()
     local wg = self._image_wg
     if wg and wg._bb and wg.getScaleFactorExtrema then
         local ok, _minf, wmax = pcall(wg.getScaleFactorExtrema, wg)
@@ -7420,8 +7432,6 @@ function Glimpse:showViewer(whole_book_once)
     viewer = GlimpseViewer:new{
         image = images_list,
         image_metas = imgs,
-        -- zoom ceiling (multiple of native), from Advanced → Maximum zoom
-        max_zoom_of_native = _maxZoomMult(),
         -- lazily supplies the full-res decode of the zoomed image (sharp zoom)
         hires_decode = hires_decode,
         -- Gallery tabs: the two pools, independent of which one is primary
