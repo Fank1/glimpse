@@ -14,6 +14,7 @@
 - The chrome on the card is drawn flat with a white outline instead of a drop shadow, so it stays readable over the image. The mini map sits in the bottom-left corner, the dot indicator on the bottom edge, and the zoom controls stack onto the ⋯ button in the bottom-right. Each one shares the card's own border, and the zoom controls join the ⋯ with the same faint hairline that separates + from −.
 - The card's mini map stays a small badge in the corner. A wide image shrinks to fit it. Its top-right corner now carries the same slight rounding as the design.
 - **In night mode the card gets its border back.** The four straight edges were painted black on a black page, so the card had no visible frame: only its four corner arcs showed, as if it were torn. The frame is now an unbroken white line, the way it is in day mode.
+- The card's night border is also the same width as its day border. It used to be a hairline, half as thick, which broke up around the rounded corners: the curve thinned to a single pixel and read as a gap.
 - The dot indicator now sits on the middle of the card's bottom edge. It used to centre itself in the space left over beside the ⋯ button, which pushed it off to the left.
 
 **Mini map**

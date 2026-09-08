@@ -3256,8 +3256,7 @@ function GlimpseViewer:_paintMiniCard(bb, x, y)
         local edge = render_inv and 0xFF or 0x00
         local c_body = Blitbuffer.ColorRGB32(body, body, body, 0xFF)
         local c_edge = Blitbuffer.ColorRGB32(edge, edge, edge, 0xFF)
-        local bw = night and math.max(2, Screen:scaleBySize(1))
-            or self.panel_border
+        local bw = self.panel_border
         self._mini_card_bb:paintRectRGB32(0, 0, w, h, c_body)
         self._mini_card_bb:paintRectRGB32(0, 0, w, bw, c_edge)
         self._mini_card_bb:paintRectRGB32(0, h - bw, w, bw, c_edge)
@@ -3306,7 +3305,7 @@ function GlimpseViewer:_paintMiniBorder(bb, x, y)
     local render_inv = inv
         and not (night and Device.isAndroid and Device:isAndroid())
     local edge = render_inv and 0xFF or 0x00
-    local bw = night and math.max(2, Screen:scaleBySize(1)) or self.panel_border
+    local bw = self.panel_border
     -- straight runs only: skip the corner squares, whose arcs _restoreCorners
     -- blends back with per-pixel alpha
     local mid_w, mid_h = w - 2 * r, h - 2 * r
