@@ -11,9 +11,31 @@ DIST="$ROOT/dist"
 
 rm -rf "$DIST/glimpse.koplugin"
 mkdir -p "$DIST/glimpse.koplugin"
-cp "$ROOT"/plugin/_meta.lua "$ROOT"/plugin/main.lua "$ROOT"/plugin/glimpse_scanner.lua \
-   "$ROOT"/LICENSE "$DIST/glimpse.koplugin/"
+cp "$ROOT"/LICENSE "$DIST/glimpse.koplugin/"
 cp -r "$ROOT"/plugin/assets "$DIST/glimpse.koplugin/"
+
+# Stage the Lua sources with their comments removed. Comments are about 39% of
+# main.lua, and every user downloads them in the release zip. The stripper
+# keeps each file's leading header block and every LINE NUMBER, so a KOReader
+# error that says main.lua:5714 still names line 5714 of the source in the
+# repository. STRIP=0 stages the sources unchanged.
+#
+# Each stripped file is then compiled and compared against the original.
+# Comments never reach the bytecode and line numbers do, so identical bytecode
+# proves the strip changed no token and moved no line. A mismatch stops the
+# build rather than shipping a file nobody checked.
+echo "== strip comments =="
+for f in _meta main glimpse_scanner; do
+    src="$ROOT/plugin/$f.lua"
+    dst="$DIST/glimpse.koplugin/$f.lua"
+    if [ "${STRIP:-1}" = "0" ]; then
+        cp "$src" "$dst"
+        echo "  $f.lua: copied unchanged (STRIP=0)"
+    else
+        python3 "$HERE/strip_comments.py" "$src" "$dst"
+        python3 "$HERE/strip_comments.py" --check "$src" "$dst" > /dev/null
+    fi
+done
 
 # Compile translations and stage only the per-language .mo the runtime loads.
 # The .po and .pot are build inputs, not shipped. No .po yet == English-only,
