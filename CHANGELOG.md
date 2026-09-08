@@ -1,45 +1,33 @@
 # Changelog
 
-## Unreleased
+## 1.6.0
 
 **New formats**
-- FB2 (.fb2) books are now supported. Glimpse reads the embedded images and maps each one to its chapter for spoiler scope.
-- MOBI (.mobi, .prc) books are now supported. Glimpse reads the embedded images and skips the cover. A MOBI holds the whole book as one HTML document, so Glimpse cannot tell which chapter an image belongs to.
-- On a MOBI the mode is locked to "All images". The Mode row in the ⋯ menu and the Mode setting are greyed out, and a tap on the row explains why. Your setting is kept, and an EPUB gets it back.
+- FB2 and MOBI books now work. Glimpse finds the images inside them the same way that it does in an EPUB. ([#3](https://github.com/Fank1/glimpse/issues/3))
+- A MOBI always uses "All images". The format holds the whole book as one document, so Glimpse cannot tell which chapter an image belongs to. Your own setting comes back on an EPUB.
 
 **Compact panel**
-- A new Quick Action shrinks the panel to a small free-floating card that sits over the page. The ⋯ menu row says where the tap goes: "Switch to Compact", then "Switch to Large". Drag the card by the grip in its top-right corner. Glimpse remembers where you put it, and puts it back next time.
-- The same choice is in Settings, under Layout, as "Panel Size: Large / Compact". Pick a size there while Glimpse is open and the panel changes at once.
-- The card keeps the image, the dot indicator, the ⋯ menu, and the zoom controls and mini map when those are on. It hides the captions, the bookmark label, the navigation buttons and the reset button. Zoom in and the dots go too, so the image gets the whole card. Double-tap still resets the zoom. Swipe still changes image.
-- The chrome on the card is drawn flat with a white outline instead of a drop shadow, so it stays readable over the image. The mini map sits in the bottom-left corner, the dot indicator on the bottom edge, and the zoom controls stack onto the ⋯ button in the bottom-right. Each one shares the card's own border, and the zoom controls join the ⋯ with the same faint hairline that separates + from −.
-- The card's mini map stays a small badge in the corner. A wide image shrinks to fit it. Its top-right corner now carries the same slight rounding as the design.
-- **In night mode the card gets its border back.** The four straight edges were painted black on a black page, so the card had no visible frame: only its four corner arcs showed, as if it were torn. The frame is now an unbroken white line, the way it is in day mode.
-- The card's night border is also the same width as its day border. It used to be a hairline, half as thick, which broke up around the rounded corners: the curve thinned to a single pixel and read as a gap.
-- The card's shadow reaches about 60% further in night mode. A shadow can only darken, so on a dark page the reach that lifts the card off a white page hardly registers. The wider field gives the card the same separation from the text around it. Day mode is unchanged.
-- The dot indicator now sits on the middle of the card's bottom edge. It used to centre itself in the space left over beside the ⋯ button, which pushed it off to the left.
-- On the card, the numbered indicator now matches the dot indicator: the same colours, the same height, and the same docking on the bottom border. In night mode both are white. The large panel is unchanged, where the numbered indicator stays light on a dark page so it does not pull the eye.
+- Glimpse can now open as a small card that floats over the page, instead of the full drawer. Drag it by the grip in its top-right corner. Glimpse puts it back where you left it.
+- Switch size from the ⋯ menu, or in Settings under Layout. The panel changes at once, while Glimpse is open.
+- The card keeps the image, the indicator, the ⋯ menu, and your zoom controls and mini map. It leaves out the captions, the bookmark label, the navigation buttons and the reset button. Swipe changes image. Double-tap resets the zoom.
+- While the card is on, the ⋯ menu dims the rows that the card cannot show. Swipe, pinch and double-tap stay on, whatever Settings → Gestures says.
+- The card now works in night mode. Its border, its shadow and its indicator match the design instead of disappearing into the dark page.
+- Open the Gallery from the card and Glimpse switches to the large panel, so the thumbnails stay big enough to use. Close the Gallery and the card comes back.
 
-**Mini map**
-- The rectangle that marks where you are in the image now has slightly rounded corners, in both the large panel and the compact card.
-- Nav Buttons and Image Captions are dimmed in the ⋯ menu while the compact panel is on, because the card cannot show them.
-- Settings → Gestures applies to the large panel only. The compact panel always keeps swipe, pinch and double-tap on, because it hides the navigation buttons and the reset button.
-- Opening the Gallery restores the large panel, so the thumbnails stay usable. Leaving the Gallery brings the card back.
+**Zoom**
+- Maximum zoom takes a custom value, from 100% to 1000%, in place of the fixed presets. A high value lets a small image fill the screen. ([#13](https://github.com/Fank1/glimpse/issues/13))
+- Zooming in is much quicker, and it stays quick however far you go. Each step used to cost more than the step before it.
+- You can zoom all the way to the value that you set. "+" greys out at your maximum, and not before it.
+- Change Maximum zoom while Glimpse is open and the new limit applies at once.
 
 **Viewer**
-- The image indicator now goes away when you zoom past the fitted view, in the large panel as well as on the compact card. Image switching is off at that zoom, so the indicator has nothing left to show, and the image gets the row back. With the zoom controls off, the indicator's place still becomes the Reset button.
-- A pressed button keeps its border. The press flash used to invert the whole button, the border with it, so on the compact card the button's outline disappeared for as long as you held it down. The flash now inverts only what is inside the border.
-
-**Maximum zoom**
-- The Maximum zoom setting now has a Custom option. Enter any value from 100% to 1000%, in place of the fixed presets. A very high value helps low-resolution images fill the screen.
-- **Zooming in is much quicker, and it no longer slows down the further you go.** Each step used to rebuild the whole image at the new size and then show a screen-sized piece of it, so the work grew with the square of the zoom: on a 1920×2778 image the fourth step built a 109-megapixel picture to show 1.3 of them, and took 480 ms. Glimpse now builds only the part you can see. The same step takes 9 ms, and every step costs the same however far in you are.
-- You can now zoom all the way to the value you set. The old path had to stop early to stay inside the memory limit, which also left the "+" button looking active when the image could not grow further. Both are gone: "+" greys out exactly at your Maximum zoom.
-
-**Settings apply while Glimpse is open**
-- Change Maximum zoom with the panel open and the new ceiling applies at once. It used to be read when the panel opened, so you had to close and reopen before it took effect.
-- The same was true of the ⋯ button. Turn every Quick Action off and it becomes a Gallery button; turn one back on and it becomes the ⋯ menu again. Both the action and the icon now follow the setting straight away.
+- The image indicator goes away when you zoom past the fitted view, in both panel sizes, so the image gets the whole row.
+- The rectangle on the mini map that marks your position has rounded corners.
+- A pressed button keeps its outline.
+- Turn every Quick Action off and the ⋯ button opens the Gallery directly. Turn one back on and the menu returns. The button follows the setting at once.
 
 **Translations**
-- The "Show Mini Map" setting is corrected in 15 languages. Italian and Dutch showed the English words. Thirteen more used a different word, spelling or capitalisation from the one the same language uses for "Mini Map" on its own. Every one now matches, and follows how that language writes its other settings rows.
+- "Show Mini Map" is corrected in 15 languages.
 
 ## 1.5.1
 
