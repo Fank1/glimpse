@@ -4001,14 +4001,12 @@ function GlimpseViewer:_updateImageOnly()
         self._zooming = nil
         return self:update()
     end
-    -- The pill (dots ↔ "Reset") and the nav arrows depend on the over-fit state,
-    -- but only when the −/fit/+ zoom control is OFF (with it on the dots always
-    -- stay). The light path never rebuilds that chrome, so when a zoom step
-    -- crosses the fit boundary with the control off, fall back to a full update.
-    -- Mini Mode HIDES the dots past fit whether or not the control is on, so it
-    -- needs the full rebuild at that boundary either way.
-    if (self._mini or not G_reader_settings:isTrue(ZOOMCTL_KEY))
-            and self:_isOverFit() ~= self._chrome_over_fit then
+    -- The pill (dots ↔ "Reset" ↔ nothing) and the nav arrows depend on the
+    -- over-fit state in EVERY mode: past fit the indicator goes away, and with
+    -- the −/fit/+ zoom control off it is replaced by a Reset button. The light
+    -- path never rebuilds that chrome, so a zoom step that crosses the fit
+    -- boundary falls back to a full update.
+    if self:_isOverFit() ~= self._chrome_over_fit then
         self._zooming = nil
         return self:update()
     end
@@ -4093,22 +4091,22 @@ function GlimpseViewer:_buildPill()
         end
         return
     end
-    -- Mini Mode has no Reset button at all: the card is small, and a button in
-    -- the bottom row would crowd the mini map and the ⋯ stack. Zoomed in it
-    -- drops the dots too, leaving the image the whole card. A double tap still
-    -- resets to fit.
-    if self._mini and self:_isOverFit() then return end
-    if self:_isOverFit() and not G_reader_settings:isTrue(ZOOMCTL_KEY)
-            and not self._mini then
-        -- genuinely spilling past fit: image switching is disabled, and
-        -- the indicator becomes a tappable "reset to fit" button, styled
-        -- to match the ⋯ button (see onTap). When the −/fit/+ zoom control
-        -- is on, its middle button handles reset instead, so keep the dots.
-        self._pill_frame = GlimpseTextButton:new{
-            text = _("Reset"),
-            bold = true,
-            icon = _PLUGIN_DIR .. "/assets/zoom.svg",
-        }
+    -- Zoomed past the fitted view, image switching is off, so the indicator has
+    -- nothing left to indicate and the image gets its row back. One exception:
+    if self:_isOverFit() then
+        if not self._mini and not G_reader_settings:isTrue(ZOOMCTL_KEY) then
+            -- with no zoom control on screen there is no visible way back to
+            -- fit, so the indicator's slot becomes a tappable "reset to fit"
+            -- button instead, styled to match the ⋯ button (see onTap). Mini
+            -- Mode never gets one: the card is small, and a button in the
+            -- bottom row would crowd the mini map and the ⋯ stack. A double
+            -- tap resets to fit in every mode.
+            self._pill_frame = GlimpseTextButton:new{
+                text = _("Reset"),
+                bold = true,
+                icon = _PLUGIN_DIR .. "/assets/zoom.svg",
+            }
+        end
         return
     end
     if not (self._images_list and self._images_list_nb > 1) then return end

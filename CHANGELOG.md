@@ -26,6 +26,7 @@
 - Opening the Gallery restores the large panel, so the thumbnails stay usable. Leaving the Gallery brings the card back.
 
 **Viewer**
+- The image indicator now goes away when you zoom past the fitted view, in the large panel as well as on the compact card. Image switching is off at that zoom, so the indicator has nothing left to show, and the image gets the row back. With the zoom controls off, the indicator's place still becomes the Reset button.
 - A pressed button keeps its border. The press flash used to invert the whole button, the border with it, so on the compact card the button's outline disappeared for as long as you held it down. The flash now inverts only what is inside the border.
 
 **Maximum zoom**
