@@ -2368,6 +2368,10 @@ local GlimpseViewer = ImageViewer:extend{
     -- while the top stayed at 27 device px).
     mini_shadow = math.floor(Screen:scaleBySize(10) * 1.55 + 0.5),
     mini_shadow_bias = 0.13,
+    -- Night reach multiplier. On a dark page a shadow can only darken what is
+    -- already dark, so the same reach that lifts the card off a white page
+    -- barely registers. Night gets a wider field to carry the same weight.
+    mini_shadow_night = 1.6,
     mini_grip_inset = Screen:scaleBySize(6),
     mini_map_max_w = Screen:scaleBySize(61),  -- widest the card's map ever gets
     -- Numeric alpha in (0,1) makes UIManager:setDirty flag every window
@@ -3123,8 +3127,18 @@ end
 -- The shadow is biased DOWNWARD by soff (the distance field is centred on a card
 -- shifted down), so its longest reach is mini_shadow + soff, below the card. The
 -- stencil and the refresh region both size off this.
+-- Shadow reach for the CURRENT mode. Every caller goes through this: the
+-- stencil, the padding around it and the refresh region must agree, or the
+-- shadow is clipped or leaves a dirty band behind when the card moves.
+function GlimpseViewer:_miniShadowReach()
+    if Screen.night_mode then
+        return math.floor(self.mini_shadow * self.mini_shadow_night + 0.5)
+    end
+    return self.mini_shadow
+end
+
 function GlimpseViewer:_miniShadowPad()
-    return self.mini_shadow + self:_miniShadowOffset()
+    return self:_miniShadowReach() + self:_miniShadowOffset()
 end
 
 -- How far DOWN the shadow's distance field is biased. Kept small: at half the
@@ -3132,7 +3146,7 @@ end
 -- with no gradient left. The band above is mini_shadow - this, the band below
 -- mini_shadow + this.
 function GlimpseViewer:_miniShadowOffset()
-    return math.floor(self.mini_shadow * self.mini_shadow_bias + 0.5)
+    return math.floor(self:_miniShadowReach() * self.mini_shadow_bias + 0.5)
 end
 
 -- Mini Mode card paint. The drawer's directional gradient assumes one inner
@@ -3151,7 +3165,7 @@ function GlimpseViewer:_paintMiniCard(bb, x, y)
         and not (night and Device.isAndroid and Device:isAndroid())
     local skey = tostring(night) .. tostring(render_inv) .. "mini"
     local shadow_disabled = G_reader_settings:isTrue(SHADOW_KEY)
-    local s = self.mini_shadow
+    local s = self:_miniShadowReach()
 
     -- Soft drop shadow: a dithered ring around the card (the interior stays
     -- transparent — the card body paints over it). Density falls off

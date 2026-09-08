@@ -15,6 +15,7 @@
 - The card's mini map stays a small badge in the corner. A wide image shrinks to fit it. Its top-right corner now carries the same slight rounding as the design.
 - **In night mode the card gets its border back.** The four straight edges were painted black on a black page, so the card had no visible frame: only its four corner arcs showed, as if it were torn. The frame is now an unbroken white line, the way it is in day mode.
 - The card's night border is also the same width as its day border. It used to be a hairline, half as thick, which broke up around the rounded corners: the curve thinned to a single pixel and read as a gap.
+- The card's shadow reaches about 60% further in night mode. A shadow can only darken, so on a dark page the reach that lifts the card off a white page hardly registers. The wider field gives the card the same separation from the text around it. Day mode is unchanged.
 - The dot indicator now sits on the middle of the card's bottom edge. It used to centre itself in the space left over beside the ⋯ button, which pushed it off to the left.
 - On the card, the numbered indicator now matches the dot indicator: the same colours, the same height, and the same docking on the bottom border. In night mode both are white. The large panel is unchanged, where the numbered indicator stays light on a dark page so it does not pull the eye.
 
