@@ -495,6 +495,31 @@ local function make_corner_stencil(w, h, r, corners, stroke, fill, outline, side
     return bb
 end
 
+-- Press-flash invert, clipped to a stencil's INTERIOR.
+--
+-- The stencils above encode the shape twice: the alpha channel marks the
+-- silhouette, and the gray value separates the `fill` interior (0xFF) from the
+-- `outline` border band (0x00, or the disabled gray). Inverting on alpha alone
+-- flips the border with the fill, so a pressed button loses its outline — most
+-- visible on the Compact card, where that border is the only edge the button
+-- has against the image behind it. Test the gray as well and the border keeps
+-- its color through the press.
+--
+-- `y0`/`y1` bound the rows to invert, for a control that flashes one zone (the
+-- zoom control) rather than its whole body. Pass nil for the whole height.
+local INVERT_FILL_MIN = 0xF0    -- below this the pixel is border, or its AA
+local function invert_stencil_fill(bb, stencil, x, y, w, h, y0, y1)
+    for yy = y0 or 0, (y1 or h) - 1 do
+        for xx = 0, w - 1 do
+            local s = stencil:getPixel(xx, yy):getColorRGB32()
+            if s.alpha > 127 and s.r >= INVERT_FILL_MIN then
+                bb:setPixel(x + xx, y + yy,
+                    bb:getPixel(x + xx, y + yy):getColorRGB32():invert())
+            end
+        end
+    end
+end
+
 -- Soft drop shadow for the ACTIVE chrome (⋯, nav arrows, zoom control,
 -- Back/Reset). Disabled/inactive buttons get none. A rounded-rect silhouette
 -- that fades out over `blur` px on ALL sides (so the edges are soft, never a
@@ -886,18 +911,11 @@ function GlimpseMoreButton:paintTo(bb, x, y)
             y + math.floor((self.size - isz.h) / 2))
     end
     if self.inverted then
-        -- pressed state: invert the rendered button, but only within its
-        -- rounded silhouette (the stencil's alpha) — a square invertRect
-        -- would flip the image corners outside the radius too
-        for yy = 0, self.size - 1 do
-            for xx = 0, self.size - 1 do
-                local a = self._bg_bb:getPixel(xx, yy):getColorRGB32().alpha
-                if a > 127 then
-                    bb:setPixel(x + xx, y + yy,
-                        bb:getPixel(x + xx, y + yy):getColorRGB32():invert())
-                end
-            end
-        end
+        -- pressed state: invert the button's INTERIOR only, inside its rounded
+        -- silhouette. A square invertRect would flip the image corners outside
+        -- the radius, and inverting the border with it would drop the button's
+        -- outline for as long as the press lasts.
+        invert_stencil_fill(bb, self._bg_bb, x, y, self.size, self.size)
     end
 end
 
@@ -1070,15 +1088,7 @@ function GlimpseZoomControl:paintTo(bb, x, y)
     if self.inverted_zone then
         local z0 = math.floor(self.inverted_zone * zone)
         local z1 = math.floor((self.inverted_zone + 1) * zone)
-        for yy = z0, z1 - 1 do
-            for xx = 0, w - 1 do
-                local a = self._bg_bb:getPixel(xx, yy):getColorRGB32().alpha
-                if a > 127 then
-                    bb:setPixel(x + xx, y + yy,
-                        bb:getPixel(x + xx, y + yy):getColorRGB32():invert())
-                end
-            end
-        end
+        invert_stencil_fill(bb, self._bg_bb, x, y, w, h, z0, z1)
     end
 end
 
@@ -1572,17 +1582,9 @@ function GlimpseTextButton:paintTo(bb, x, y)
     end
     self._text_wg:paintTo(bb, cx, y + math.floor((self.height - tsz.h) / 2))
     if self.inverted then
-        -- pressed state: invert within the rounded silhouette only (the
-        -- stencil's alpha), same trick as GlimpseMoreButton
-        for yy = 0, self.height - 1 do
-            for xx = 0, self._w - 1 do
-                local a = self._bg_bb:getPixel(xx, yy):getColorRGB32().alpha
-                if a > 127 then
-                    bb:setPixel(x + xx, y + yy,
-                        bb:getPixel(x + xx, y + yy):getColorRGB32():invert())
-                end
-            end
-        end
+        -- pressed state: interior only, inside the rounded silhouette — same
+        -- trick as GlimpseMoreButton, so the border survives the press
+        invert_stencil_fill(bb, self._bg_bb, x, y, self._w, self.height)
     end
 end
 

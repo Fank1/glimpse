@@ -25,6 +25,9 @@
 - Settings → Gestures applies to the large panel only. The compact panel always keeps swipe, pinch and double-tap on, because it hides the navigation buttons and the reset button.
 - Opening the Gallery restores the large panel, so the thumbnails stay usable. Leaving the Gallery brings the card back.
 
+**Viewer**
+- A pressed button keeps its border. The press flash used to invert the whole button, the border with it, so on the compact card the button's outline disappeared for as long as you held it down. The flash now inverts only what is inside the border.
+
 **Maximum zoom**
 - The Maximum zoom setting now has a Custom option. Enter any value from 100% to 1000%, in place of the fixed presets. A very high value helps low-resolution images fill the screen.
 - **Zooming in is much quicker, and it no longer slows down the further you go.** Each step used to rebuild the whole image at the new size and then show a screen-sized piece of it, so the work grew with the square of the zoom: on a 1920×2778 image the fourth step built a 109-megapixel picture to show 1.3 of them, and took 480 ms. Glimpse now builds only the part you can see. The same step takes 9 ms, and every step costs the same however far in you are.
